@@ -118,7 +118,7 @@ protected:
 
 /** Macro to create plugin library for user-defined Processors. */
 #define DECLARE_SBN_PROCESSOR(classname) extern "C" { \
-core::ProcessorBase* CreateProcessorObject() { return (core::ProcessorBase*) new classname; } \
+core::ProcessorBase* CreateProcessorObject() { return new classname; } \
 void DestroyProcessorObject(core::ProcessorBase* o) { delete o; } \
 struct core::ProcessorBase::export_table exports = { CreateProcessorObject, DestroyProcessorObject };}
 

@@ -21,7 +21,6 @@ extern "C" {
 /** Load a Processor. */
 inline ProcessorBase::export_table* LoadProcessor() {
   return &exports;
-  //return (ProcessorBase::export_table *) &exports;
 }
 
 int main(int argc, char* argv[]) {
@@ -69,8 +68,8 @@ int main(int argc, char* argv[]) {
   for (size_t i=0; i<n_processors; i++) {
     Json::Value* config = config_names.size() == 0 ? NULL : Main::LoadConfig(config_names[i]);
 
-    procs.push_back(LoadProcessor()->create());
-    configs.push_back(config);
+    procs[i] = LoadProcessor()->create(); 
+    configs[i] = config;
   }
 
   ProcessorBlock block = Main::InitializeBlock(configs, procs);
