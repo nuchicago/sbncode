@@ -32,6 +32,12 @@ namespace core {
 class ProcessorBase {
 friend class ProcessorBlock;
 public:
+  /** Struct containing (Macro defined) creation/deletion operations */
+  struct export_table {
+    ProcessorBase* (*create)(void);
+    void (*destroy)(ProcessorBase*);
+  };
+
   /** Constructor */
   ProcessorBase();
 
@@ -112,10 +118,9 @@ protected:
 
 /** Macro to create plugin library for user-defined Processors. */
 #define DECLARE_SBN_PROCESSOR(classname) extern "C" { \
-classname* CreateObject() { return new classname; } \
-void DestroyObject(classname* o) { delete o; } \
-struct export_table { classname* (*create)(void); void (*destroy)(classname*); }; \
-struct export_table exports = { CreateObject, DestroyObject }; }
+core::ProcessorBase* CreateProcessorObject() { return new classname; } \
+void DestroyProcessorObject(core::ProcessorBase* o) { delete o; } \
+struct core::ProcessorBase::export_table exports = { CreateProcessorObject, DestroyProcessorObject };}
 
 #endif  // __sbnanalysis_core_ProcessorBase__
 

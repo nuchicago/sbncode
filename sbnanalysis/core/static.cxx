@@ -12,24 +12,29 @@
 
 using namespace core;
 
+extern "C" {
+  extern ProcessorBase* CreateProcessorObject();
+  extern void DestroyProcessorObject(ProcessorBase* proc); 
+  extern struct ProcessorBase::export_table exports;
+}
+
+/** Load a Processor. */
+inline ProcessorBase::export_table* LoadProcessor() {
+  return &exports;
+}
+
 int main(int argc, char* argv[]) {
   // Parse command line arguments
-  std::vector<char*> processors;
-  std::map<unsigned, char*> config_names;
+  std::vector<char*> config_names;
 
   int c;
-  unsigned procindex = 0;
-  while ((c=getopt(argc, argv, "m:c:")) != -1) {
+  while ((c=getopt(argc, argv, "c:")) != -1) {
     switch (c) {
-      case 'm':
-        processors.push_back(optarg);
-        procindex++;
-        break;
       case 'c':
-        config_names[procindex-1] = optarg;
+        config_names.push_back(optarg);
         break;
       case '?':
-        if (optopt == 'c' || optopt == 'm')
+        if (optopt == 'c')
           fprintf(stderr, "Option -%c requires an argument.\n", optopt);
         else if (isprint(optopt))
           fprintf(stderr, "Unknown option `-%c'.\n", optopt);
@@ -42,7 +47,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (argc - optind < 1) {
-    std::cout << "Usage: " << argv[0] << " [-m PROCESSOR [-c CONFIG]] "
+    std::cout << "Usage: " << argv[0] << " [-c [Config]] "
               << "INPUTDEF [...]" << std::endl;
     return 0;
   }
@@ -55,22 +60,19 @@ int main(int argc, char* argv[]) {
   assert(!filenames.empty());
 
   // Setup
-  std::vector<ProcessorBase*> procs(processors.size());
-  std::vector<Json::Value*> configs(processors.size());
+  int n_processors = config_names.size() == 0 ? 1 : config_names.size();
+  std::vector<Json::Value*> configs(n_processors);
+  std::vector<ProcessorBase*> procs(n_processors);
 
   std::cout << "Configuring... " << std::endl;
-  for (size_t i=0; i<processors.size(); i++) {
-    ProcessorBase::export_table* exp = Main::LoadProcessor(processors[i]);
+  for (size_t i=0; i<n_processors; i++) {
+    Json::Value* config = config_names.size() == 0 ? NULL : Main::LoadConfig(config_names[i]);
 
-    Json::Value* config = Main::LoadConfig(config_names[i]);
+    procs[i] = LoadProcessor()->create(); 
     configs[i] = config;
-
-    ProcessorBase* proc = exp->create();
-    procs[i] = proc;
   }
 
   ProcessorBlock block = Main::InitializeBlock(configs, procs);
-
   std::cout << "Running... " << std::endl;
   block.ProcessFiles(filenames);
 
@@ -79,4 +81,3 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
-
