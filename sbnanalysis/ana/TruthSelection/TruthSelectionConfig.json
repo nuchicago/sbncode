@@ -1,0 +1,7 @@
+{
+  "OutputFile": "output_TruthSelection_TruthSelection.root",
+  "TruthSelection": {
+    "parameter": 42
+  }
+}
+
