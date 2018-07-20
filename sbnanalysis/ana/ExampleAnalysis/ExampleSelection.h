@@ -70,6 +70,7 @@ protected:
   /** Custom data branches */
   int fNuCount;  //!< Number of neutrino interactions in the event
   int fMyVar;  //!< Another variable of interest
+  std::vector<int> fParentPDG;  //!< Neutrino parent PDG codes
 
   /** Histograms */
   TH2D* fNuVertexXZHist;  //!< Neutrino vertex XZ projection
