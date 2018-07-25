@@ -1,0 +1,52 @@
+# includes from uboonecode
+
+#include "pandoramodules_microboone.fcl"
+#include "services_microboone.fcl"
+
+
+physics:
+{
+  producers:
+  {
+    pandora: @local::microboone_pandoraFull
+  }
+
+  my_producer_modules: [pandora]
+
+  outstream: [out1]
+  end_paths: [outstream]
+
+}
+
+services:
+{
+  @table::microboone_services
+  @table::microboone_services_reco
+  TFileService: { fileName: "out.root"}
+}
+
+# overriding some configuration that seem to make problems
+# taken from UBXSec at uboonecode v06_26_01_13 
+# also taken from https://cdcvs.fnal.gov/redmine/projects/uboonecode/wiki/Guide_to_Using_FCL_files_in_MicroBooNE
+#
+services.DetectorClocksService.InheritClockConfig: false
+services.DetectorClocksService.TriggerOffsetTPC: -400
+services.DetectorPropertiesService.NumberTimeSamples: 6400
+services.DetectorPropertiesService.ReadOutWindowSize: 6400
+
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    fileName: "pandora_out.root"
+  }
+}
+
+source:
+{
+  module_type: RootInput
+}
+
+process_name: PandoraReco
+
