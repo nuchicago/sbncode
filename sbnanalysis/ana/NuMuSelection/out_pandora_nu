@@ -1,0 +1,630 @@
+Configuring... 
+Loading processor: NuMuSelection_SelectNu... OK
+Loading configuration: NuConfig.json... OK
+Running... 
+Successfully opened file /uboone/data/users/gputnam/numu_selection/single_file/prodgenie_bnb_nu_cosmic_uboone_0_20170331T061313_gen2_bd481898-5529-474b-97ca-55db7ca40b5a_20171226T155333_reco1_20171226T162431_reco2_20180207T181416_cali_pandora.root
+
+New Event
+MCTruth
+Pos: 3.97988 -74.8672 355.503
+PFParticle!
+Pos: 259.816 -109.117 317.474 
+Closest reconstructed: 260.905
+
+New Event
+MCTruth
+Pos: 153.419 -26.7741 808.219
+PFParticle!
+Pos: 71.2432 117.223 501.143 
+PFParticle!
+Pos: 128.468 102.47 575.161 
+PFParticle!
+Pos: 113.561 -103.208 170.448 
+PFParticle!
+Pos: 241.675 -40.1252 248.234 
+PFParticle!
+Pos: 181.58 -82.3455 740.649 
+PFParticle!
+Pos: 192.934 115.58 154.062 
+PFParticle!
+Pos: 157.419 -24.875 807.892 
+PFParticle!
+Pos: 59.2439 73.6284 560.363 
+Closest reconstructed: 4.43938
+
+New Event
+MCTruth
+Pos: 231.791 39.767 428.787
+PFParticle!
+Pos: 234.1 35.7749 428.217 
+PFParticle!
+Pos: 134.548 -82.5862 478.458 
+Closest reconstructed: 4.64709
+
+New Event
+MCTruth
+Pos: 32.4791 -126.867 128.558
+PFParticle!
+Pos: 68.6167 112.14 14.612 
+PFParticle!
+Pos: 0.4756 -100.333 165.756 
+Closest reconstructed: 55.785
+
+New Event
+MCTruth
+Pos: 262.82 112.204 442.808
+PFParticle!
+Pos: 160.497 -87.66 799.513 
+PFParticle!
+Pos: 40.0671 63.767 409.19 
+PFParticle!
+Pos: 38.789 102.053 461.044 
+Closest reconstructed: 225.001
+
+New Event
+MCTruth
+Pos: 197.372 9.49518 496.116
+PFParticle!
+Pos: 201.427 9.14001 495.449 
+PFParticle!
+Pos: 180.244 -91.3755 17.5593 
+PFParticle!
+Pos: 68.6415 67.0011 750.864 
+Closest reconstructed: 4.12468
+
+New Event
+MCTruth
+Pos: 56.8414 52.1339 632.047
+PFParticle!
+Pos: 200.902 102.983 107.747 
+PFParticle!
+Pos: 62.8413 111.076 558.502 
+PFParticle!
+Pos: 103.093 59.0285 991.562 
+Closest reconstructed: 94.4405
+
+New Event
+MCTruth
+Pos: 216.764 76.8531 -5.06777
+PFParticle!
+Pos: 218.019 76.6592 9.27807 
+PFParticle!
+Pos: 62.9238 28.2627 314.308 
+PFParticle!
+Pos: 80.8039 108.741 300.208 
+PFParticle!
+Pos: 177.213 77.8756 140.974 
+PFParticle!
+Pos: 193.559 -56.1093 873.382 
+PFParticle!
+Pos: 179.915 -18.2696 120.077 
+Closest reconstructed: 14.4019
+
+New Event
+MCTruth
+Pos: 211.698 -151.438 514.854
+PFParticle!
+Pos: 235.186 -99.3132 532.297 
+Closest reconstructed: 59.7741
+
+New Event
+MCTruth
+Pos: -4.01682 -117.2 118.837
+PFParticle!
+Pos: 94.5301 -113.002 41.9988 
+PFParticle!
+Pos: 99.3545 111.521 783.414 
+PFParticle!
+Pos: 56.1322 46.2177 153.317 
+PFParticle!
+Pos: 241.034 107.391 697.194 
+Closest reconstructed: 125.033
+
+New Event
+MCTruth
+Pos: 258.406 48.1072 842.32
+PFParticle!
+Pos: 206.629 65.1095 935.004 
+PFParticle!
+Pos: 29.8286 -106.418 997.695 
+PFParticle!
+Pos: 89.5664 -115.413 850.412 
+Closest reconstructed: 107.518
+
+New Event
+MCTruth
+Pos: 204.21 -134.633 1087.02
+PFParticle!
+Pos: 93.4944 -108.405 123.296 
+PFParticle!
+Pos: 64.2458 -16.5573 124.818 
+PFParticle!
+Pos: 13.3798 12.7473 513.005 
+PFParticle!
+Pos: 196.055 45.8932 846.363 
+PFParticle!
+Pos: 110.169 -46.1152 867.742 
+PFParticle!
+Pos: 7.59616 86.1284 408.676 
+PFParticle!
+Pos: 105.647 -99.4414 629.142 
+Closest reconstructed: 254.483
+
+New Event
+MCTruth
+Pos: 250.308 28.3125 215.847
+PFParticle!
+Pos: 248.215 -110.811 91.7049 
+PFParticle!
+Pos: 56.7238 116.371 141.645 
+PFParticle!
+Pos: 250.821 25.6237 226.15 
+Closest reconstructed: 10.66
+
+New Event
+MCTruth
+Pos: 178.858 32.5219 929.52
+PFParticle!
+Pos: 253.185 101.613 695.648 
+PFParticle!
+Pos: 178.32 -41.7569 761.224 
+PFParticle!
+Pos: 182.228 31.032 927.301 
+PFParticle!
+Pos: 129.529 -59.1239 968.766 
+Closest reconstructed: 4.30179
+
+New Event
+MCTruth
+Pos: 66.2513 66.6432 -0.548723
+Closest reconstructed: -1
+
+New Event
+MCTruth
+Pos: 312.678 -46.4483 955.84
+PFParticle!
+Pos: 189.649 -54.3886 425.754 
+PFParticle!
+Pos: 207.498 94.6632 574.515 
+PFParticle!
+Pos: 254.218 -25.1585 209.892 
+Closest reconstructed: 419.981
+
+New Event
+MCTruth
+Pos: -48.6477 58.4859 66.4925
+PFParticle!
+Pos: 0.629439 60.528 194.781 
+PFParticle!
+Pos: 0.622105 66.3509 1002.4 
+PFParticle!
+Pos: 143.159 -50.604 392.299 
+PFParticle!
+Pos: 228.743 63.9229 672.245 
+PFParticle!
+Pos: 216.191 -114.767 286.893 
+Closest reconstructed: 137.442
+
+New Event
+MCTruth
+Pos: 200.585 -15.6243 567.741
+PFParticle!
+Pos: 204.329 -14.2285 567.592 
+Closest reconstructed: 3.99779
+
+New Event
+MCTruth
+Pos: 203.373 -102.246 1083.97
+PFParticle!
+Pos: 31.5396 -112.393 386.785 
+PFParticle!
+Pos: 58.5562 0.700527 563.807 
+PFParticle!
+Pos: 190.549 -15.4841 448.356 
+PFParticle!
+Pos: 154.556 111.954 15.0643 
+PFParticle!
+Pos: 135.171 -89.1995 945.231 
+Closest reconstructed: 155.142
+
+New Event
+MCTruth
+Pos: 18.5907 -156.009 319.247
+PFParticle!
+Pos: 123.771 117.334 603.911 
+PFParticle!
+Pos: 37.3167 11.1142 270.012 
+PFParticle!
+Pos: 244.337 54.945 375.377 
+PFParticle!
+Pos: 176.62 99.1715 235.691 
+PFParticle!
+Pos: 239.419 -99.1499 544.843 
+PFParticle!
+Pos: 185.013 -87.6103 934.779 
+PFParticle!
+Pos: 254.089 91.7158 478.795 
+PFParticle!
+Pos: 96.6717 19.4893 475.895 
+Closest reconstructed: 175.229
+
+New Event
+MCTruth
+Pos: 24.2213 35.3928 258.06
+PFParticle!
+Pos: 25.6304 35.2515 258.481 
+PFParticle!
+Pos: 207.433 -114.571 255.561 
+Closest reconstructed: 1.47718
+
+New Event
+MCTruth
+Pos: 182.472 -79.6192 990.326
+PFParticle!
+Pos: 253.114 63.388 669.67 
+PFParticle!
+Pos: 184.734 -76.3106 987.917 
+PFParticle!
+Pos: 152.183 -33.7208 1004.53 
+Closest reconstructed: 4.67614
+
+New Event
+MCTruth
+Pos: 31.4016 -122.691 274.054
+PFParticle!
+Pos: 38.9126 -75.3919 343.451 
+PFParticle!
+Pos: 75.9892 99.4237 928.817 
+PFParticle!
+Pos: 197.369 16.661 257.557 
+PFParticle!
+Pos: 64.7009 75.5254 733.963 
+PFParticle!
+Pos: 208.447 97.0387 52.4144 
+PFParticle!
+Pos: 181.288 90.2973 943.573 
+PFParticle!
+Pos: 223.007 -115.249 135.58 
+PFParticle!
+Pos: 63.5118 -93.9496 598.801 
+PFParticle!
+Pos: 78.6818 104.687 358.916 
+PFParticle!
+Pos: 203.154 -49.3093 15.0583 
+PFParticle!
+Pos: 186.873 -101.905 676.838 
+Closest reconstructed: 84.3176
+
+New Event
+MCTruth
+Pos: 94.5609 22.9545 49.4759
+PFParticle!
+Pos: 42.168 -67.5504 151.181 
+PFParticle!
+Pos: 96.7898 21.7535 50.0088 
+PFParticle!
+Pos: 150.836 -70.2636 779.152 
+Closest reconstructed: 2.58734
+
+New Event
+MCTruth
+Pos: 201.92 -53.3886 907.038
+PFParticle!
+Pos: 205.019 -49.0933 905.562 
+PFParticle!
+Pos: 58.7097 -31.2831 967.929 
+PFParticle!
+Pos: 212.82 -115.415 339.209 
+PFParticle!
+Pos: 171.964 87.81 389.365 
+PFParticle!
+Pos: 209.39 107.946 1016.24 
+Closest reconstructed: 5.49817
+
+New Event
+MCTruth
+Pos: 224.143 -38.8164 775.782
+PFParticle!
+Pos: 209.193 -98.8763 735.129 
+PFParticle!
+Pos: 30.3516 12.8526 680.715 
+PFParticle!
+Pos: 255.537 -54.6458 766.984 
+PFParticle!
+Pos: 172.066 -115.521 527.881 
+Closest reconstructed: 36.2431
+
+New Event
+MCTruth
+Pos: 20.7807 104.83 411.982
+PFParticle!
+Pos: 21.3544 104.609 412.107 
+Closest reconstructed: 0.6275
+
+New Event
+MCTruth
+Pos: -7.70407 -125.097 237.221
+PFParticle!
+Pos: 121.348 55.7641 796.573 
+PFParticle!
+Pos: 75.5166 -114.999 987.343 
+PFParticle!
+Pos: 143.71 -11.7929 1029.97 
+PFParticle!
+Pos: 161.635 -83.4064 568.663 
+PFParticle!
+Pos: 219.594 75.0027 253.7 
+PFParticle!
+Pos: 79.1623 17.5539 911.186 
+Closest reconstructed: 303.275
+
+New Event
+MCTruth
+Pos: 208.347 -92.2523 789.212
+PFParticle!
+Pos: 211.21 -81.7869 789.897 
+Closest reconstructed: 10.8716
+
+New Event
+MCTruth
+Pos: 293.293 14.5199 66.5228
+PFParticle!
+Pos: 199.158 -46.2576 714.779 
+PFParticle!
+Pos: 249.242 -14.9487 212.084 
+PFParticle!
+Pos: 108.739 23.684 13.0053 
+PFParticle!
+Pos: 36.6427 106.385 4.11245 
+Closest reconstructed: 154.909
+
+New Event
+MCTruth
+Pos: 169.376 25.1699 998.117
+PFParticle!
+Pos: 165.338 25.8867 1004.09 
+PFParticle!
+Pos: 219.661 112.379 843.01 
+PFParticle!
+Pos: 212.37 22.653 452.101 
+PFParticle!
+Pos: 78.8239 -20.3661 832.775 
+PFParticle!
+Pos: 17.2818 -33.6391 843.701 
+PFParticle!
+Pos: 74.9562 -6.63627 902.148 
+PFParticle!
+Pos: 84.5239 -111.348 925.776 
+Closest reconstructed: 7.24223
+
+New Event
+MCTruth
+Pos: 262.881 94.087 732.422
+PFParticle!
+Pos: 120.026 -59.959 17.8497 
+PFParticle!
+Pos: 233.951 116.911 361.282 
+PFParticle!
+Pos: 173.087 102.77 102.229 
+PFParticle!
+Pos: 46.9552 -4.96985 669.681 
+PFParticle!
+Pos: 123.087 -9.71687 671.631 
+PFParticle!
+Pos: 22.0901 91.0917 740.549 
+Closest reconstructed: 184.426
+
+New Event
+MCTruth
+Pos: 241.994 -57.8013 -0.867274
+PFParticle!
+Pos: 242.599 -57.6911 12.7203 
+PFParticle!
+Pos: 10.656 105.793 183.337 
+PFParticle!
+Pos: 64.2707 -114.018 19.5442 
+PFParticle!
+Pos: 207.736 -73.6096 381.186 
+PFParticle!
+Pos: 177.763 101.074 321.831 
+PFParticle!
+Pos: 43.6554 73.9568 328.911 
+Closest reconstructed: 13.6015
+
+New Event
+MCTruth
+Pos: -22.5333 -64.4113 109.119
+PFParticle!
+Pos: 182.729 79.5312 287.488 
+PFParticle!
+Pos: 85.3705 -115.076 309.433 
+PFParticle!
+Pos: 138.874 77.6969 187.426 
+PFParticle!
+Pos: 211.454 -108.572 1010.74 
+PFParticle!
+Pos: 222.273 84.2062 942.823 
+Closest reconstructed: 228.864
+MCTruth
+Pos: 132.183 -145.649 210.06
+PFParticle!
+Pos: 182.729 79.5312 287.488 
+PFParticle!
+Pos: 85.3705 -115.076 309.433 
+PFParticle!
+Pos: 138.874 77.6969 187.426 
+PFParticle!
+Pos: 211.454 -108.572 1010.74 
+PFParticle!
+Pos: 222.273 84.2062 942.823 
+Closest reconstructed: 114.022
+
+New Event
+MCTruth
+Pos: 215.77 -119.944 564.837
+PFParticle!
+Pos: 139.445 111.276 644.156 
+Closest reconstructed: 256.085
+
+New Event
+MCTruth
+Pos: 81.1184 3.69455 230.047
+PFParticle!
+Pos: 242.165 116.964 488.081 
+PFParticle!
+Pos: 148.395 -64.3885 312.407 
+Closest reconstructed: 126.272
+
+New Event
+MCTruth
+Pos: 63.536 116.811 -15.5825
+PFParticle!
+Pos: 40.0477 -91.1091 220.499 
+PFParticle!
+Pos: 2.77471 -39.7606 527.321 
+PFParticle!
+Pos: 22.4891 76.6708 120.557 
+PFParticle!
+Pos: 113.33 42.0222 485.473 
+PFParticle!
+Pos: 120.192 103.276 911.942 
+PFParticle!
+Pos: 124.338 -87.7178 950.929 
+Closest reconstructed: 147.75
+
+New Event
+MCTruth
+Pos: 17.0728 -141.765 1069.27
+PFParticle!
+Pos: 54.7743 108.901 181.489 
+PFParticle!
+Pos: 141.268 39.0447 489.356 
+Closest reconstructed: 620.015
+
+New Event
+MCTruth
+Pos: 165.449 -93.6437 -67.3912
+PFParticle!
+Pos: 135.284 -109.77 465.6 
+PFParticle!
+Pos: 119.298 -108.519 226.317 
+PFParticle!
+Pos: 12.2431 117.219 15.6031 
+Closest reconstructed: 273.538
+
+New Event
+MCTruth
+Pos: -52.9475 41.2769 4.80137
+Closest reconstructed: -1
+
+New Event
+MCTruth
+Pos: 77.0713 87.8087 12.1237
+PFParticle!
+Pos: 145.895 -104.328 79.1015 
+PFParticle!
+Pos: 241.641 44.9996 38.542 
+PFParticle!
+Pos: 21.631 35.9382 12.9191 
+PFParticle!
+Pos: 83.8734 82.7292 1.50323 
+PFParticle!
+Pos: 208.948 0.45775 1030.08 
+Closest reconstructed: 13.5965
+
+New Event
+MCTruth
+Pos: -35.1206 -11.9441 16.2603
+Closest reconstructed: -1
+
+New Event
+MCTruth
+Pos: 243.947 9.59096 441.25
+PFParticle!
+Pos: 84.896 -114.35 366.912 
+PFParticle!
+Pos: 26.7419 -96.506 410.979 
+PFParticle!
+Pos: 62.3521 -115.394 630.916 
+PFParticle!
+Pos: 102.412 90.5068 478.265 
+PFParticle!
+Pos: 253.868 -43.946 397.138 
+PFParticle!
+Pos: 123.786 117.561 739.809 
+Closest reconstructed: 70.0748
+
+New Event
+MCTruth
+Pos: 219.472 9.7273 730.919
+PFParticle!
+Pos: 177.249 -57.0073 976.295 
+PFParticle!
+Pos: 113.131 -49.6054 740.904 
+PFParticle!
+Pos: 120.952 -11.6194 1016.47 
+PFParticle!
+Pos: 96.5705 18.3548 353.19 
+Closest reconstructed: 122.182
+
+New Event
+MCTruth
+Pos: 87.9161 -18.0115 189.977
+PFParticle!
+Pos: 35.8297 74.1053 289.727 
+PFParticle!
+Pos: 155.735 106.192 292.717 
+PFParticle!
+Pos: 90.9485 -17.5682 190.18 
+Closest reconstructed: 3.07137
+
+New Event
+MCTruth
+Pos: -8.03059 -121.362 615.864
+Closest reconstructed: -1
+
+New Event
+MCTruth
+Pos: 138.739 -90.595 317.822
+PFParticle!
+Pos: 7.55748 52.0705 340.631 
+PFParticle!
+Pos: 141.105 -84.9032 317.616 
+PFParticle!
+Pos: 251.987 -115.408 146.983 
+Closest reconstructed: 6.16746
+
+New Event
+MCTruth
+Pos: -24.6595 -3.3796 498.837
+PFParticle!
+Pos: 29.5808 108.46 407.963 
+PFParticle!
+Pos: 135.586 58.1138 439.079 
+PFParticle!
+Pos: 237.925 45.5977 373.679 
+PFParticle!
+Pos: 71.9635 -98.9919 369.549 
+Closest reconstructed: 153.974
+
+New Event
+MCTruth
+Pos: 104.621 60.9389 304.527
+PFParticle!
+Pos: 167.748 106.595 155.121 
+PFParticle!
+Pos: 107.37 59.0675 304.378 
+Closest reconstructed: 3.32827
+
+New Event
+MCTruth
+Pos: -7.56225 -109.881 415.453
+PFParticle!
+Pos: 130.034 -90.2708 488.925 
+PFParticle!
+Pos: 203.508 58.4947 288.565 
+PFParticle!
+Pos: 196.447 -100.018 392.696 
+Closest reconstructed: 157.212
+Closing file, read 3317135 bytes in 206 transactions
+Done!
