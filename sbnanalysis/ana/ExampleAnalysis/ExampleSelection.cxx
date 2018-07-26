@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 #include <vector>
@@ -8,6 +9,7 @@
 #include "nusimdata/SimulationBase/MCFlux.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
+#include "larsim/EventWeight/Base/MCEventWeight.h"
 #include "ExampleSelection.h"
 #include "ExampleTools.h"
 
@@ -58,6 +60,35 @@ bool ExampleSelection::ProcessEvent(gallery::Event& ev) {
   auto const& mctruths = *ev.getValidHandle<std::vector<simb::MCTruth>>(fTruthTag);
   auto const& mcfluxs = *ev.getValidHandle<std::vector<simb::MCFlux>>(fTruthTag);
   assert(mctruths.size() == mcfluxs.size());
+
+  gallery::Handle<std::vector<evwgh::MCEventWeight> > wgh;
+  bool hasWeights = ev.getByLabel({"genieeventweight"}, wgh);
+
+  gallery::Handle<std::vector<evwgh::MCEventWeight> > wghf;
+  bool hasWeightsf = ev.getByLabel({"fluxeventweight"}, wghf);
+
+  std::vector<gallery::Handle<std::vector<evwgh::MCEventWeight> > > wghs = \
+    { wgh, wghf };
+
+  std::cout << "===== " << wgh->size() << std::endl;
+
+  // Print weights
+  for (auto const& ws : wghs) {
+    for (auto const& w : *ws) {
+      for (auto& it : w.fWeight) {
+        printf("%50s ", it.first.c_str());
+        for (size_t j=0; j<it.second.size(); j++) {
+          if (it.second[j] < 1e-2 || it.second[j] > 10) {
+            std::cout << "oh no! " << it.second[j] << " ";
+          }
+          if (j < std::min(10, (int)it.second.size())) {
+            printf("%6.3f ", it.second[j]);
+          }
+        }
+        printf("\n");
+      }
+    }
+  }
 
   // Fill in the custom branches
   fNuCount = mctruths.size();  // Number of neutrinos in this event
