@@ -32,7 +32,7 @@ void SelectNu::Initialize(Json::Value* config) {
   AddBranch("min_reconstructed_R", &_min_reconstructed_Rs);
 
   // setup config
-  _config_dist_cut = config->get("distance_cut", -1.).asDouble();
+  _config.dist_cut = config->get("distance_cut", -1.).asDouble();
 }
 
 
@@ -71,8 +71,9 @@ bool SelectNu::ProcessEvent(gallery::Event& ev) {
     int i = 0;
     for (auto const& pfp: *pfp_handle) {
       // Get the primary PFParticle (the neutrino)
-      if (pfp.IsPrimary()) {
+      if (pfp.IsPrimary() && pfp.PdgCode() == 14) {
         std::cout << "PFParticle!" << std::endl;
+        std::cout << pfp;
 
 	// get vertex and track
 	std::vector<const recob::Track*> tracks = ftrk.at(i);
@@ -92,6 +93,8 @@ bool SelectNu::ProcessEvent(gallery::Event& ev) {
       i ++;
     }
     std::cout << "Closest reconstructed: " << _min_reconstructed_R << std::endl;
+
+    // fill per-neutrino containers
     _min_reconstructed_Rs->push_back(_min_reconstructed_R);
 
     // fill the per-neutrino tree
@@ -101,10 +104,11 @@ bool SelectNu::ProcessEvent(gallery::Event& ev) {
   // how to deal with multiple neutrino events?
   // for now, only accept event if all neutrinos were reconstructed
   for (double r: *_min_reconstructed_Rs) {
-    if (_config_dist_cut > 0 && r > _config_dist_cut) return false;
+    if (_config.dist_cut > 0 && r > _config.dist_cut) return false;
   }
   return true;
 }
+
 
   }  // namespace NuMuSelection
 }  // namespace ana

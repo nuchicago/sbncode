@@ -1,10 +1,12 @@
-#ifndef __sbnanalysis_ana_NuMuSelection_SelectNu__
-#define __sbnanalysis_ana_NuMuSelection_SelectNu__
+#ifndef __sbnanalysis_ana_NuMuSelection_SelectCosmic__
+#define __sbnanalysis_ana_NuMuSelection_SelectCosmic__
 
 // Includes
 #include <iostream>
 #include "canvas/Utilities/InputTag.h"
 #include "core/SelectionBase.hh"
+
+#include "../DataTypes/RecobInteraction.h"
 
 namespace ana {
 
@@ -12,12 +14,12 @@ namespace ana {
   namespace NuMuSelection {
 
 /**
- * \class SelectNu
+ * \class SelectCosmic
  */
-class SelectNu : public core::SelectionBase {
+class SelectCosmic : public core::SelectionBase {
 public:
   /** Constructor. */
-  SelectNu();
+  SelectCosmic();
 
   void Initialize(Json::Value* config=NULL);
 
@@ -26,17 +28,13 @@ public:
   bool ProcessEvent(gallery::Event& ev);
 
 protected:
-  TTree *_neutrinoTree;
-  double _min_reconstructed_R;
-  std::vector<double> *_min_reconstructed_Rs; 
+  std::vector<RecobInteraction> *_reco_interactions;
 
-  // config
-  double _config_dist_cut;
 
 };
 
   }  // namespace NuMuSelection
 }  // namespace ana
 
-#endif  // __sbnanalysis_ana_NuMuSelection_SelectNu__
+#endif  // __sbnanalysis_ana_NuMuSelection_SelectCosmic__
 
