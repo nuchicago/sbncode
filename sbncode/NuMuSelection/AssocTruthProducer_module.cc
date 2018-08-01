@@ -1,0 +1,113 @@
+////////////////////////////////////////////////////////////////////////
+// Class:       AssocTruthProducer
+// Plugin Type: producer (art v2_11_02)
+// File:        AssocTruthProducer_module.cc
+//
+// Generated at Wed Aug  1 12:45:20 2018 by Gray Putnam using cetskelgen
+// from cetlib version v3_03_01.
+////////////////////////////////////////////////////////////////////////
+
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
+
+#include "art/Persistency/Common/PtrMaker.h"
+#include "canvas/Utilities/InputTag.h"
+
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCNeutrino.h"
+
+#include "larcore/Geometry/Geometry.h"
+
+#include <memory>
+
+#include "DataTypes/AssocTruthInfo.h"
+#include "Algorithms/FiducialVolume.h"
+
+namespace numuselection {
+  class AssocTruthProducer;
+}
+
+
+class numuselection::AssocTruthProducer : public art::EDProducer {
+public:
+  explicit AssocTruthProducer(fhicl::ParameterSet const & p);
+  // The compiler-generated destructor is fine for non-base
+  // classes without bare pointers or other resource use.
+
+  // Plugins should not be copied or assigned.
+  AssocTruthProducer(AssocTruthProducer const &) = delete;
+  AssocTruthProducer(AssocTruthProducer &&) = delete;
+  AssocTruthProducer & operator = (AssocTruthProducer const &) = delete;
+  AssocTruthProducer & operator = (AssocTruthProducer &&) = delete;
+
+  // Required functions.
+  void produce(art::Event & e) override;
+
+private:
+
+  // Declare member data here.
+  art::InputTag _truth_tag;
+  numuselection::FiducialVolume _fv;
+
+};
+
+
+numuselection::AssocTruthProducer::AssocTruthProducer(fhicl::ParameterSet const & p) {
+  // get truth tag
+  _truth_tag = { "generator" };
+
+  // Call appropriate produces<>() functions here.
+  produces<std::vector<numuselection::AssocTruthInfo>>(); 
+  produces<art::Assns<numuselection::AssocTruthInfo, simb::MCTruth>>();
+
+  // get hook to geometry
+  art::ServiceHandle<geo::Geometry> geo;
+
+  _fv.Configure(p.get<fhicl::ParameterSet>("FiducialVolumeSettings"), 
+    geo->DetHalfHeight(),
+    2.*geo->DetHalfWidth(),
+    geo->DetLength());
+}
+
+void numuselection::AssocTruthProducer::produce(art::Event & e)
+{
+  // make the vector of truth info
+  auto truth_info = std::make_unique<std::vector<numuselection::AssocTruthInfo>>();
+  // and the associations
+  auto assns = std::make_unique<art::Assns<numuselection::AssocTruthInfo, simb::MCTruth>>();
+  // ptr maker
+  art::PtrMaker<numuselection::AssocTruthInfo> makeTruthPtr(e, *this);
+
+  // get truth info
+  auto const& mctruths = \
+    *e.getValidHandle<std::vector<art::Ptr<simb::MCTruth>> >(_truth_tag);
+
+  for (art::Ptr<simb::MCTruth> const& mc_truth: mctruths) {
+    // assoc truth object
+    numuselection::AssocTruthInfo truth;
+
+    // get FV 
+    double pos[3] = {mc_truth->GetNeutrino().Nu().Vx(), mc_truth->GetNeutrino().Nu().Vy(), mc_truth->GetNeutrino().Nu().Vz()};
+    truth.in_FV =  _fv.InFV(pos);
+
+    // store truth object
+    truth_info->push_back(std::move(truth));
+    // get art pointer
+    art::Ptr<numuselection::AssocTruthInfo> assoc_truth_Ptr = makeTruthPtr(truth_info->size() - 1);
+    // make association
+    assns->addSingle(assoc_truth_Ptr, mc_truth);
+  } 
+
+  // put stuff in the event
+  e.put(std::move(truth_info));
+  e.put(std::move(assns));
+}
+
+DEFINE_ART_MODULE(numuselection::AssocTruthProducer)
