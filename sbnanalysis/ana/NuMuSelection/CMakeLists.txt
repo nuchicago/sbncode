@@ -28,3 +28,4 @@ install(TARGETS NuMuSelection_NuMuUtil DESTINATION lib)
 
 add_subdirectory(DataTypes)
 add_subdirectory(Selection)
+add_subdirectory(PostProcess)
