@@ -5,12 +5,6 @@
  * \file RecobInteraction.hh
  */
 
-#include <map>
-#include <string>
-#include <vector>
-#include <TTree.h>
-#include <TVector3.h>
-
 /**
  * \class RecobInteraction
  */
@@ -20,5 +14,5 @@ public:
   double l_mcs_momentum;
 };
 
-#endif  // __sbnanalysis_core_Event__
+#endif  
 
