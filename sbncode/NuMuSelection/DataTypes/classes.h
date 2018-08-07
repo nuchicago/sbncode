@@ -1,5 +1,7 @@
+#include "nusimdata/SimulationBase/MCTruth.h"
 #include "sbncode/NuMuSelection/DataTypes/AssocTruthInfo.h"
 #include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Assns.h"
 #include <vector>
 
 namespace {
@@ -8,5 +10,7 @@ namespace {
     std::vector<numuselection::AssocTruthInfo> v_ato;
     art::Wrapper<numuselection::AssocTruthInfo> w_ato;
     art::Wrapper<std::vector<numuselection::AssocTruthInfo>> w_v_ato;
+    art::Assns<numuselection::AssocTruthInfo,simb::MCTruth, void> a_ato_mct;
+    art::Wrapper<art::Assns<numuselection::AssocTruthInfo,simb::MCTruth, void>> w_a_ato_mct;
   };
 }
