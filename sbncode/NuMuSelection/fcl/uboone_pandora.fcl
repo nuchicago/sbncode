@@ -1,7 +1,13 @@
+# local
+#include "assoc_truth.fcl"
+
 # includes from uboonecode
 
 #include "pandoramodules_microboone.fcl"
 #include "services_microboone.fcl"
+
+# from larreco
+#include "mcsfitproducer.fcl"
 
 
 physics:
@@ -9,9 +15,12 @@ physics:
   producers:
   {
     pandora: @local::microboone_pandoraFull
+    pandoraFullMCSMu: @local::mcsfitproducer
+    pandoraFullMCSPi: @local::mcsfitproducer
+    assocTruth: @local::AssocTruth
   }
 
-  my_producer_modules: [pandora]
+  my_producer_modules: [pandora, pandoraFullMCSMu, pandoraFullMCSPi, assocTruth]
 
   outstream: [out1]
   end_paths: [outstream]
@@ -34,6 +43,14 @@ services.DetectorClocksService.TriggerOffsetTPC: -400
 services.DetectorPropertiesService.NumberTimeSamples: 6400
 services.DetectorPropertiesService.ReadOutWindowSize: 6400
 
+# switch out pdgid for pion MCS
+physics.producers.pandoraFullMCSPi.fitter.pIdHypothesis: 211
+# set labels
+physics.producers.pandoraFullMCSPi.inputs.inputLabel: "pandoraFull::NuMuReco"
+physics.producers.pandoraFullMCSMu.inputs.inputLabel: "pandoraFull::NuMuReco"
+
+
+
 outputs:
 {
   out1:
@@ -48,5 +65,5 @@ source:
   module_type: RootInput
 }
 
-process_name: PandoraReco
+process_name: NuMuReco
 
