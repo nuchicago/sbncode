@@ -22,6 +22,6 @@ link_directories(
 )
 
 add_subdirectory(ExampleAnalysis)
-add_subdirectory(NuMuSelection)
+#add_subdirectory(NuMuSelection)
 add_subdirectory(SBNOsc)
 
