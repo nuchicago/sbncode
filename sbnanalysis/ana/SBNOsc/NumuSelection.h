@@ -14,6 +14,9 @@
 #include "core/SelectionBase.hh"
 #include "core/Event.hh"
 
+// take the geobox stuff from uboonecode
+#include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
+
 class TH2D;
 
 namespace ana {
@@ -48,11 +51,22 @@ public:
   bool ProcessEvent(const gallery::Event& ev, std::vector<Event::Interaction>& reco);
 
 protected:
+  /** Configuration parameters */
+  struct Config {
+    art::InputTag truthTag; //!< art tag for MCTruth information
+    bool doFVCut; //!< Whether to apply fiducial volume cut
+    std::vector<geoalgo::AABox> aaBoxes; //!< List of FV containers -- set by "fiducial_volumes"
+  };
+
+  /** Returns whether to apply FV cut on neutrino */
+  bool passFV(double x, double y, double z);
+  /** Run Selection on a neutrino */
+  bool Select(const simb::MCNeutrino& nu);
+
   unsigned fEventCounter;  //!< Count processed events
   unsigned fNuCount;  //!< Count selected events
 
-  /** Configuration parameters */
-  art::InputTag fTruthTag;  //!< art tag for MCTruth information
+  Config _config; //!< The config
 };
 
   }  // namespace SBNOsc

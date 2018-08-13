@@ -10,6 +10,7 @@
 #include "NumuSelection.h"
 #include "Utilities.h"
 
+
 namespace ana {
   namespace SBNOsc {
 
@@ -18,10 +19,17 @@ NumuSelection::NumuSelection() : SelectionBase(), fEventCounter(0), fNuCount(0) 
 
 void NumuSelection::Initialize(Json::Value* config) {
   // Load configuration parameters
-  fTruthTag = { "generator" };
+  _config.truthTag = { "generator" };
 
   if (config) {
-    fTruthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
+    _config.truthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
+
+    // allow multiple fiducial volumes (accomodate for uboone data channels and icarus 2 TPC's)
+    auto FVs = (*config)["fiducial_volumes"];
+    for (auto FV: FVs) {
+      _config.aaBoxes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
+    }
+    _config.doFVCut = (*config)["doFVcut"].asBool();
   }
 
   hello();
@@ -41,7 +49,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
 
   // Grab a data product from the event
   auto const& mctruths = \
-    *ev.getValidHandle<std::vector<simb::MCTruth> >(fTruthTag);
+    *ev.getValidHandle<std::vector<simb::MCTruth> >(_config.truthTag);
 
   // Iterate through the neutrinos
   for (size_t i=0; i<mctruths.size(); i++) {
@@ -49,9 +57,11 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     auto const& mctruth = mctruths.at(i);
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 
-    if (nu.CCNC() == simb::kCC && nu.Mode() == 0 && nu.Nu().PdgCode() == 14) {
+    if (Select(nu)) {
       Event::Interaction interaction = TruthReco(mctruth);
+      
       reco.push_back(interaction);
+
     }
   }
 
@@ -62,6 +72,26 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
   }
 
   return selected;
+}
+
+bool NumuSelection::Select(const simb::MCNeutrino& nu) {
+  // select true CC events
+  bool pass_true_CC = (nu.CCNC() == simb::kCC && nu.Mode() == 0 && nu.Nu().PdgCode() == 14);
+
+  // pass fiducial volume cut
+  bool pass_FV = passFV(nu.Nu().Vx(), nu.Nu().Vy(), nu.Nu().Vz());
+
+  return pass_true_CC && pass_FV;
+}
+
+bool NumuSelection::passFV(double x, double y, double z) {
+  if (!_config.doFVCut) return true;
+  for (auto const& aaBox: _config.aaBoxes) {
+    geoalgo::Point_t p(x, y, z); 
+    if (aaBox.Contain(p)) return true;
+  }
+  return false;
+
 }
 
   }  // namespace SBNOsc
