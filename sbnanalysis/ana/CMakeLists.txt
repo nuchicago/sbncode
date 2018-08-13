@@ -10,6 +10,8 @@ include_directories( $ENV{LARCOREOBJ_INC} )
 include_directories( $ENV{LARDATAOBJ_INC} )
 include_directories( $ENV{NUSIMDATA_INC} )
 include_directories( $ENV{JSONCPP_INC} )
+# include stuff from uboonecode
+include_directories( $ENV{UBOONECODE_INC} )
 
 link_directories(
   $ENV{CANVAS_LIB}
