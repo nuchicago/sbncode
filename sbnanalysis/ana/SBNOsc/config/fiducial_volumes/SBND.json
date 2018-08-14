@@ -1,6 +1,6 @@
 // Note: jsoncpp supports C-like comments but it's not in the standard so this may break other parsers....
 
-// Larsoft gemoetry uboone active volume:
+// Larsoft geometry uboone active volume:
 // TPC0: (-199.15,-200,0) -- (-2.65,200,500)
 // TPC1: (2.65,-200,0) -- (199.15,200,500)
 // Note that the split in the TPC volumes in the x-dir (drift direction)
