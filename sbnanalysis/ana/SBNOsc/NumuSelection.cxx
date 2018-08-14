@@ -25,11 +25,11 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.truthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
 
     // allow multiple fiducial volumes (accomodate for uboone data channels and icarus 2 TPC's)
-    auto FVs = (*config)["fiducial_volumes"];
+    auto FVs = (*config)["NumuSelection"]["fiducial_volumes"];
     for (auto FV: FVs) {
       _config.aaBoxes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
-    _config.doFVCut = (*config)["doFVcut"].asBool();
+    _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
   }
 
   hello();
