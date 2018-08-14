@@ -55,6 +55,7 @@ private:
   // Declare member data here.
   art::InputTag _truth_tag;
   numuselection::FiducialVolume _fv;
+  bool _verbose;
 
 };
 
@@ -74,6 +75,7 @@ numuselection::AssocTruthProducer::AssocTruthProducer(fhicl::ParameterSet const 
     geo->DetHalfHeight(),
     2.*geo->DetHalfWidth(),
     geo->DetLength());
+  _verbose = p.get<bool>("verbose", false);
 }
 
 void numuselection::AssocTruthProducer::produce(art::Event & e)
@@ -86,8 +88,10 @@ void numuselection::AssocTruthProducer::produce(art::Event & e)
   art::PtrMaker<numuselection::AssocTruthInfo> makeTruthPtr(e, *this);
 
   // get truth info
-  auto const& mctruths = \
-    *e.getValidHandle<std::vector<art::Ptr<simb::MCTruth>> >(_truth_tag);
+  auto mctruths_handle = \
+    e.getValidHandle<std::vector<simb::MCTruth>>(_truth_tag);
+  std::vector<art::Ptr<simb::MCTruth>> mctruths;
+  art::fill_ptr_vector(mctruths, mctruths_handle);
 
   for (art::Ptr<simb::MCTruth> const& mc_truth: mctruths) {
     // assoc truth object
@@ -96,6 +100,10 @@ void numuselection::AssocTruthProducer::produce(art::Event & e)
     // get FV 
     double pos[3] = {mc_truth->GetNeutrino().Nu().Vx(), mc_truth->GetNeutrino().Nu().Vy(), mc_truth->GetNeutrino().Nu().Vz()};
     truth.in_FV =  _fv.InFV(pos);
+    if (_verbose) {
+      std::cout << "AssocTruth: Pos: " << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
+      std::cout << "AssocTruth: In FV: " <<truth.in_FV << std::endl;
+    }
 
     // store truth object
     truth_info->push_back(std::move(truth));
