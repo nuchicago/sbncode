@@ -74,6 +74,8 @@ namespace numuselection{
 
     size_t _n_fv;
 
+    bool _use_relative_positions;
+
     bool _configured = false;
   };
 }

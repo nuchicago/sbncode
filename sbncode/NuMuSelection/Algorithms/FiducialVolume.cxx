@@ -32,6 +32,8 @@ namespace numuselection {
     _det_width       = det_width;
     _det_length      = det_length;
 
+    _use_relative_positions = pset.get<bool>("useRelativePos");
+
     _configured = true;
   }
 
@@ -80,13 +82,22 @@ namespace numuselection {
     for (size_t i = 0; i < _n_fv; i++) {
 
 
+      // maybe use relative positions
+
       // Construct the fiducial volume
-      ::geoalgo::AABox fidvol(_border_x_low.at(i), 
+      auto fidvol = (_use_relative_positions) ?
+                          ::geoalgo::AABox (_border_x_low.at(i), 
                               -1.*_det_half_height + _border_y_low.at(i), 
                               _border_z_low.at(i),
                               _det_width - _border_x_high.at(i), 
                               _det_half_height - _border_y_high.at(i), 
-                              _det_length - _border_z_high.at(i));
+                              _det_length - _border_z_high.at(i)) :
+                          ::geoalgo::AABox(_border_x_low.at(i),
+                              _border_y_low.at(i),
+			      _border_z_low.at(i),
+			      _border_x_high.at(i),
+			      _border_y_high.at(i),
+			      _border_z_high.at(i));
 
       // Check if the vector is in the FV
       if(fidvol.Contain(the_point))
