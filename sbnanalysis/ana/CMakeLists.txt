@@ -20,6 +20,7 @@ link_directories(
   $ENV{NUSIMDATA_LIB}
   $ENV{LARCOREOBJ_LIB}
   $ENV{LARDATAOBJ_LIB}
+  $ENV{MRB_BUILDDIR}/uboonecode/lib/
   ${CMAKE_INSTALL_DIR}/lib
 )
 

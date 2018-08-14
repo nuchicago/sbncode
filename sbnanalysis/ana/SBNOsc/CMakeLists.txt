@@ -18,7 +18,11 @@ add_library(sbnanalysis_SBNOsc_Chi2Sensitivity SHARED Chi2Sensitivity.cxx)
 
 # Define library linking
 target_link_libraries(sbnanalysis_SBNOsc_NueSelection sbnanalysis_SBNOsc_Utilities)
-target_link_libraries(sbnanalysis_SBNOsc_NumuSelection sbnanalysis_SBNOsc_Utilities)
+target_link_libraries(sbnanalysis_SBNOsc_NumuSelection 
+  sbnanalysis_SBNOsc_Utilities
+  # include uboone stuff
+  uboonecode_uboone_BasicTool_GeoAlgo
+)
 target_link_libraries(sbnanalysis_SBNOsc_Chi2Sensitivity sbnanalysis_SBNOsc_Covariance)
 
 # Build executables
