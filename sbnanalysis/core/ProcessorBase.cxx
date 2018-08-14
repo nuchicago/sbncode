@@ -97,10 +97,6 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
 
     auto const& mctruth = mctruths.at(i);
 
-    // TODO: What to do with cosmic MC?
-    // For now, ignore them
-    if (!mctruth.NeutrinoSet()) continue;
-
     // Weights
     if (hasWeights) {
       interaction.weights = wgh->at(i).fWeight;
