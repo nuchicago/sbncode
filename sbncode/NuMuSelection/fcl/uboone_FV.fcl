@@ -12,6 +12,8 @@ NuMuSelectionFiducialVolumeSettings: {
   BorderZLow:   [25., 775.]
   BorderZHigh:  [220., 85.]
 
+  useRelativePos: true
+
 }
 
 NuMuSelectionFiducialVolumeCosmicSettings: {
@@ -25,6 +27,8 @@ NuMuSelectionFiducialVolumeCosmicSettings: {
   BorderYHigh:  [30.]
   BorderZLow:   [20.]
   BorderZHigh:  [20.]
+
+  useRelativePos: true
 
 }
 

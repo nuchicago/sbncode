@@ -1,5 +1,6 @@
 add_subdirectory(Algorithms)
 add_subdirectory(DataTypes)
+add_subdirectory(fcl)
 
 art_make(
           MODULE_LIBRARIES 
