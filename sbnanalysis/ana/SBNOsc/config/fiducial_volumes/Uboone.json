@@ -16,7 +16,7 @@
       "ymax": 102.47,
       "zmax": 989.4
      }
-   ]
+   ],
    
    "experiment_fiducial_volumes": [
      // first FV is the upstream one (relative to beam direction)
@@ -26,7 +26,7 @@
       "zmin": 25.1,
       "xmax": 242.8,
       "ymax": 82.47,
-      "zmax": 675.1,
+      "zmax": 675.1
      },
      {
       "xmin": 10.45,
@@ -34,7 +34,7 @@
       "zmin": 775.1,
       "xmax": 242.8,
       "ymax": 82.47,
-      "zmax": 951.9,
+      "zmax": 951.9
      }
    ]
 }
