@@ -77,6 +77,8 @@ void NumuSelection::Initialize(Json::Value* config) {
   for (unsigned i = 0; i < nCuts; i++) {
     _root_out[i].h_numu_ccqe = new TH1D(("numu_ccqe_" + cut_names[i]).c_str(), "numu_ccqe", 100, 0, 10);
     _root_out[i].h_numu_trueE = new TH1D(("numu_trueE_" + cut_names[i]).c_str(), "numu_trueE", 100, 0 , 10);
+    _root_out[i].h_numu_visibleE = new TH1D(("numu_visibleE_" + cut_names[i]).c_str(), "numu_visibleE", 100, 0, 10);
+    _root_out[i].h_numu_true_v_visibleE = new TH1D(("numu_true_v_visibleE_" + cut_names[i]).c_str(), "numu_true_v_visibleE", 100, -10, 10);
     _root_out[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
       20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
       20, _config.active_volume.Min()[1], _config.active_volume.Max()[1]);
@@ -98,6 +100,8 @@ void NumuSelection::Finalize() {
   for (unsigned i = 0; i < nCuts; i++) {
     _root_out[i].h_numu_ccqe->Write();
     _root_out[i].h_numu_trueE->Write();
+    _root_out[i].h_numu_visibleE->Write();
+     _root_out[i].h_numu_true_v_visibleE->Write();
     _root_out[i].h_numu_Vxy->Write();
     _root_out[i].h_numu_Vxz->Write();
     _root_out[i].h_numu_Vyz->Write();
@@ -138,13 +142,28 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
       fNuCount++;
       selected = true;
     }
+    // "Reconstruct" visible energy
+    double visible_E = 0.;
+    for (size_t particle_i = 0; particle_i < mctruth.NParticles(); particle_i++) {
+      auto const &daughter = mctruth.GetParticle(particle_i);
+      // ignore particles not from primary event
+      if (daughter.Process() != "primary") continue;
 
+      // ignore neutrino
+      if (daughter.PdgCode() == 14) {}
+      // lepton
+      else if (daughter.PdgCode() == 13) visible_E += daughter.E();
+      // hadron -- ignore ones missing mass
+      else if (daughter.Mass() > 1e-4) visible_E += daughter.E() - daughter.Mass();
+    } 
     // fill histos
     unsigned select_i = 0; 
     for (bool pass: selection) {
       if (pass) {
         _root_out[select_i].h_numu_trueE->Fill(interaction.neutrino.energy);
         _root_out[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
+        _root_out[i].h_numu_visibleE->Fill(visible_E);
+        _root_out[i].h_numu_true_v_visibleE->Fill(visible_E - interaction.neutrino.energy);
         _root_out[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_out[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_out[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());

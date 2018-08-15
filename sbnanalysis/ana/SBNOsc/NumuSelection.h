@@ -68,6 +68,8 @@ protected:
   struct RootOut {
     TH1D *h_numu_ccqe; //!< histogram w/ CCQE energy veriable
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable
+    TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy)
+    TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy
     TH2D *h_numu_Vxy; //!< 2D x-y vertex histogram
     TH2D *h_numu_Vxz; //!< 2D x-z vertex histogram
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram
