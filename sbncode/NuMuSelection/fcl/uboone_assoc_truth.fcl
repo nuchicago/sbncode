@@ -6,7 +6,8 @@
 
 AssocTruth: {
   module_type: "AssocTruthProducer"
-  FiducialVolumeSettings: @local::NuMuSelectionFiducialVolumeCosmicSettings
+  FiducialVolumeSettings: @local::NuMuSelectionFiducialVolumeSettings
+  verbose: true
 }
 
 
