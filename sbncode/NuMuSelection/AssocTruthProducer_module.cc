@@ -76,6 +76,9 @@ numuselection::AssocTruthProducer::AssocTruthProducer(fhicl::ParameterSet const 
     2.*geo->DetHalfWidth(),
     geo->DetLength());
   _verbose = p.get<bool>("verbose", false);
+  if (_verbose) {
+    _fv.PrintBoxes();
+  }
 }
 
 void numuselection::AssocTruthProducer::produce(art::Event & e)
