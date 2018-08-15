@@ -66,6 +66,13 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
   return enu_top / enu_bot;
 }
 
+double NuMuOscillation(double numu_energy, double numu_dist, double osc_dm2, double osc_angle) {
+  double overlap = sin(2*osc_angle);
+  double energy_factor = sin(1.27 * osc_dm2 * numu_dist / numu_energy);
+  return 1 - overlap * overlap * energy_factor * energy_factor;
+
+}
+
   }  // namespace SBNOsc
 }  // namespace ana
 
