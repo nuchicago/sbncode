@@ -1,5 +1,34 @@
 {
   "OutputFile": "output_SBNOsc_NumuSelection.root",
-  "NumuSelection": {}
+  "NumuSelection": {
+    "doFVCut": true,
+    "fiducial_volumes": [
+       // first FV is the upstream one (relative to beam direction)
+       {
+	"xmin": 10.45,
+	"ymin": -80.53,
+	"zmin": 25.1,
+	"xmax": 242.8,
+	"ymax": 82.47,
+	"zmax": 675.1
+       },
+       {
+	"xmin": 10.45,
+	"ymin": -80.53,
+	"zmin": 775.1,
+	"xmax": 242.8,
+	"ymax": 82.47,
+	"zmax": 951.9
+       }
+     ],
+     "active_volume": {
+      "xmin": -1.55,
+      "ymin": -115.53,
+      "zmin": 0.1,
+      "xmax": 254.8,
+      "ymax": 117.47,
+      "zmax": 1036.9
+     }
+   }
 }
 
