@@ -65,6 +65,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
+    _config.minLength = (*config)["NumuSelection"].get("minLength", -1).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
 
 
@@ -164,6 +165,16 @@ std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MC
   // pass fiducial volume cut
   bool pass_FV = passFV(nu.Nu().Vx(), nu.Nu().Vy(), nu.Nu().Vz());
 
+  // pass length cut
+  const simb::MCParticle& lepton = nu.Lepton(); // get lepton
+  double l_length = (lepton.EndPosition() - lepton.Position()).Mag();
+  geoalgo::Point_t l_end_pos(lepton.EndX(), lepton.EndY(), lepton.EndZ());
+
+  // TODO FIX: trajectories in genie files only have 1 point -- so this cut is vacuous 
+  bool stop_in_tpc = _config.active_volume.Contain(l_end_pos) && !(lepton.Trajectory().size() == 1);
+
+  bool pass_min_length = passMinLength(l_length, stop_in_tpc); 
+
   // pass vertex reconstruction cut
   bool pass_reco_vertex = true;
   if (_config.vertexDistanceCut > 0) {
@@ -195,7 +206,7 @@ std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MC
   }
 
   // retrun list of cuts
-  return {pass_true_CC, pass_true_CC && pass_FV, pass_true_CC && pass_FV && pass_reco_vertex};
+  return {pass_true_CC, pass_true_CC && pass_FV, pass_true_CC && pass_FV && pass_min_length, pass_true_CC && pass_FV && pass_reco_vertex};
 }
 
 bool NumuSelection::passFV(double x, double y, double z) {
@@ -217,6 +228,12 @@ bool NumuSelection::passRecoVertex(double truth_v[3], double reco_v[3]) {
  
   double R = sqrt(R2); 
   return R < _config.vertexDistanceCut;
+}
+
+bool NumuSelection::passMinLength(double length, bool stop_in_tpc) {
+  if (!stop_in_tpc) return true;
+  if (_config.minLength < 0) return true;
+  return length > _config.minLength;
 }
 
   }  // namespace SBNOsc

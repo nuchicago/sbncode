@@ -59,8 +59,9 @@ protected:
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> aaBoxes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume
-    double vertexDistanceCut; //!< Value of max distance between truth and reconstructed vertex. Will not apply cut if value is negative.
+    double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
+    double minLength; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
   };
 
   /** Histograms made for output */
@@ -74,18 +75,20 @@ protected:
 
   /** Returns whether to apply FV cut on neutrino */
   bool passFV(double x, double y, double z);
-  /** Applies reco vertex cut */
+  /** Applies reco-truth vertex matching cut */
   bool passRecoVertex(double truth_v[3], double reco_v[3]);
+  /** Applies truth length cut */
+  bool passMinLength(double length, bool stop_in_tpc);
   /** Run Selection on a neutrino */
   std::vector<bool> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind);
 
   unsigned fEventCounter;  //!< Count processed events
   unsigned fNuCount;  //!< Count selected events
 
-  static const unsigned nCuts = 3; //!< number of cuts
+  static const unsigned nCuts = 4; //!< number of cuts
   /** Names of cuts */
   static const std::vector<std::string> cutNames() {
-    return {"CC", "FV", "reco_V"};
+    return {"CC", "FV", "min_L", "reco_V"};
   }
 
   Config _config; //!< The config
