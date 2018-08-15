@@ -74,6 +74,18 @@ namespace numuselection {
 
   }
 
+  void FiducialVolume::PrintBoxes() {
+    for (size_t i = 0; i < _n_fv; i++) {
+      std::cout << "TPC: " << i << std::endl;
+      std::cout << "xmin: " << _border_x_low.at(i) << std::endl;
+      std::cout << "ymin: " << -1.*_det_half_height + _border_y_low.at(i) << std::endl;
+      std::cout << "zmin: " << _border_z_low.at(i) << std::endl; 
+      std::cout << "xmax: " << _det_width - _border_x_high.at(i) << std::endl;
+      std::cout << "ymax: " << _det_half_height - _border_y_high.at(i) << std::endl;
+      std::cout << "zmax: " << _det_length - _border_z_high.at(i) << std::endl;
+    }
+  }
+
   bool FiducialVolume::InFV(double x, double y, double z) {
 
     // Construct a vector

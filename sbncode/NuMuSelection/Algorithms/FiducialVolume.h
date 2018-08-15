@@ -47,6 +47,9 @@ namespace numuselection{
     /// Printd the current configuration
     void PrintConfig();
 
+    /// Print Box sizes
+    void PrintBoxes();
+
     /// Returns true if the point is in the FV
     bool InFV(double x, double y, double z);
 
