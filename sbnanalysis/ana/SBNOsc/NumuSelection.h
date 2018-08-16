@@ -17,6 +17,8 @@
 #include "TH1D.h"
 #include "TDatabasePDG.h"
 
+#include "nusimdata/SimulationBase/MCTruth.h"
+
 // take the geobox stuff from uboonecode
 #include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
 #include "uboone/LLBasicTool/GeoAlgo/GeoAlgo.h"
@@ -54,6 +56,13 @@ public:
    */
   bool ProcessEvent(const gallery::Event& ev, std::vector<Event::Interaction>& reco);
 
+  /** Additional information used by the selection per neutrino interaction */
+  struct NuMuInteraction {
+    bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
+    double l_contained_length; //!< the length of the lepton track contained in the fiducial volume
+    double visible_energy; //!< sum of kinetic energies of particles produced directly in interaction
+  };
+
 protected:
   /** Configuration parameters */
   struct Config {
@@ -80,12 +89,6 @@ protected:
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram
   };
 
-  /** Additional information used by the selection per neutrino interaction */
-  struct NuMuInteraction {
-    bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
-    double l_contained_length; //!< the length of the lepton track contained in the fiducial volume
-    double visible_energy; //!< sum of kinetic energies of particles produced directly in interaction
-  };
 
   /** Returns whether to apply FV cut on neutrino */
   bool passFV(double x, double y, double z);
