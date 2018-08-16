@@ -8,6 +8,10 @@
 
 #include "Utilities.h"
 
+#include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
+#include "uboone/LLBasicTool/GeoAlgo/GeoAlgo.h"
+#include "uboone/LLBasicTool/GeoAlgo/GeoLineSegment.h"
+
 namespace ana {
   namespace SBNOsc {
 
@@ -78,8 +82,7 @@ double NuMuOscillation(double numu_energy, double numu_dist, double osc_dm2, dou
 
 }
 
-double PDGMass(int pdg) {
-  TDatabasePDG *PDGTable = new TDatabasePDG;
+double PDGMass(int pdg, TDatabasePDG *PDGTable) {
   // regular particle
   if (pdg < 1000000000) {
     TParticlePDG* ple = PDGTable->GetParticle(pdg);
@@ -104,6 +107,48 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track, float di
   TLorentzVector nuVtx = mc.GetNeutrino().Nu().Trajectory().Position(0);
   TLorentzVector trkStart = track.Start().Position();
   return (trkStart - nuVtx).Mag() < distance;
+}
+
+double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes, const geoalgo::GeoAlgo &algo) {
+  // construct individual points
+  geoalgo::Point_t p0(v0);
+  geoalgo::Point_t p1(v1);
+
+  // construct line segment
+  geoalgo::LineSegment line(p0, p1);
+
+  double length = 0;
+
+  // total contained length is sum of lengths in all boxes
+  // assuming they are non-overlapping
+  for (auto const &box: boxes) {
+    int n_contained = box.Contain(p0) + box.Contain(p1);
+    // both points contained -- length is total length (also can break out of loop)
+    if (n_contained == 2) {
+      length = (v1 - v0).Mag();
+      break;
+    }
+    // one contained -- have to find intersection point (which must exist) 
+    if (n_contained == 1) {
+      auto intersections = algo.Intersection(line, box);
+      assert(intersections.size() == 1); // must have one intersection
+      // get TVector at intersection point
+      TVector3 int_tv(intersections.at(0).ToTLorentzVector().Vect());
+      length += ( box.Contain(p0) ? (v0 - int_tv).Mag() : (v1 - int_tv).Mag() ); 
+    }
+    // none contained -- either must have zero or two intersections
+    if (n_contained == 0) {
+      auto intersections = algo.Intersection(line, box);
+      assert(intersections.size() == 0 || intersections.size() == 2);
+      if (intersections.size() == 2) {
+        TVector3 start(intersections.at(0).ToTLorentzVector().Vect());
+        TVector3 end(intersections.at(1).ToTLorentzVector().Vect());
+        length += (start - end).Mag();
+      }
+    }
+  }
+
+  return length;
 }
 
   }  // namespace SBNOsc

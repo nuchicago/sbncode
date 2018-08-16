@@ -13,12 +13,16 @@
  * Author: A. Mastbaum <mastbaum@uchicago.edu>
  */
 
+#include "TDatabasePDG.h"
+
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "lardataobj/MCBase/MCShower.h"
 #include "lardataobj/MCBase/MCTrack.h"
 
 #include "core/Event.hh"
+
+#include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
 
 namespace ana {
   namespace SBNOsc {
@@ -53,17 +57,37 @@ double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, doub
 /** Get mass from PDGID of particle.
  *
  * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
+ * \param PDGTable An instance of TDatabase. Defined in <TDatabase.h>. can be constructed by: TDatabasePDG *table = new TDatabasePDG;
  *
  * */
-double PDGMass(int pdg);
+double PDGMass(int pdg, TDatabasePDG *PDGTable);
 
 /** Returns whether track/shower object is from the neutrino vertex
  *
+ * \param mc MCTruth corresponding to neutrino interaction
+ * \param show The object to be matched
+ * \param distance between shower start and interaction vertex
  * */
 bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
                            float distance=5.0);
+/** Returns whether track/shower object is from the neutrino vertex
+ *
+ * \param mc MCTruth corresponding to neutrino interaction
+ * \param track The object to be matched
+ * \param distance between track start and interaction vertex
+ * */
 bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
                             float distance=5.0);
+
+/* Finds length of line segment contained inside AABox
+ *
+ * \param v0 the first point of the line segment
+ * \param v1 the second point of the line segment
+ * \param boxes a list of fiducial volumes instantiated as AABoxes
+ * \param algo An instance of the Uboone GeoAlgo class. Defined in "uboone/LLBasicTool/GeoAlgo/GeoAlgo.h". Can be constructed by: GeoAlgo algo;
+ * 
+ * */
+double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes, const geoalgo::GeoAlgo &algo);
 
 
   }  // namespace SBNOsc
