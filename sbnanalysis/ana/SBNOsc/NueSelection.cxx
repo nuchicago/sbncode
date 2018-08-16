@@ -87,12 +87,12 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     *ev.getValidHandle<std::vector<sim::MCShower> >(fShowerTag);
 
   // shower energy cut
-  std::vector<sim::MCShower> EnergeticShowers;
+  std::vector<int> EnergeticShowersIndices;
   for (size_t i=0;i<mcshowers.size();i++) {
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
     fShowerEnergy->Fill(shower_E);
-    if (shower_E > 0.2) EnergeticShowers.push_back(mcshower); //have yet to implement the configurable energy threshold parameter
+    if (shower_E > 0.2) EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
     // if (Shower_E > fEnergyThreshold) EnergeticShowers.push_back(mcshower);
   }
 
@@ -112,7 +112,8 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if ((nu.Nu().PdgCode() ==12)&&(((-174.15 < vx && vx < -27.65) || (27.65 < vx && vx < 174.15)) && (-175 < vy && vy < 175) && (25 < vz && vz < 475))) fGenNueFidVolHist->Fill(nu_E);
     auto nu_pos = nu.Nu().Position();
     int matched_shower_count = 0;
-    for (auto shower : EnergeticShowers) {
+    for (auto j : EnergeticShowersIndices) {
+      auto const& shower = mcshowers.at(j);
       auto shower_pos = shower.DetProfile().Position();
       double distance = (nu_pos.Vect()-shower_pos.Vect()).Mag();
       fDiffLength->Fill(distance);
