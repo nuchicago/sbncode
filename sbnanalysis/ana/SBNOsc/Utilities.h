@@ -26,8 +26,11 @@ void hello();
 /** Extract truth information to approximate reconstruction. */
 Event::Interaction TruthReco(const simb::MCTruth& mctruth);
 
+/** Find active length */
+bool IsUsableTrack(const sim::MCTrack& mctrack);
+double GetActiveLength(const sim::MCTrack& mctrack);
+
   }  // namespace SBNOsc
 }  // namespace ana
 
 #endif  // __sbnanalysis_ana_SBNOsc_Utilities__
-
