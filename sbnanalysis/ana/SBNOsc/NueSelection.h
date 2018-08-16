@@ -55,12 +55,12 @@ protected:
 
 
   TH1D* fDiffLength;
-<<<<<<< HEAD
+
   TH1D* fShowerEnergy;
-=======
+
   TH1D* fGenNueHist;
   TH1D* fGenNueFidVolHist;
->>>>>>> fidvolcut
+
 
   /** Configuration parameters */
   art::InputTag fTruthTag;  //!< art tag for MCTruth information

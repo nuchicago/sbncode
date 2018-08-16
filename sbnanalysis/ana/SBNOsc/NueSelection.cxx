@@ -31,12 +31,10 @@ NueSelection::NueSelection() : SelectionBase(), fEventCounter(0), fNuCount(0){}
 void NueSelection::Initialize(Json::Value* config) {
 
   fDiffLength = new TH1D ("diff_length","",200,0,200);
-<<<<<<< HEAD
   fShowerEnergy = new TH1D ("shower_energy","",100,0,10);
-=======
+
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
->>>>>>> fidvolcut
 
   // Load configuration parameters
   fEnergyThreshold =0.;
@@ -62,12 +60,12 @@ void NueSelection::Initialize(Json::Value* config) {
 void NueSelection::Finalize() {
   fOutputFile->cd();
   fDiffLength->Write();
-<<<<<<< HEAD
+
   fShowerEnergy->Write();
-=======
+
   fGenNueHist->Write();
   fGenNueFidVolHist->Write();
->>>>>>> fidvolcut
+
 }
 
 
