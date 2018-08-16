@@ -57,6 +57,7 @@ protected:
   TH1D* fDiffLength;
 
   TH1D* fShowerEnergy;
+  TH1D* fEnergeticShowerHist;
 
   TH1D* fGenNueHist;
   TH1D* fGenNueFidVolHist;

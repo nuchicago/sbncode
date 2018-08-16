@@ -32,6 +32,7 @@ void NueSelection::Initialize(Json::Value* config) {
 
   fDiffLength = new TH1D ("diff_length","",200,0,200);
   fShowerEnergy = new TH1D ("shower_energy","",100,0,10);
+  fEnergeticShowerHist = new TH1D("shower_energy","",100,0,10);
 
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
@@ -62,9 +63,10 @@ void NueSelection::Finalize() {
   fDiffLength->Write();
 
   fShowerEnergy->Write();
-
+  fEnergeticShowerHist->Write();
   fGenNueHist->Write();
   fGenNueFidVolHist->Write();
+
 
 }
 
@@ -92,8 +94,11 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
     fShowerEnergy->Fill(shower_E);
-    if (shower_E > 0.2) EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
+    if (shower_E > 0.2) {
+      EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
     // if (Shower_E > fEnergyThreshold) EnergeticShowers.push_back(mcshower);
+      fEnergeticShowerHist->Fill(shower_E);
+      }
   }
 
 
