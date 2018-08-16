@@ -57,6 +57,7 @@ protected:
   TH1D* fDiffLength;
   TH1D* fGenNueHist;
   TH1D* fGenNueFidVolHist;
+  TH1D* fSelectedNuHist;
 
   /** Configuration parameters */
   art::InputTag fTruthTag;  //!< art tag for MCTruth information

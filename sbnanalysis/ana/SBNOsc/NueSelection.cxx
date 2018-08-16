@@ -33,6 +33,7 @@ void NueSelection::Initialize(Json::Value* config) {
   fDiffLength = new TH1D ("diff_length","",200,0,200);
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
+  fSelectedNuHist = new TH1D ("selected_nu_hist","",60,0,6);
 
   // Load configuration parameters
   fTruthTag = { "generator" };
@@ -57,6 +58,7 @@ void NueSelection::Finalize() {
   fDiffLength->Write();
   fGenNueHist->Write();
   fGenNueFidVolHist->Write();
+  fSelectedNuHist->Write();
 }
 
 
@@ -110,11 +112,13 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     Event::Interaction interaction;
     auto const& mctruth = mctruths.at(i);
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
+    auto nu_E = nu.Nu().E();
     auto vx = nu.Nu().Vx();
     auto vy = nu.Nu().Vy();
     auto vz = nu.Nu().Vz();
     bool IsFid = (((-174.15 < vx && vx < -27.65) || (27.65 < vx && vx < 174.15)) && (-175 < vy && vy < 175) && (25 < vz && vz < 475));
     if (matchedness[i]&&IsFid) {
+      fSelectedNuHist->Fill(nu_E);
       Event::Interaction interaction = TruthReco(mctruth);
       reco.push_back(interaction);
     }
