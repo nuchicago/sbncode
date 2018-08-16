@@ -110,7 +110,11 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     Event::Interaction interaction;
     auto const& mctruth = mctruths.at(i);
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
-    if (matchedness[i]==true) {
+    auto vx = nu.Nu().Vx();
+    auto vy = nu.Nu().Vy();
+    auto vz = nu.Nu().Vz();
+    bool IsActive = (((-199.15 < vx && vx < -2.65) || (2.65 < vx && vx < 199.15)) && (-200 < vy && vy < 200) && (0 < vz && vz < 500));
+    if (matchedness[i]&&IsActive) {
       Event::Interaction interaction = TruthReco(mctruth);
       reco.push_back(interaction);
     }
