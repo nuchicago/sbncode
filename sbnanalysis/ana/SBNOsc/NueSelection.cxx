@@ -138,7 +138,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto nu_pos = nu.Nu().Position();
     for (size_t j=0;j<mctracks.size();j++) {
       auto const& mctrack = mctracks.at(j);
-      auto track_start_pos = mctrack.Start().Pos();
+      auto track_start_pos = mctrack.Start().Position();
       auto nu_track_dis = (track_start_pos.Vect() - nu_pos.Vect()).Mag();
       //do total length cut first
       auto total_length = (mctrack.Start().Position().Vect() - mctrack.End().Position().Vect()).Mag();
