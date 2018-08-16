@@ -31,6 +31,8 @@ NueSelection::NueSelection() : SelectionBase(), fEventCounter(0), fNuCount(0){}
 void NueSelection::Initialize(Json::Value* config) {
 
   fDiffLength = new TH1D ("diff_length","",200,0,200);
+  fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
+  fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
 
   // Load configuration parameters
   fTruthTag = { "generator" };
@@ -53,6 +55,8 @@ void NueSelection::Initialize(Json::Value* config) {
 void NueSelection::Finalize() {
   fOutputFile->cd();
   fDiffLength->Write();
+  fGenNueHist->Write();
+  fGenNueFidVolHist->Write();
 }
 
 
@@ -78,6 +82,13 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   for (size_t i=0;i<mctruths.size();i++) {
     auto const& mctruth = mctruths.at(i);
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
+    auto nu_E = nu.Nu().E();
+    if (nu.Nu().PdgCode() == 12) fGenNueHist->Fill(nu_E);
+    auto vx = nu.Nu().Vx();
+    auto vy = nu.Nu().Vy();
+    auto vz = nu.Nu().Vz();
+    if ((nu.Nu().PdgCode() ==12)&&(((-174.15 < vx && vx < -27.65) || (27.65 < vx && vx < 174.15)) && (-175 < vy && vy < 175) && (25 < vz && vz < 475))) fGenNueFidVolHist->Fill(nu_E);
+
     auto nu_pos = nu.Nu().Position();
     int matched_shower_count = 0;
     for (size_t j=0;j<mcshowers.size();j++) {
