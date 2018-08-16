@@ -32,7 +32,7 @@ void NueSelection::Initialize(Json::Value* config) {
 
   fDiffLength = new TH1D ("diff_length","",200,0,200);
   fShowerEnergy = new TH1D ("shower_energy","",100,0,10);
-  fEnergeticShowerHist = new TH1D("shower_energy","",100,0,10);
+  fEnergeticShowerHist = new TH1D("energetic_shower_energy","",100,0,10);
 
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
@@ -94,7 +94,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
     fShowerEnergy->Fill(shower_E);
-    if (shower_E > 0.2) {
+    if (shower_E >= 0.2) {
       EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
     // if (Shower_E > fEnergyThreshold) EnergeticShowers.push_back(mcshower);
       fEnergeticShowerHist->Fill(shower_E);
@@ -122,9 +122,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       auto shower_pos = shower.DetProfile().Position();
       double distance = (nu_pos.Vect()-shower_pos.Vect()).Mag();
       fDiffLength->Fill(distance);
-      if (distance <= 5.) {
-        matched_shower_count++;
-      }
+      if (distance <= 5.) matched_shower_count++;
     }
     if (matched_shower_count>0) matchedness.push_back(true);
     else matchedness.push_back(false);
