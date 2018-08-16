@@ -110,6 +110,9 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track, float di
 }
 
 double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes, const geoalgo::GeoAlgo &algo) {
+  // if points are the same, return 0
+  if ((v0 - v1).Mag() < 1e-6) return 0;
+
   // construct individual points
   geoalgo::Point_t p0(v0);
   geoalgo::Point_t p1(v1);
