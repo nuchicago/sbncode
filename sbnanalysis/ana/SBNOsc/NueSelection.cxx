@@ -113,7 +113,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto vx = nu.Nu().Vx();
     auto vy = nu.Nu().Vy();
     auto vz = nu.Nu().Vz();
-    bool IsActive = (((-199.15 < vx && vx < -2.65) || (2.65 < vx && vx < 199.15)) && (-200 < vy && vy < 200) && (0 < vz && vz < 500));
+    bool IsFid = (((-174.15 < vx && vx < -27.65) || (27.65 < vx && vx < 174.15)) && (-175 < vy && vy < 175) && (25 < vz && vz < 475));
     if (matchedness[i]&&IsActive) {
       Event::Interaction interaction = TruthReco(mctruth);
       reco.push_back(interaction);
