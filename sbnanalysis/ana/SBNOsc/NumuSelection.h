@@ -15,9 +15,11 @@
 #include "core/Event.hh"
 
 #include "TH1D.h"
+#include "TDatabasePDG.h"
 
 // take the geobox stuff from uboonecode
 #include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
+#include "uboone/LLBasicTool/GeoAlgo/GeoAlgo.h"
 
 class TH2D;
 
@@ -56,6 +58,9 @@ protected:
   /** Configuration parameters */
   struct Config {
     art::InputTag truthTag; //!< art tag for MCTruth information
+    art::InputTag mctTag;
+    art::InputTag mcsTag;
+    art::InputTag mcpTag;
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> aaBoxes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume
@@ -65,7 +70,7 @@ protected:
   };
 
   /** Histograms made for output */
-  struct RootOut {
+  struct RootHistos {
     TH1D *h_numu_ccqe; //!< histogram w/ CCQE energy veriable
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable
     TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy)
@@ -75,6 +80,13 @@ protected:
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram
   };
 
+  /** Additional information used by the selection per neutrino interaction */
+  struct NuMuInteraction {
+    bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
+    double l_contained_length; //!< the length of the lepton track contained in the fiducial volume
+    double visible_energy; //!< sum of kinetic energies of particles produced directly in interaction
+  };
+
   /** Returns whether to apply FV cut on neutrino */
   bool passFV(double x, double y, double z);
   /** Applies reco-truth vertex matching cut */
@@ -82,7 +94,9 @@ protected:
   /** Applies truth length cut */
   bool passMinLength(double length, bool stop_in_tpc);
   /** Run Selection on a neutrino */
-  std::vector<bool> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind);
+  std::vector<bool> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo);
+  /** Get associated interaction information from monte carlo */
+  NuMuInteraction interactionInfo(const gallery::Event& ev, const simb::MCTruth &mctruth);
 
   unsigned fEventCounter;  //!< Count processed events
   unsigned fNuCount;  //!< Count selected events
@@ -94,7 +108,16 @@ protected:
   }
 
   Config _config; //!< The config
-  RootOut _root_out[nCuts];
+
+  // branch holders
+  std::vector<NuMuInteraction> *_interactionInfo;
+
+  // histos
+  RootHistos _root_histos[nCuts];
+
+  //  stuff for algos
+  TDatabasePDG *_pdg_database; 
+  geoalgo::GeoAlgo _algo;
 };
 
   }  // namespace SBNOsc
