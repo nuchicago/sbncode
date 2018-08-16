@@ -69,7 +69,7 @@ double GetActiveLength(const sim::MCTrack& mctrack) {
     auto stepY = mcstep.Y();
     auto stepZ = mcstep.Z();
     if(((-199.15 < stepX && stepX < -2.65) || (2.65 < stepX && stepX < 199.15)) && (-200 < stepY && stepY < 200) && (0 < stepZ && stepZ < 500)) {
-      entering_step = mcstep;
+      auto const& entering_step = mcstep;
       break;
     }
     else continue;
