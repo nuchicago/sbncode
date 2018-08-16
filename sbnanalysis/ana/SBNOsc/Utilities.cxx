@@ -1,6 +1,9 @@
 #include <iostream>
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
+#include "lardataobj/MCBase/MCTrack.h"
+#include "lardataobj/MCBase/MCShower.h"
+#include "lardataobj/MCBase/MCStep.h"
 #include "core/Event.hh"
 
 namespace ana {
