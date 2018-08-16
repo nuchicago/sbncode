@@ -114,14 +114,9 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   int MuTrackCount =0;
   for (size_t i=0;i<mctracks.size();i++) {
     auto const& mctrack = mctracks.at(i);
-    if (IsUsableTrack(mctrack)) {
-      double this_active_length;
-      this_active_length = GetActiveLength(mctrack);
-      fTrackLength->Fill(this_active_length);
-      if (this_active_length>=100.) {
-        MuTrackCount++;
-      }
-    }
+    // do total length cut first
+    auto total_length = (mctrack.Start().Position().Vect() - mctrack.End().Position().Vect()).Mag();
+    if (total_length >= 100.) MuTrackCount++;
   }
   if (MuTrackCount>0) {
     return false; //questionable
