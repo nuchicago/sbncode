@@ -59,11 +59,15 @@ protected:
   TH1D* fGenNueHist;
   TH1D* fGenNueFidVolHist;
   TH1D* fSelectedNuHist;
+  TH1D* fShowerEnergy;
+  TH1D* fEnergeticShowerHist;
+
 
   /** Configuration parameters */
   art::InputTag fTruthTag;  //!< art tag for MCTruth information
   art::InputTag fTrackTag; //! <art tag for MCTrack information
   art::InputTag fShowerTag; //! <art tag for MCShower information
+  double fEnergyThreshold; //configurable parameter
 };
 
   }  // namespace SBNOsc
