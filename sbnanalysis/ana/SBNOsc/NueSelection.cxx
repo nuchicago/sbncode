@@ -144,9 +144,9 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       auto total_length = (mctrack.Start().Position().Vect() - mctrack.End().Position().Vect()).Mag();
       if ((total_length >= 100.) && (nu_track_dis<=5.)) MuTrackCount++;
     }
-    bool MuTrackness = (MuTrackCount==0);
+    bool NotMuTrackness = (MuTrackCount==0);
 
-    if (matchedness[i]&&IsFid&&MuTrackness) {
+    if (matchedness[i]&&IsFid&&NotMuTrackness) {
       fSelectedNuHist->Fill(nu_E);
       Event::Interaction interaction = TruthReco(mctruth);
       reco.push_back(interaction);
