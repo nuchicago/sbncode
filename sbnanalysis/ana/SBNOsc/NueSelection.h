@@ -61,6 +61,7 @@ protected:
 
   TH1D* fGenNueHist;
   TH1D* fGenNueFidVolHist;
+  TH1D* fSelectedNueHist;
 
 
   /** Configuration parameters */
