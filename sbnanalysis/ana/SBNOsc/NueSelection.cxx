@@ -121,6 +121,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if ((nu.Nu().PdgCode() ==12)&&(((-174.15 < vx && vx < -27.65) || (27.65 < vx && vx < 174.15)) && (-175 < vy && vy < 175) && (25 < vz && vz < 475))) fGenNueFidVolHist->Fill(nu_E);
     auto nu_pos = nu.Nu().Position();
     int matched_shower_count = 0;
+    // loop through only energetic showers
     for (auto j : EnergeticShowersIndices) {
       auto const& shower = mcshowers.at(j);
       auto shower_pos = shower.DetProfile().Position();
