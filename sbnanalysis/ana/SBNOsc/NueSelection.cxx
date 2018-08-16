@@ -118,10 +118,11 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto total_length = (mctrack.Start().Position().Vect() - mctrack.End().Position().Vect()).Mag();
     if (total_length >= 100.) MuTrackCount++;
   }
+  /*
   if (MuTrackCount>0) {
     return false; //questionable
   }
-
+  */
 
   // Iterate through the neutrinos/MCTruth
   for (size_t i=0; i<mctruths.size(); i++) {
@@ -133,7 +134,19 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto vy = nu.Nu().Vy();
     auto vz = nu.Nu().Vz();
     bool IsFid = (((-174.15 < vx && vx < -27.65) || (27.65 < vx && vx < 174.15)) && (-175 < vy && vy < 175) && (25 < vz && vz < 475));
-    if (matchedness[i]&&IsFid) {
+    int MuTrackCount=0;
+    auto nu_pos = nu.Nu().Position();
+    for (size_t j=0;j<mctracks.size();j++) {
+      auto const& mctrack = mctracks.at(j);
+      auto track_start_pos = mctrack.Start().Pos();
+      auto nu_track_dis = (track_start_pos.Vect() - nu_pos.Vect()).Mag();
+      //do total length cut first
+      auto total_length = (mctrack.Start().Position().Vect() - mctrack.End().Position().Vect()).Mag();
+      if ((total_length >= 100.) && (nu_track_dis<=5.)) MuTrackCount++;
+    }
+    bool MuTrackness = (MuTrackCount==0);
+
+    if (matchedness[i]&&IsFid&&MuTrackness) {
       fSelectedNuHist->Fill(nu_E);
       Event::Interaction interaction = TruthReco(mctruth);
       reco.push_back(interaction);
