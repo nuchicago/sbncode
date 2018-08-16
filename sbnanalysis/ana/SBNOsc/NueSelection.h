@@ -6,7 +6,7 @@
  *
  * SBN nue selection.
  *
- * Author: 
+ * Author:
  */
 
 #include <iostream>
@@ -15,6 +15,7 @@
 #include "core/Event.hh"
 
 class TH2D;
+class TH1D;
 
 namespace ana {
   namespace SBNOsc {
@@ -51,12 +52,19 @@ protected:
   unsigned fEventCounter;  //!< Count processed events
   unsigned fNuCount;  //!< Count selected events
 
+
+
+  TH1D* fDiffLength;
+  TH1D* fShowerEnergy;
+
   /** Configuration parameters */
   art::InputTag fTruthTag;  //!< art tag for MCTruth information
+  art::InputTag fTrackTag; //! <art tag for MCTrack information
+  art::InputTag fShowerTag; //! <art tag for MCShower information
+  double fEnergyThreshold; //configurable parameter
 };
 
   }  // namespace SBNOsc
 }  // namespace ana
 
 #endif  // __sbnanalysis_ana_SBNOsc_NueSelection__
-
