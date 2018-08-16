@@ -14,6 +14,10 @@
  */
 
 #include "nusimdata/SimulationBase/MCTruth.h"
+
+#include "lardataobj/MCBase/MCShower.h"
+#include "lardataobj/MCBase/MCTrack.h"
+
 #include "core/Event.hh"
 
 namespace ana {
@@ -45,6 +49,21 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  *
  * */
 double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, double osc_angle);
+
+/** Get mass from PDGID of particle.
+ *
+ * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
+ *
+ * */
+double PDGMass(int pdg);
+
+/** Returns whether track/shower object is from the neutrino vertex
+ *
+ * */
+bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
+                           float distance=5.0);
+bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
+                            float distance=5.0);
 
 
   }  // namespace SBNOsc

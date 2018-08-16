@@ -1,7 +1,12 @@
 #include <iostream>
+
+#include "TDatabasePDG.h"
+
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
 #include "core/Event.hh"
+
+#include "Utilities.h"
 
 namespace ana {
   namespace SBNOsc {
@@ -71,6 +76,34 @@ double NuMuOscillation(double numu_energy, double numu_dist, double osc_dm2, dou
   double energy_factor = sin(1.27 * osc_dm2 * numu_dist / numu_energy);
   return 1 - overlap * overlap * energy_factor * energy_factor;
 
+}
+
+double PDGMass(int pdg) {
+  TDatabasePDG *PDGTable = new TDatabasePDG;
+  // regular particle
+  if (pdg < 1000000000) {
+    TParticlePDG* ple = PDGTable->GetParticle(pdg);
+    return ple->Mass() * 1000.0;
+  }
+  // ion
+  else {
+    int p = (pdg % 10000000) / 10000;
+    int n = (pdg % 10000) / 10 - p;
+    return (PDGTable->GetParticle(2212)->Mass() * p +
+            PDGTable->GetParticle(2112)->Mass() * n) * 1000.0;
+  }
+}
+
+bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show, float distance)  {
+  TLorentzVector nuVtx = mc.GetNeutrino().Nu().Trajectory().Position(0);
+  TLorentzVector showStart = show.Start().Position();
+  return (showStart - nuVtx).Mag() < distance;
+}
+
+bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track, float distance) {
+  TLorentzVector nuVtx = mc.GetNeutrino().Nu().Trajectory().Position(0);
+  TLorentzVector trkStart = track.Start().Position();
+  return (trkStart - nuVtx).Mag() < distance;
 }
 
   }  // namespace SBNOsc
