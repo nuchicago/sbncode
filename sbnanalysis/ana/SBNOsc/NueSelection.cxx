@@ -98,7 +98,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
     fShowerEnergy->Fill(shower_E);
-    if (shower_E >= 0.2) {
+    if (shower_E >= 200) {
       EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
     // if (Shower_E > fEnergyThreshold) EnergeticShowers.push_back(mcshower);
       fEnergeticShowerHist->Fill(shower_E);
