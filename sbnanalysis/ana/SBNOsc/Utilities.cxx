@@ -69,7 +69,7 @@ double GetActiveLength(const sim::MCTrack& mctrack) {
     auto stepY = mcstep.Y();
     auto stepZ = mcstep.Z();
     if(((-199.15 < stepX && stepX < -2.65) || (2.65 < stepX && stepX < 199.15)) && (-200 < stepY && stepY < 200) && (0 < stepZ && stepZ < 500)) {
-      entering step = mcstep;
+      entering_step = mcstep;
       break;
     }
     else continue;
@@ -87,7 +87,7 @@ double GetActiveLength(const sim::MCTrack& mctrack) {
     auto reverse_mcstepZ_former = reverse_mcstep_former.Z();
     bool FormerOut = !(((-199.15 < reverse_mcstepX_former && reverse_mcstepX_former < -2.65) || (2.65 < reverse_mcstepX_former && reverse_mcstepX_former < 199.15)) && (-200 < reverse_mcstepY_former && reverse_mcstepY_former < 200) && (0 < reverse_mcstepZ_former && reverse_mcstepZ_former < 500));
     if (IsOut && (!FormerOut)) {
-      exiting_step = reverse_mcstep_former;
+      auto const& exiting_step = reverse_mcstep_former;
       break;
     }
     if ((!IsOut)&&(!FormerOut)) {
