@@ -59,12 +59,18 @@ void NumuSelection::Initialize(Json::Value* config) {
 	zmax = (*config)["NumuSelection"]["active_volume"]["zmax"].asDouble();
       }
       else if ((*config)["NumuSelection"].isMember("fiducial_volumes")) {
-	xmin = std::min_element(_config.aaBoxes.begin(), _config.aaBoxes.end(), [](const auto& lhs, const auto &rhs) { return lhs.Min()[0] < rhs.Min()[0];})->Min()[0];
-	xmax = std::max_element(_config.aaBoxes.begin(), _config.aaBoxes.end(), [](const auto& lhs, const auto &rhs) { return lhs.Max()[0] < rhs.Max()[0];})->Max()[0];
-	ymin = std::min_element(_config.aaBoxes.begin(), _config.aaBoxes.end(), [](const auto& lhs, const auto &rhs) { return lhs.Min()[1] < rhs.Min()[1];})->Min()[1];
-	ymax = std::max_element(_config.aaBoxes.begin(), _config.aaBoxes.end(), [](const auto& lhs, const auto &rhs) { return lhs.Max()[1] < rhs.Max()[1];})->Max()[1];
-	zmin = std::min_element(_config.aaBoxes.begin(), _config.aaBoxes.end(), [](const auto& lhs, const auto &rhs) { return lhs.Min()[2] < rhs.Min()[2];})->Min()[2];
-	zmax = std::max_element(_config.aaBoxes.begin(), _config.aaBoxes.end(), [](const auto& lhs, const auto &rhs) { return lhs.Max()[2] < rhs.Max()[2];})->Max()[2];
+	xmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+          [](const auto& lhs, const auto &rhs) { return lhs.Min()[0] < rhs.Min()[0];})->Min()[0];
+	xmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+          [](const auto& lhs, const auto &rhs) { return lhs.Max()[0] < rhs.Max()[0];})->Max()[0];
+	ymin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+          [](const auto& lhs, const auto &rhs) { return lhs.Min()[1] < rhs.Min()[1];})->Min()[1];
+	ymax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+          [](const auto& lhs, const auto &rhs) { return lhs.Max()[1] < rhs.Max()[1];})->Max()[1];
+	zmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+          [](const auto& lhs, const auto &rhs) { return lhs.Min()[2] < rhs.Min()[2];})->Min()[2];
+	zmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+          [](const auto& lhs, const auto &rhs) { return lhs.Max()[2] < rhs.Max()[2];})->Max()[2];
       }
       _config.active_volume = geoalgo::AABox(xmin, ymin, zmin, xmax, ymax, zmax);
     }
@@ -72,7 +78,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     // allow multiple fiducial volumes (accomodate for uboone data channels and icarus 2 TPC's)
     auto FVs = (*config)["NumuSelection"]["fiducial_volumes"];
     for (auto FV: FVs) {
-      _config.aaBoxes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
+      _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
@@ -236,10 +242,10 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   TLorentzVector pos = lepton_track.Start().Position();
   for (int i = 1; i < lepton_track.size(); i++) {
     // update if track is contained
-    if (contained_in_FV) contained_in_FV = passFV(pos.X(), pos.Y(), pos.Z());
+    if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
 
     // update length
-    l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.aaBoxes);
+    l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
 
     pos = lepton_track[i].Position();
   }
@@ -260,7 +266,7 @@ std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MC
   bool pass_true_CC = (nu.CCNC() == simb::kCC && (nu.Mode() == 0 || nu.Mode() == 10) && nu.Nu().PdgCode() == 14);
 
   // pass fiducial volume cut
-  bool pass_FV = passFV(nu.Nu().Vx(), nu.Nu().Vy(), nu.Nu().Vz());
+  bool pass_FV = passFV(nu.Nu().Position().Vect());
 
   // min length cut
   bool pass_min_length = passMinLength(intInfo.l_contained_length, intInfo.l_is_contained);
@@ -299,11 +305,12 @@ std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MC
   return {pass_true_CC, pass_true_CC && pass_FV, pass_true_CC && pass_FV && pass_min_length, pass_true_CC && pass_FV && pass_reco_vertex};
 }
 
-bool NumuSelection::passFV(double x, double y, double z) {
+bool NumuSelection::containedInFV(const TVector3 &v) {
   if (!_config.doFVCut) return true;
-  for (auto const& aaBox: _config.aaBoxes) {
-    geoalgo::Point_t p(x, y, z); 
-    if (aaBox.Contain(p)) return true;
+
+  geoalgo::Point_t p(v); 
+  for (auto const& FV: _config.fiducial_volumes) {
+    if (FV.Contain(p)) return true;
   }
   return false;
 }

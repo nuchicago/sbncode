@@ -71,7 +71,7 @@ protected:
     art::InputTag mcsTag;
     art::InputTag mcpTag;
     bool doFVCut; //!< Whether to apply fiducial volume cut
-    std::vector<geoalgo::AABox> aaBoxes; //!< List of FV containers -- set by "fiducial_volumes"
+    std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
@@ -91,7 +91,7 @@ protected:
 
 
   /** Returns whether to apply FV cut on neutrino */
-  bool passFV(double x, double y, double z);
+  bool passFV(const TVector3 &v) { return containedInFV(v); }
   /** Applies reco-truth vertex matching cut */
   bool passRecoVertex(double truth_v[3], double reco_v[3]);
   /** Applies truth length cut */
@@ -100,6 +100,8 @@ protected:
   std::vector<bool> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo);
   /** Get associated interaction information from monte carlo */
   NuMuInteraction interactionInfo(const gallery::Event& ev, const simb::MCTruth &mctruth);
+  /** Helper function -- whether point is contained in fiducial volume list */
+  bool containedInFV(const TVector3 &v);
 
   unsigned fEventCounter;  //!< Count processed events
   unsigned fNuCount;  //!< Count selected events
@@ -112,11 +114,9 @@ protected:
 
   Config _config; //!< The config
 
-  // branch holders
-  std::vector<NuMuInteraction> *_interactionInfo;
+  std::vector<NuMuInteraction> *_interactionInfo; //!< Branch holder
 
-  // histos
-  RootHistos _root_histos[nCuts];
+  RootHistos _root_histos[nCuts]; //!< Histos (one group per cut)
 };
 
   }  // namespace SBNOsc
