@@ -73,6 +73,9 @@ protected:
   TH1D* fGammaShowerSelectedNu;
   TH1D* fOtherShowerSelectedNu;
   TH1D* fShowerdEdx;
+  TH1D* fEShowerdEdx;
+  TH1D* fGammaShowerdEdx;
+  TH1D* fOtherShowerdEdx;
 
 
   /** Configuration parameters */
