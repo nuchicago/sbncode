@@ -15,14 +15,14 @@ void RatioPlotNue(){
   TH1D *gen_nuhist_fidvol = (TH1D*)myFile->Get("generated_nue_in_fiducial_volume");
   TH1D *shower_fid_track_cg = (TH1D*)myFile->Get("final_selected_nu");
   TH1D *h = (TH1D*)shower_fid_track_cg->Clone("h");
-  h->SetLineColor(kBlack);
+  h->SetLineColor(kBlue);
   h->SetMinimum(0.);
   h->SetMaximum(1.);
-  h->Sumw2();
+  //h->Sumw2();
   h->SetStats(0);
   h->Divide(gen_nuhist_fidvol);
   h->SetMarkerStyle(21);
-  h->Draw("ep");
+  h->Draw();
  /*
   int nbins = nuhist->GetNbinsX();
   Double_t nuhistcontent [nbins];
