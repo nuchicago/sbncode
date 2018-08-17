@@ -41,6 +41,7 @@ void NueSelection::Initialize(Json::Value* config) {
   fEnergeticShowerHist = new TH1D("energetic_shower_energy","",100,0,10);
   fVisibleVertexNuEHist = new TH1D("visible_vertex_nu_energy","",60,0,6);
   fCGSelectionHist = new TH1D("final_selected_nu","",60,0,6);
+  fRecoSelectionHist = new TH1D("final_selected_nu_w_reco_efficiency","",60,0,6);
 
 
 
@@ -79,6 +80,7 @@ void NueSelection::Finalize() {
   fEnergeticShowerHist->Write();
   fVisibleVertexNuEHist->Write();
   fCGSelectionHist->Write();
+  fRecoSelectionHist->Write();
 
 }
 
@@ -223,8 +225,18 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if (matchedness[i]&&IsFid&&NotMuTrackness) fSelectedNuHist->Fill(nu_E);
     if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) {
       fCGSelectionHist->Fill(nu_E);
-      Event::Interaction interaction = TruthReco(mctruth);
-      reco.push_back(interaction);
+      double lower_bound=0.;
+      double upper_bound=1.;
+      std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
+      std::random_device r;
+      std::default_random_engine e1(r());
+      double rnd_double = unif(e1);
+      if (rnd_double <= 0.8) {
+        fRecoSelectionHist->Fill(nu_E);
+        Event::Interaction interaction = TruthReco(mctruth);
+        reco.push_back(interaction);
+      }
+      else continue;
     }
 
     /*
