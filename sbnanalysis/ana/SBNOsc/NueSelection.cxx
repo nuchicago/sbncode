@@ -56,6 +56,7 @@ void NueSelection::Initialize(Json::Value* config) {
   fEShowerdEdx = new TH1D("electron_shower_dEdx","",60,0,6);
   fGammaShowerdEdx = new TH1D("gamma_shower_dEdx","",60,0,6);
   fMuShowerdEdx = new TH1D("mu_shower_dEdx","",60,0,6);
+  fPositronShowerdEdx = new TH1D("positron_shower_dEdx","",60,0,6);
   fOtherShowerdEdx = new TH1D("other_shower_dEdx","",60,0,6);
 
 
@@ -109,6 +110,7 @@ void NueSelection::Finalize() {
   fGammaShowerdEdx->Write();
   fOtherShowerdEdx->Write();
   fMuShowerdEdx->Write();
+  fPositronShowerdEdx->Write();
 }
 
 
@@ -197,7 +199,8 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if (showerPDG == 11) fEShowerdEdx->Fill(shower_dEdx);
     if (showerPDG == 22) fGammaShowerdEdx->Fill(shower_dEdx);
     if (showerPDG == 13) fMuShowerdEdx->Fill(shower_dEdx);
-    if ((showerPDG!=11)&&(showerPDG!=22)) fOtherShowerdEdx->Fill(shower_dEdx);
+    if (showerPDG == -11) fPositronShowerdEdx->Fill(shower_dEdx);
+    if ((showerPDG!=11)&&(showerPDG!=22)&&(showerPDG!=-11)&&(showerPDG!=13)) fOtherShowerdEdx->Fill(shower_dEdx);
     fShowerEnergy->Fill(shower_E);
     if (shower_E >= 200) {
       EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter

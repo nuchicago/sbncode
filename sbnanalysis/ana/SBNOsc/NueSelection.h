@@ -76,6 +76,7 @@ protected:
   TH1D* fEShowerdEdx;
   TH1D* fGammaShowerdEdx;
   TH1D* fMuShowerdEdx;
+  TH1D* fPositronShowerdEdx;
   TH1D* fOtherShowerdEdx;
 
 
