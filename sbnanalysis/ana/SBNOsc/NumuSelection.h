@@ -62,6 +62,7 @@ public:
   struct NuMuInteraction {
     bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
     double l_contained_length; //!< the length of the lepton track contained in the fiducial volume
+    double l_length; //!< total length of lepton track
     double visible_energy; //!< sum of kinetic energies of particles produced directly in interaction
     double smeared_visible_energy; //!< visible energy with component particle energies smeared
     double smeared_eccqe; //!< CCQE energy w/ lepton energy smeared
@@ -92,8 +93,9 @@ protected:
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable
     TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy)
     TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy
-    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of lepton in CC event
     TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated lepton is contained in FV 
+    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of lepton in CC event
+    TH1D *h_numu_l_length; //!< histogram w/ total length of associated lepton
     TH2D *h_numu_Vxy; //!< 2D x-y vertex histogram
     TH2D *h_numu_Vxz; //!< 2D x-z vertex histogram
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram

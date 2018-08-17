@@ -100,6 +100,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _root_histos[i].h_numu_trueE = new TH1D(("numu_trueE_" + cut_names[i]).c_str(), "numu_trueE", 100, 0 , 10);
     _root_histos[i].h_numu_visibleE = new TH1D(("numu_visibleE_" + cut_names[i]).c_str(), "numu_visibleE", 100, 0, 10);
     _root_histos[i].h_numu_true_v_visibleE = new TH1D(("numu_true_v_visibleE_" + cut_names[i]).c_str(), "numu_true_v_visibleE", 100, -10, 10);
+    _root_histos[i].h_numu_l_length = new TH1D(("numu_l_length_" + cut_names[i]).c_str(), "numu_l_length", 101, -10, 1000);
     _root_histos[i].h_numu_contained_L = new TH1D(("numu_contained_L_" + cut_names[i]).c_str(), "numu_contained_L", 101, -10 , 1000);
     _root_histos[i].h_numu_l_is_contained = new TH1D(("l_is_contained_" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
     _root_histos[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
@@ -128,6 +129,7 @@ void NumuSelection::Finalize() {
     _root_histos[i].h_numu_trueE->Write();
     _root_histos[i].h_numu_visibleE->Write();
     _root_histos[i].h_numu_true_v_visibleE->Write();
+    _root_histos[i].h_numu_l_length->Write();
     _root_histos[i].h_numu_contained_L->Write();
     _root_histos[i].h_numu_l_is_contained->Write();
     _root_histos[i].h_numu_Vxy->Write();
@@ -190,6 +192,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
         _root_histos[select_i].h_numu_visibleE->Fill(intInfo.visible_energy);
         _root_histos[select_i].h_numu_true_v_visibleE->Fill(intInfo.visible_energy - interaction.neutrino.energy);
+        _root_histos[select_i].h_numu_l_length->Fill(intInfo.l_length);
         _root_histos[select_i].h_numu_contained_L->Fill(intInfo.l_contained_length);
         _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.l_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
@@ -227,11 +230,15 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // parameters only make sense if lepton exists
   bool contained_in_FV = false;
   double l_contained_length = -1;
+  double l_length = -1;
   double smeared_eccqe = -1;
 
   if (lepton_ind != -1) {
     // if lepton exists, addume contained by default
     contained_in_FV = true;
+    l_contained_length = 0;
+    l_length = 0;
+    smeared_eccqe = 0;
 
     auto const& lepton_track = mctrack_list.at(lepton_ind);
     
@@ -243,6 +250,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
       
       // update length
       l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
+      l_length += (lepton_track[i].Position().Vect() - pos.Vect()).Mag();
       
       pos = lepton_track[i].Position();
     }
@@ -287,7 +295,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
 
 
   // convert visible energies to GeV
-  return {contained_in_FV, l_contained_length, visible_E / 1000., smeared_visible_E / 1000., smeared_eccqe}; 
+  return {contained_in_FV, l_contained_length, l_length, visible_E / 1000., smeared_visible_E / 1000., smeared_eccqe}; 
 }
 
 std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo) {
