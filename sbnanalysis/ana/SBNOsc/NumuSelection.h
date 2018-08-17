@@ -127,7 +127,7 @@ protected:
   /** Returns whether to apply FV cut on neutrino */
   bool passFV(const TVector3 &v) { return containedInFV(v); }
   /** Applies reco-truth vertex matching cut */
-  bool passRecoVertex(double truth_v[3], double reco_v[3]);
+  bool passRecoVertex(const TVector3 &truth_v, const TVector3 &reco_v);
   /** Applies truth length cut */
   bool passMinLength(double length, bool stop_in_tpc);
   /** Run Selection on a neutrino */

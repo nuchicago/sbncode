@@ -311,10 +311,10 @@ std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MC
     // index of truth info is same as index of vertex info
     std::vector<const recob::Vertex*> vertices = fvtx.at(truth_ind);
     // neutrino will only have one associated vetex
-    double reco_v[3];
-    vertices[0]->XYZ(reco_v);
+    auto vertex = vertices[0]->position();
+    TVector3 reco_v(vertex.X(), vertex.Y(), vertex.Z());
     
-    pass_reco_vertex = passRecoVertex(truth_v, reco_v);
+    pass_reco_vertex = passRecoVertex(nu.Nu().Position().Vect(), reco_v);
   }
 
   // print selection information
@@ -341,22 +341,17 @@ bool NumuSelection::containedInFV(const TVector3 &v) {
   return false;
 }
 
-bool NumuSelection::passRecoVertex(double truth_v[3], double reco_v[3]) {
+bool NumuSelection::passRecoVertex(const TVector3 &truth_v, const TVector3 &reco_v) {
   if (_config.vertexDistanceCut < 0) return true;
 
-  double R2 =  
-    (truth_v[0] - reco_v[0]) * (truth_v[0] - reco_v[0]) +
-    (truth_v[1] - reco_v[1]) * (truth_v[1] - reco_v[1]) +
-    (truth_v[2] - reco_v[2]) * (truth_v[2] - reco_v[2]);
- 
-  double R = sqrt(R2); 
-  return R < _config.vertexDistanceCut;
+  return (truth_v - reco_v).Mag() < _config.vertexDistanceCut;
 }
 
 bool NumuSelection::passMinLength(double length, bool stop_in_tpc) {
-  if (!stop_in_tpc) return true;
-  if (_config.minLengthContainedLepton < 0) return true;
-  return length > _config.minLengthContainedLepton;
+  if (!stop_in_tpc)
+    return _config.minLengthExitingLepton < 0 || length > _config.minLengthExitingLepton;
+  else
+    return _config.minLengthContainedLepton < 0 || length > _config.minLengthContainedLepton;
 }
 
   }  // namespace SBNOsc
