@@ -51,12 +51,12 @@ void NueSelection::Initialize(Json::Value* config) {
 
   if (config) {
     //fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold", 0).asDouble();
-    fEnergyThreshold = { (*config)["SBNOsc"].get("energy_threshold",12.34).asDouble() };
+    //fEnergyThreshold = { (*config)["SBNOsc"].get("energy_threshold",12.34).asDouble() };
     fTruthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
     fTrackTag = { (*config)["SBNOsc"].get("MCTrackTag", "mcreco").asString() };
     fShowerTag = { (*config)["SBNOsc"].get("MCShowerTag","mcreco").asString() };
   }
-
+  fEnergyThreshold=config->get("energy_threshold",120.3).asDouble();
   AddBranch("energy_threshold",&fEnergyThreshold);
   AddBranch("nucount",&fNuCount);
 
