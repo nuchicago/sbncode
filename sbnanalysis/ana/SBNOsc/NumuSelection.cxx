@@ -100,8 +100,8 @@ void NumuSelection::Initialize(Json::Value* config) {
     _root_histos[i].h_numu_trueE = new TH1D(("numu_trueE_" + cut_names[i]).c_str(), "numu_trueE", 100, 0 , 10);
     _root_histos[i].h_numu_visibleE = new TH1D(("numu_visibleE_" + cut_names[i]).c_str(), "numu_visibleE", 100, 0, 10);
     _root_histos[i].h_numu_true_v_visibleE = new TH1D(("numu_true_v_visibleE_" + cut_names[i]).c_str(), "numu_true_v_visibleE", 100, -10, 10);
-    _root_histos[i].h_numu_contained_L = new TH1D(("numu_contained_L" + cut_names[i]).c_str(), "numu_contained_L", 102, -2 , 100);
-    _root_histos[i].h_numu_l_is_contained = new TH1D(("l_is_contained" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
+    _root_histos[i].h_numu_contained_L = new TH1D(("numu_contained_L_" + cut_names[i]).c_str(), "numu_contained_L", 101, -10 , 1000);
+    _root_histos[i].h_numu_l_is_contained = new TH1D(("l_is_contained_" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
     _root_histos[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
       20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
       20, _config.active_volume.Min()[1], _config.active_volume.Max()[1]);
@@ -188,10 +188,10 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
       if (pass) {
         _root_histos[select_i].h_numu_trueE->Fill(interaction.neutrino.energy);
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
-        _root_histos[i].h_numu_visibleE->Fill(intInfo.visible_energy);
-        _root_histos[i].h_numu_true_v_visibleE->Fill(intInfo.visible_energy - interaction.neutrino.energy);
-        _root_histos[i].h_numu_contained_L->Fill(intInfo.l_contained_length);
-        _root_histos[i].h_numu_l_is_contained->Fill(intInfo.l_is_contained);
+        _root_histos[select_i].h_numu_visibleE->Fill(intInfo.visible_energy);
+        _root_histos[select_i].h_numu_true_v_visibleE->Fill(intInfo.visible_energy - interaction.neutrino.energy);
+        _root_histos[select_i].h_numu_contained_L->Fill(intInfo.l_contained_length);
+        _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.l_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
@@ -230,6 +230,9 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   double smeared_eccqe = -1;
 
   if (lepton_ind != -1) {
+    // if lepton exists, addume contained by default
+    contained_in_FV = true;
+
     auto const& lepton_track = mctrack_list.at(lepton_ind);
     
     // Get the length and determine if any point leaves the fiducial volume
@@ -257,6 +260,8 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // get visible energy
   // "Reconstruct" visible energy from tracks + showers
   // Also do smearing
+  //
+  // Track energy and masses are in MeV
   double visible_E = 0.;
   double smeared_visible_E = 0.;
   // first the tracks
@@ -281,7 +286,8 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   }
 
 
-  return {contained_in_FV, l_contained_length, visible_E, smeared_visible_E, smeared_eccqe}; 
+  // convert visible energies to GeV
+  return {contained_in_FV, l_contained_length, visible_E / 1000., smeared_visible_E / 1000., smeared_eccqe}; 
 }
 
 std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo) {
