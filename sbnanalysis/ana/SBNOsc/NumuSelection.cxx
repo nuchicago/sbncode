@@ -82,10 +82,15 @@ void NumuSelection::Initialize(Json::Value* config) {
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
-    _config.minLength = (*config)["NumuSelection"].get("minLength", -1).asDouble();
+    _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
+    _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
+    _config.containedLeptonESmear = (*config)["NumuSelection"].get("containedLeptonESmear", 0).asDouble();
+    _config.exitingLeptonESmear = (*config)["NumuSelection"].get("exitingLeptonESmear", 0).asDouble();
+    _config.hadronESmear = (*config)["NumuSelection"].get("hadronESmear", 0).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
-
   }
+  // setup smearing from config
+  _smear = new Smearing(_config.containedLeptonESmear, _config.exitingLeptonESmear, _config.hadronESmear);
 
   // Setup histo's for root output
   fOutputFile->cd();
@@ -95,6 +100,8 @@ void NumuSelection::Initialize(Json::Value* config) {
     _root_histos[i].h_numu_trueE = new TH1D(("numu_trueE_" + cut_names[i]).c_str(), "numu_trueE", 100, 0 , 10);
     _root_histos[i].h_numu_visibleE = new TH1D(("numu_visibleE_" + cut_names[i]).c_str(), "numu_visibleE", 100, 0, 10);
     _root_histos[i].h_numu_true_v_visibleE = new TH1D(("numu_true_v_visibleE_" + cut_names[i]).c_str(), "numu_true_v_visibleE", 100, -10, 10);
+    _root_histos[i].h_numu_contained_L = new TH1D(("numu_contained_L" + cut_names[i]).c_str(), "numu_contained_L", 102, -2 , 100);
+    _root_histos[i].h_numu_l_is_contained = new TH1D(("l_is_contained" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
     _root_histos[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
       20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
       20, _config.active_volume.Min()[1], _config.active_volume.Max()[1]);
@@ -121,6 +128,8 @@ void NumuSelection::Finalize() {
     _root_histos[i].h_numu_trueE->Write();
     _root_histos[i].h_numu_visibleE->Write();
     _root_histos[i].h_numu_true_v_visibleE->Write();
+    _root_histos[i].h_numu_contained_L->Write();
+    _root_histos[i].h_numu_l_is_contained->Write();
     _root_histos[i].h_numu_Vxy->Write();
     _root_histos[i].h_numu_Vxz->Write();
     _root_histos[i].h_numu_Vyz->Write();
@@ -181,6 +190,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
         _root_histos[i].h_numu_visibleE->Fill(intInfo.visible_energy);
         _root_histos[i].h_numu_true_v_visibleE->Fill(intInfo.visible_energy - interaction.neutrino.energy);
+        _root_histos[i].h_numu_contained_L->Fill(intInfo.l_contained_length);
+        _root_histos[i].h_numu_l_is_contained->Fill(intInfo.l_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
@@ -202,23 +213,10 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   auto const& mcparticle_list = \
     *ev.getValidHandle<std::vector<simb::MCParticle>>(_config.mcpTag);
 
-  // get visible energy
-  // "Reconstruct" visible energy from tracks + showers
-  double visible_E = 0.;
-  // first the tracks
-  for (auto const &mct: mctrack_list) {
-    if (isFromNuVertex(mctruth, mct)) {
-      double mass = PDGMass(mct.PdgCode());
-      visible_E += mct.Start().E() - mass;
-    }
-  }
-  // now the showers
-  for (auto const &mcs: mcshower_list) {
-    if (isFromNuVertex(mctruth, mcs)) {
-      double mass = PDGMass(mcs.PdgCode());
-      visible_E += mcs.Start().E() - mass;
-    }
-  }
+  // Get the length and determine if any point leaves the fiducial volume
+  bool contained_in_FV = false;
+  double l_contained_length = -1;
+  double smeared_eccqe = -1;
 
   // get lepton track
   int lepton_ind = -1;
@@ -230,32 +228,61 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   } 
 
   // return failure if there was no lepton
-  if (lepton_ind == -1) {
-    return { false, -1, visible_E };
+  if (lepton_ind != -1) {
+    auto const& lepton_track = mctrack_list.at(lepton_ind);
+    
+    // Get the length and determine if any point leaves the fiducial volume
+    bool contained_in_FV = true;
+    double l_contained_length = 0;
+    TLorentzVector pos = lepton_track.Start().Position();
+    for (int i = 1; i < lepton_track.size(); i++) {
+      // update if track is contained
+      if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
+      
+      // update length
+      l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
+      
+      pos = lepton_track[i].Position();
+    }
+    
+    // determine if stopped in TPC
+    // sim::MCStep end = lepton_track.End();
+    // geoalgo::Point_t l_end_pos(end.Position().Vect());
+    // bool stop_in_tpc = _config.active_volume.Contain(l_end_pos);
+
+    // While we're here, get the smeared ECCQE
+    smeared_eccqe = ECCQE(lepton_track.Start().Momentum().Vect(), lepton_track.Start().E(), 
+      _smear->Smear(lepton_track.Start().E(), 14, contained_in_FV));
+  }
+    
+  // get visible energy
+  // "Reconstruct" visible energy from tracks + showers
+  // Also do smearing
+  double visible_E = 0.;
+  double smeared_visible_E = 0.;
+  // first the tracks
+  for (auto const &mct: mctrack_list) {
+    if (isFromNuVertex(mctruth, mct)) {
+      double mass = PDGMass(mct.PdgCode());
+      double this_visible_energy = mct.Start().E() - mass;
+      double this_smeared_visible_energy = _smear->Smear(this_visible_energy, mct.PdgCode(), contained_in_FV);
+      visible_E += this_visible_energy;
+      smeared_visible_E += this_smeared_visible_energy; 
+    }
+  }
+  // now the showers
+  for (auto const &mcs: mcshower_list) {
+    if (isFromNuVertex(mctruth, mcs)) {
+      double mass = PDGMass(mcs.PdgCode());
+      double this_visible_energy = mcs.Start().E() - mass;
+      double this_smeared_visible_energy = _smear->Smear(this_visible_energy, mcs.PdgCode(), contained_in_FV);
+      visible_E += this_visible_energy;
+      smeared_visible_E += this_smeared_visible_energy; 
+    }
   }
 
-  auto const& lepton_track = mctrack_list.at(lepton_ind);
 
-  // Get the length and determine if any point leaves the fiducial volume
-  bool contained_in_FV = true;
-  double l_contained_length = 0;
-  TLorentzVector pos = lepton_track.Start().Position();
-  for (int i = 1; i < lepton_track.size(); i++) {
-    // update if track is contained
-    if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
-
-    // update length
-    l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
-
-    pos = lepton_track[i].Position();
-  }
-
-  // determine if stopped in TPC
-  // sim::MCStep end = lepton_track.End();
-  // geoalgo::Point_t l_end_pos(end.Position().Vect());
-  // bool stop_in_tpc = _config.active_volume.Contain(l_end_pos);
-
-  return {contained_in_FV, l_contained_length, visible_E}; 
+  return {contained_in_FV, l_contained_length, visible_E, smeared_visible_E, smeared_eccqe}; 
 }
 
 std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo) {
@@ -329,8 +356,8 @@ bool NumuSelection::passRecoVertex(double truth_v[3], double reco_v[3]) {
 
 bool NumuSelection::passMinLength(double length, bool stop_in_tpc) {
   if (!stop_in_tpc) return true;
-  if (_config.minLength < 0) return true;
-  return length > _config.minLength;
+  if (_config.minLengthContainedLepton < 0) return true;
+  return length > _config.minLengthContainedLepton;
 }
 
   }  // namespace SBNOsc

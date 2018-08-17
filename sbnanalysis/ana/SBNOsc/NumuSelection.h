@@ -10,6 +10,8 @@
  */
 
 #include <iostream>
+#include <random>
+
 #include "canvas/Utilities/InputTag.h"
 #include "core/SelectionBase.hh"
 #include "core/Event.hh"
@@ -61,6 +63,8 @@ public:
     bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
     double l_contained_length; //!< the length of the lepton track contained in the fiducial volume
     double visible_energy; //!< sum of kinetic energies of particles produced directly in interaction
+    double smeared_visible_energy; //!< visible energy with component particle energies smeared
+    double smeared_eccqe; //!< CCQE energy w/ lepton energy smeared
   };
 
 protected:
@@ -75,7 +79,11 @@ protected:
     geoalgo::AABox active_volume; //!< Active volume
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
-    double minLength; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
+    double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
+    double minLengthExitingLepton; //!< Minimum length [cm] of exiting leptons.  Will not apply cut if value is negative.
+    double containedLeptonESmear; //!< % to smear truth energy of contained CC leptons.
+    double exitingLeptonESmear; //!< % to smear truth energy of exiting CC leptons.
+    double hadronESmear; //!< % to smear truth energy of hadrons.
   };
 
   /** Histograms made for output */
@@ -84,9 +92,35 @@ protected:
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable
     TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy)
     TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy
+    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of lepton in CC event
+    TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated lepton is contained in FV 
     TH2D *h_numu_Vxy; //!< 2D x-y vertex histogram
     TH2D *h_numu_Vxz; //!< 2D x-z vertex histogram
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram
+  };
+
+  /** cpp distributions for smearing energies */
+  struct Smearing {
+    std::mt19937 _gen;
+    std::normal_distribution<double> contained_lepton_E;
+    std::normal_distribution<double> exiting_lepton_E;
+    std::normal_distribution<double> hadron_E;
+
+    Smearing(double contained_l_smear, double exiting_l_smear, double hadron_smear):
+      _gen( time(0) ),
+      contained_lepton_E(0., contained_l_smear),
+      exiting_lepton_E(0., exiting_l_smear),
+      hadron_E(0., hadron_smear) {}
+
+    double Smear(double energy, int pdg, bool is_contained=false) {
+      if (pdg == 14 /* muon */) {
+        if (is_contained) return energy * contained_lepton_E(_gen);
+        else return energy * exiting_lepton_E(_gen);
+      }
+      else {
+        return hadron_E(_gen);
+      }
+    }
   };
 
 
@@ -117,6 +151,8 @@ protected:
   std::vector<NuMuInteraction> *_interactionInfo; //!< Branch holder
 
   RootHistos _root_histos[nCuts]; //!< Histos (one group per cut)
+
+  Smearing *_smear; //!< Instance for smearing FSP energies
 };
 
   }  // namespace SBNOsc
