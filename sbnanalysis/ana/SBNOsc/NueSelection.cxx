@@ -42,6 +42,8 @@ void NueSelection::Initialize(Json::Value* config) {
   fVisibleVertexNuEHist = new TH1D("visible_vertex_nu_energy","",60,0,6);
   fCGSelectionHist = new TH1D("final_selected_nu","",60,0,6);
   fRecoSelectionHist = new TH1D("final_selected_nu_w_reco_efficiency","",60,0,6);
+  fShowerCutSelectionHist = new TH1D("shower_cut_fid_only_nu_energy","",60,0,6);
+
 
 
 
@@ -81,6 +83,7 @@ void NueSelection::Finalize() {
   fVisibleVertexNuEHist->Write();
   fCGSelectionHist->Write();
   fRecoSelectionHist->Write();
+  fShowerCutSelectionHist->Write();
 
 }
 
@@ -221,7 +224,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     }
     bool NotMuTrackness = (MuTrackCount==0);
 
-
+    if (matchedness[i]&&IsFid) fShowerCutSelectionHist->Fill(nu_E);
     if (matchedness[i]&&IsFid&&NotMuTrackness) fSelectedNuHist->Fill(nu_E);
     if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) {
       fCGSelectionHist->Fill(nu_E);

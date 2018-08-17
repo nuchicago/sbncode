@@ -64,6 +64,7 @@ protected:
   TH1D* fVisibleVertexNuEHist;
   TH1D* fCGSelectionHist;
   TH1D* fRecoSelectionHist;
+  TH1D* fShowerCutSelectionHist;
 
 
   /** Configuration parameters */
