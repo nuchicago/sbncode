@@ -214,10 +214,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     *ev.getValidHandle<std::vector<simb::MCParticle>>(_config.mcpTag);
 
   // Get the length and determine if any point leaves the fiducial volume
-  bool contained_in_FV = false;
-  double l_contained_length = -1;
-  double smeared_eccqe = -1;
-
+  //
   // get lepton track
   int lepton_ind = -1;
   for (int i = 0; i < mctrack_list.size(); i++) {
@@ -227,13 +224,15 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     }
   } 
 
-  // return failure if there was no lepton
+  // parameters only make sense if lepton exists
+  bool contained_in_FV = false;
+  double l_contained_length = -1;
+  double smeared_eccqe = -1;
+
   if (lepton_ind != -1) {
     auto const& lepton_track = mctrack_list.at(lepton_ind);
     
     // Get the length and determine if any point leaves the fiducial volume
-    bool contained_in_FV = true;
-    double l_contained_length = 0;
     TLorentzVector pos = lepton_track.Start().Position();
     for (int i = 1; i < lepton_track.size(); i++) {
       // update if track is contained
@@ -265,7 +264,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     if (isFromNuVertex(mctruth, mct)) {
       double mass = PDGMass(mct.PdgCode());
       double this_visible_energy = mct.Start().E() - mass;
-      double this_smeared_visible_energy = _smear->Smear(this_visible_energy, mct.PdgCode(), contained_in_FV);
+      double this_smeared_visible_energy = this_visible_energy + _smear->Smear(this_visible_energy, mct.PdgCode(), contained_in_FV);
       visible_E += this_visible_energy;
       smeared_visible_E += this_smeared_visible_energy; 
     }
@@ -275,7 +274,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     if (isFromNuVertex(mctruth, mcs)) {
       double mass = PDGMass(mcs.PdgCode());
       double this_visible_energy = mcs.Start().E() - mass;
-      double this_smeared_visible_energy = _smear->Smear(this_visible_energy, mcs.PdgCode(), contained_in_FV);
+      double this_smeared_visible_energy = this_visible_energy + _smear->Smear(this_visible_energy, mcs.PdgCode(), contained_in_FV);
       visible_E += this_visible_energy;
       smeared_visible_E += this_smeared_visible_energy; 
     }
