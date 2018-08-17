@@ -60,6 +60,7 @@ protected:
   TH1D* fGenNumuHist;
   TH1D* fGenBarNueHist;
   TH1D* fGenNueHist;
+  TH1D* fGenOtherHist;
   TH1D* fGenNueFidVolHist;
   TH1D* fSelectedNuHist;
   TH1D* fShowerEnergy;
