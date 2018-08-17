@@ -51,6 +51,9 @@ void NueSelection::Initialize(Json::Value* config) {
   fGammaShowerSelectedNu = new TH1D ("gamma_shower","",60,0,6);
   fOtherShowerSelectedNu = new TH1D("other_shower","",60,0,6);
 
+  //shower dE/dx
+  fShowerdEdx = new TH1D("shower_dEdx","",60,0,6);
+
 
 
 
@@ -96,6 +99,8 @@ void NueSelection::Finalize() {
   fEShowerSelectedNu->Write();
   fGammaShowerSelectedNu->Write();
   fOtherShowerSelectedNu->Write();
+
+  fShowerdEdx->Write();
 }
 
 
@@ -177,6 +182,9 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   for (size_t i=0;i<mcshowers.size();i++) {
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
+    //fill in the dEdx hist
+    double shower_dEdx = mcshower.dEdx();
+    fShowerdEdx->Fill(shower_dEdx);
     fShowerEnergy->Fill(shower_E);
     if (shower_E >= 200) {
       EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter

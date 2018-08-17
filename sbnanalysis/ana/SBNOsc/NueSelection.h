@@ -72,6 +72,7 @@ protected:
   TH1D* fEShowerSelectedNu;
   TH1D* fGammaShowerSelectedNu;
   TH1D* fOtherShowerSelectedNu;
+  TH1D* fShowerdEdx;
 
 
   /** Configuration parameters */
