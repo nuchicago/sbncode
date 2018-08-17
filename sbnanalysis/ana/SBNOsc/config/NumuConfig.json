@@ -29,7 +29,11 @@
       "ymax": 117.47,
       "zmax": 1036.9
      },
-     "minLength": 50
+     "minContainedLength": 50,
+     "minExitingLength": 100,
+     "containedLeptonESmear": 0.05, // from UBXSEC contained resolution
+     "exitingLeptonESmear": 0.25, // from UBXSec MCS resolution
+     "hadronESmear": 0.0 // not sure what this one should be
    }
 }
 
