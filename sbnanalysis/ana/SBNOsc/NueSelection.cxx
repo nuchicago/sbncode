@@ -56,7 +56,7 @@ void NueSelection::Initialize(Json::Value* config) {
   fShowerTag = { "mcreco" };
 
   if (config) {
-    //fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold", 0).asDouble();
+    fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold").asDouble();
     //fEnergyThreshold = { (*config)["SBNOsc"].get("energy_threshold",12.34).asDouble() };
     fTruthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
     fTrackTag = { (*config)["SBNOsc"].get("MCTrackTag", "mcreco").asString() };
