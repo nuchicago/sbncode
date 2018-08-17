@@ -34,12 +34,15 @@ void NueSelection::Initialize(Json::Value* config) {
 
   fTrackLength = new TH1D ("track_length","",200,0,200);
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
+  fGenHist = new TH1D ("generated_particles","",60,0,6);
+  fGenNumuHist = new TH1D("generated_numu","",60,0,6);
+  fGenBarNueHist = new TH1D ("gen_bar_nue","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
   fSelectedNuHist = new TH1D ("selected_nu_hist","",60,0,6);
   fNodEdxNuHist = new TH1D ("no_dEdx","",60,0,6);
 
-  fShowerEnergy = new TH1D ("shower_energy","",100,0,10);
-  fEnergeticShowerHist = new TH1D("energetic_shower_energy","",100,0,10);
+  fShowerEnergy = new TH1D ("shower_energy","",1000,0,1000);
+  fEnergeticShowerHist = new TH1D("energetic_shower_energy","",1000,0,100);
   fVisibleVertexNuEHist = new TH1D("visible_vertex_nu_energy","",60,0,6);
   fCGSelectionHist = new TH1D("final_selected_nu","",60,0,6);
   fRecoSelectionHist = new TH1D("final_selected_nu_w_reco_efficiency","",60,0,6);
@@ -113,6 +116,10 @@ void NueSelection::Finalize() {
   fOtherShowerdEdx->Write();
   fMuShowerdEdx->Write();
   fPositronShowerdEdx->Write();
+
+  fGenHist->Write();
+  fGenBarNueHist->Write();
+  fGenNumuHist->Write();
 }
 
 
@@ -229,7 +236,10 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto const& mctruth = mctruths.at(i);
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
     auto nu_E = nu.Nu().E();
+    fGenHist->Fill(nu_E);
     if (nu.Nu().PdgCode() == 12) fGenNueHist->Fill(nu_E);
+    if (nu.Nu().PdgCode() == 14) fGenNumuHist->Fill(nu_E);
+    if (nu.Nu().PdgCode() == -12) fGenBarNueHist->Fill(nu_E);
     auto vx = nu.Nu().Vx();
     auto vy = nu.Nu().Vy();
     auto vz = nu.Nu().Vz();

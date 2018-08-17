@@ -56,6 +56,9 @@ protected:
 
   TH1D* fDiffLength;
   TH1D* fTrackLength;
+  TH1D* fGenHist;
+  TH1D* fGenNumuHist;
+  TH1D* fGenBarNueHist;
   TH1D* fGenNueHist;
   TH1D* fGenNueFidVolHist;
   TH1D* fSelectedNuHist;
