@@ -1,12 +1,13 @@
 #include "TFile.h"
 #include "TTree.h"
 #include <vector>
+#include <string>
 #include <TTreeReader.h>
 #include <TTreeReaderValue.h>
 #include <TTreeReaderArray.h>
 #include <algorithm>
 
-void AnalyzeNumuCut (){
+void AcceptanceStack (){
   TFile *myFile = TFile::Open("output_SBNOsc_NueSelection.root");
   if (myFile==0){
     printf("File not correctly opened!\n");
@@ -19,6 +20,26 @@ void AnalyzeNumuCut (){
   TH1D *shower_fid_track_cg = (TH1D*)myFile->Get("final_selected_nu");
   TH1D *shower_fid_track_cg_reco = (TH1D*)myFile->Get("final_selected_nu_w_reco_efficiency");
 
+  double ngen =  gen_nuhist->GetEntries();
+  double ngenfid = gen_nuhist_fidvol->GetEntries();
+  double nshowerfid = shower_fid->GetEntries();
+  double nshowerfidtrack = shower_fid_track->GetEntries();
+  double nshowerfidtrackcg = shower_fid_track_cg->GetEntries();
+  double nshowerfidtrackcgreco = shower_fid_track_cg_reco->GetEntries();
+
+  double ngenfid_rate = ngenfid/ngen;
+  double nshowerfid_rate = nshowerfid/ngenfid;
+  double nshowerfidtrack_rate = nshowerfidtrack/ngenfid;
+  double nshowerfidtrackcg_rate = nshowerfidtrackcg/ngenfid;
+  double nshowerfidtrackcgreco_rate = nshowerfidtrackcgreco/ngenfid;
+
+  std::cout<<"Generated nue in fid vol/generated nue = "<<ngenfid_rate<<std::endl;
+  std::cout<<"Selected nue in fid vol passing shower energy cut/generated nue in fid vol = "<<nshowerfid_rate<<std::endl;
+  std::cout<<"Selected nue in fid vol passing shower energy cut and track length cut/generated nue in fid vol = "<<nshowerfidtrack_rate<<std::endl;
+  std::cout<<"Selected nue in fid vol passing shower energy cut, track length cut, and conversion gap cut/generated nue in fid vol = "<<nshowerfidtrackcg_rate<<std::endl;
+  std::cout<<"Selected nue in fid vol passing shower energy cut, track length cut, conversion gap cut with reco efficiency applied/generated nue in fid vol = "<<nshowerfidtrackcgreco_rate<<std::endl;
+
+
 
   gen_nuhist->SetFillColor(kAzure);
   gen_nuhist_fidvol->SetFillColor(kViolet);
@@ -29,8 +50,12 @@ void AnalyzeNumuCut (){
   //TCanvas *c = new TCanvas ("c", "Generated and recontructed hists",10,10,1000,800);
 
   THStack *nustack = new THStack("nustack","Generated and reconstructed #nu_e after cuts");
-  nustack->Add(nuhist);
-  nustack->Add(goodnuhist);
+  nustack->Add(gen_nuhist);
+  nustack->Add(gen_nuhist_fidvol);
+  nustack->Add(shower_fid);
+  nustack->Add(shower_fid_track);
+  nustack->Add(shower_fid_track_cg);
+  nustack->Add(shower_fid_track_cg_reco);
 
 
   //nustack->Draw("nostack");
