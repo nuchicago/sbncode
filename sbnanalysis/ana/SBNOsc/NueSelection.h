@@ -67,8 +67,7 @@ protected:
   art::InputTag fTruthTag;  //!< art tag for MCTruth information
   art::InputTag fTrackTag; //! <art tag for MCTrack information
   art::InputTag fShowerTag; //! <art tag for MCShower information
-  std::string fEnergyThreshold; //configurable parameter
-  double fMyEThreshold;
+  double fEnergyThreshold; //configurable parameter
 };
 
   }  // namespace SBNOsc
