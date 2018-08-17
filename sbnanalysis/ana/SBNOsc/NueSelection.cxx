@@ -36,6 +36,7 @@ void NueSelection::Initialize(Json::Value* config) {
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
   fSelectedNuHist = new TH1D ("selected_nu_hist","",60,0,6);
+  fNodEdxNuHist = new TH1D ("no_dEdx","",60,0,6);
 
   fShowerEnergy = new TH1D ("shower_energy","",100,0,10);
   fEnergeticShowerHist = new TH1D("energetic_shower_energy","",100,0,10);
@@ -99,6 +100,7 @@ void NueSelection::Finalize() {
   fRecoSelectionHist->Write();
   fShowerCutSelectionHist->Write();
   fSelectedTrueNue->Write();
+  fNodEdxNuHist->Write();
 
   fMuShowerSelectedNu->Write();
   fEShowerSelectedNu->Write();
@@ -222,6 +224,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   std::vector<int> ShowerPDG; //shower true pdg code
 
   // Iterate through the neutrinos
+  std::vector<bool> AssnShowerGooddEdx;
   for (size_t i=0;i<mctruths.size();i++) {
     auto const& mctruth = mctruths.at(i);
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
@@ -234,23 +237,28 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     auto nu_pos = nu.Nu().Position();
     int matched_shower_count = 0;
     std::vector<int> assn_showers_pdg;
+    std::vector<bool> assn_showers_quality; //dEdx
     // loop through only energetic showers
     for (auto j : EnergeticShowersIndices) {
       auto const& shower = mcshowers.at(j);
       auto shower_pos = shower.DetProfile().Position();
       double distance = (nu_pos.Vect()-shower_pos.Vect()).Mag();
       fDiffLength->Fill(distance);
-      if ((distance <= 5.)&&(HasGooddEdx[j])) {
+      if (distance <= 5.) {
         matched_shower_count++;
         assn_showers_pdg.push_back(shower.PdgCode());
+        assn_showers_quality.push_back(HasGooddEdx[j]);
       }
     }
     if (!assn_showers_pdg.empty()) ShowerPDG.push_back(assn_showers_pdg[0]);
     else ShowerPDG.push_back(0);
+    if (!assn_showers_quality.empty()) AssnShowerGooddEdx.push_back(assn_showers_quality[0]);
+    else AssnShowerGooddEdx.push_back(false);
     if (matched_shower_count>0) matchedness.push_back(true);
     else matchedness.push_back(false);
   }
   assert(ShowerPDG.size()==matchedness.size());
+  assert(AssnShowerGooddEdx.size()==matchedness.size());
 
   // Iterate through the neutrinos/MCTruth
   for (size_t i=0; i<mctruths.size(); i++) {
@@ -276,7 +284,8 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
 
     if (matchedness[i]&&IsFid) fShowerCutSelectionHist->Fill(nu_E);
     if (matchedness[i]&&IsFid&&NotMuTrackness) fSelectedNuHist->Fill(nu_E);
-    if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) {
+    if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) fNodEdxNuHist->Fill(nu_E);
+    if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]&&AssnShowerGooddEdx[i]) {
       fCGSelectionHist->Fill(nu_E);
       if (nu.Nu().PdgCode() ==12) fSelectedTrueNue->Fill(nu_E);
 
