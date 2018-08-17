@@ -261,8 +261,8 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     // bool stop_in_tpc = _config.active_volume.Contain(l_end_pos);
 
     // While we're here, get the smeared ECCQE
-    smeared_eccqe = ECCQE(lepton_track.Start().Momentum().Vect(), lepton_track.Start().E(), 
-      _smear->Smear(lepton_track.Start().E(), 14, contained_in_FV));
+    smeared_eccqe = ECCQE(lepton_track.Start().Momentum().Vect(), lepton_track.Start().E()/1000., 
+      _smear->Smear(lepton_track.Start().E()/1000., 14, contained_in_FV));
   }
     
   // get visible energy
@@ -275,7 +275,8 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // first the tracks
   for (auto const &mct: mctrack_list) {
     if (isFromNuVertex(mctruth, mct)) {
-      double mass = PDGMass(mct.PdgCode());
+      // don't subtract mass for muon
+      double mass = (mct.PdgCode() == 13) ? 0:PDGMass(mct.PdgCode());
       double this_visible_energy = mct.Start().E() - mass;
       double this_smeared_visible_energy = this_visible_energy + _smear->Smear(this_visible_energy, mct.PdgCode(), contained_in_FV);
       visible_E += this_visible_energy;
