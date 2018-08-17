@@ -32,7 +32,7 @@ void NueSelection::Initialize(Json::Value* config) {
 
   fDiffLength = new TH1D ("diff_length","",200,0,200);
 
-  fTrackLength = new TH1D ("diff_length","",200,0,200);
+  fTrackLength = new TH1D ("track_length","",200,0,200);
   fGenNueHist = new TH1D ("generated_nue_hist","",60,0,6);
   fGenNueFidVolHist = new TH1D ("generated_nue_in_fiducial_volume","",60,0,6);
   fSelectedNuHist = new TH1D ("selected_nu_hist","",60,0,6);
