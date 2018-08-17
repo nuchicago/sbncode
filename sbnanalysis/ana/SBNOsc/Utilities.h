@@ -54,7 +54,7 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  * */
 double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, double osc_angle);
 
-/** Get mass from PDGID of particle.
+/** Get mass from PDGID of particle in MeV/c^2.
  *
  * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
  *
