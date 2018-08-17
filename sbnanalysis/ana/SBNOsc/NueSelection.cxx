@@ -56,7 +56,7 @@ void NueSelection::Initialize(Json::Value* config) {
     fShowerTag = { (*config)["SBNOsc"].get("MCShowerTag","mcreco").asString() };
   }
 
-  AddBranch("energy_threshold",&fEnergyThreshold);
+  AddBranch("energy_threshold",&fMyEThreshold);
   AddBranch("nucount",&fNuCount);
 
 
@@ -95,13 +95,15 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   auto const& mcshowers = \
     *ev.getValidHandle<std::vector<sim::MCShower> >(fShowerTag);
 
+
+  fMyEThreshold=fEnergyThreshold;
   // shower energy cut
   std::vector<int> EnergeticShowersIndices;
   for (size_t i=0;i<mcshowers.size();i++) {
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
     fShowerEnergy->Fill(shower_E);
-    if (shower_E >= fEnergyThreshold) {
+    if (shower_E >= fMyEThreshold) {
       EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
     // if (Shower_E > fEnergyThreshold) EnergeticShowers.push_back(mcshower);
       fEnergeticShowerHist->Fill(shower_E);
