@@ -43,6 +43,7 @@ void NueSelection::Initialize(Json::Value* config) {
   fCGSelectionHist = new TH1D("final_selected_nu","",60,0,6);
   fRecoSelectionHist = new TH1D("final_selected_nu_w_reco_efficiency","",60,0,6);
   fShowerCutSelectionHist = new TH1D("shower_cut_fid_only_nu_energy","",60,0,6);
+  fSelectedTrueNue = new TH1D ("true_nue_selected","",60,0,6);
 
 
 
@@ -84,6 +85,7 @@ void NueSelection::Finalize() {
   fCGSelectionHist->Write();
   fRecoSelectionHist->Write();
   fShowerCutSelectionHist->Write();
+  fSelectedTrueNue->Write();
 
 }
 
@@ -228,6 +230,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if (matchedness[i]&&IsFid&&NotMuTrackness) fSelectedNuHist->Fill(nu_E);
     if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) {
       fCGSelectionHist->Fill(nu_E);
+      if (nu.Nu().PdgCode ==12) fSelectedTrueNue->Fill(nu_E);
       double lower_bound=0.;
       double upper_bound=1.;
       std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
