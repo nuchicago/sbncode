@@ -230,7 +230,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if (matchedness[i]&&IsFid&&NotMuTrackness) fSelectedNuHist->Fill(nu_E);
     if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) {
       fCGSelectionHist->Fill(nu_E);
-      if (nu.Nu().PdgCode ==12) fSelectedTrueNue->Fill(nu_E);
+      if (nu.Nu().PdgCode() ==12) fSelectedTrueNue->Fill(nu_E);
       double lower_bound=0.;
       double upper_bound=1.;
       std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
