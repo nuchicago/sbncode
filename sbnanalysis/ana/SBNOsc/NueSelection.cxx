@@ -43,14 +43,15 @@ void NueSelection::Initialize(Json::Value* config) {
 
 
   // Load configuration parameters
-  fEnergyThreshold =0.;
+  fEnergyThreshold ="";
   fNuCount=0;
   fTruthTag = { "generator" };
   fTrackTag = { "mcreco" };
   fShowerTag = { "mcreco" };
 
   if (config) {
-    fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold", 0).asDouble();
+    //fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold", 0).asDouble();
+    fEnergyThreshold = { (*config)["SBNOsc"].get("energy_threshold",0).asString() };
     fTruthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
     fTrackTag = { (*config)["SBNOsc"].get("MCTrackTag", "mcreco").asString() };
     fShowerTag = { (*config)["SBNOsc"].get("MCShowerTag","mcreco").asString() };
@@ -95,8 +96,8 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   auto const& mcshowers = \
     *ev.getValidHandle<std::vector<sim::MCShower> >(fShowerTag);
 
-
-  fMyEThreshold=fEnergyThreshold;
+  std::string::size_type sz;
+  fMyEThreshold=std::stod(fEnergyThreshold,&sz);
   // shower energy cut
   std::vector<int> EnergeticShowersIndices;
   for (size_t i=0;i<mcshowers.size();i++) {
