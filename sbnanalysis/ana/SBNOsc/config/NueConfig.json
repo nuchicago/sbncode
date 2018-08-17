@@ -1,6 +1,6 @@
 {
   "OutputFile": "output_SBNOsc_NueSelection.root",
   "NueSelection": {
-    "energy_threshold": 0.2
+    "energy_threshold": 200
   }
 }
