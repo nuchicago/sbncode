@@ -57,10 +57,9 @@ double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, doub
 /** Get mass from PDGID of particle.
  *
  * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
- * \param PDGTable An instance of TDatabase. Defined in <TDatabase.h>. can be constructed by: TDatabasePDG *table = new TDatabasePDG;
  *
  * */
-double PDGMass(int pdg, TDatabasePDG *PDGTable);
+double PDGMass(int pdg);
 
 /** Returns whether track/shower object is from the neutrino vertex
  *
@@ -84,10 +83,9 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
  * \param v0 the first point of the line segment
  * \param v1 the second point of the line segment
  * \param boxes a list of fiducial volumes instantiated as AABoxes
- * \param algo An instance of the Uboone GeoAlgo class. Defined in "uboone/LLBasicTool/GeoAlgo/GeoAlgo.h". Can be constructed by: GeoAlgo algo;
  * 
  * */
-double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes, const geoalgo::GeoAlgo &algo);
+double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes);
 
 
   }  // namespace SBNOsc

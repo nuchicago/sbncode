@@ -117,10 +117,6 @@ protected:
 
   // histos
   RootHistos _root_histos[nCuts];
-
-  //  stuff for algos
-  TDatabasePDG *_pdg_database; 
-  geoalgo::GeoAlgo _algo;
 };
 
   }  // namespace SBNOsc

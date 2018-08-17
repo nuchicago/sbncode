@@ -30,8 +30,7 @@ NumuSelection::NumuSelection() :
   SelectionBase(), 
   fEventCounter(0), 
   fNuCount(0), 
-  _interactionInfo(new std::vector<NuMuInteraction>),
-  _pdg_database(new TDatabasePDG) {}
+  _interactionInfo(new std::vector<NuMuInteraction>) {}
 
 
 void NumuSelection::Initialize(Json::Value* config) {
@@ -203,14 +202,14 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // first the tracks
   for (auto const &mct: mctrack_list) {
     if (isFromNuVertex(mctruth, mct)) {
-      double mass = PDGMass(mct.PdgCode(), _pdg_database);
+      double mass = PDGMass(mct.PdgCode());
       visible_E += mct.Start().E() - mass;
     }
   }
   // now the showers
   for (auto const &mcs: mcshower_list) {
     if (isFromNuVertex(mctruth, mcs)) {
-      double mass = PDGMass(mcs.PdgCode(), _pdg_database);
+      double mass = PDGMass(mcs.PdgCode());
       visible_E += mcs.Start().E() - mass;
     }
   }
@@ -240,7 +239,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     if (contained_in_FV) contained_in_FV = passFV(pos.X(), pos.Y(), pos.Z());
 
     // update length
-    l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.aaBoxes, _algo);
+    l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.aaBoxes);
 
     pos = lepton_track[i].Position();
   }
