@@ -120,7 +120,7 @@ void NumuSelection::Finalize() {
     _root_histos[i].h_numu_ccqe->Write();
     _root_histos[i].h_numu_trueE->Write();
     _root_histos[i].h_numu_visibleE->Write();
-     _root_histos[i].h_numu_true_v_visibleE->Write();
+    _root_histos[i].h_numu_true_v_visibleE->Write();
     _root_histos[i].h_numu_Vxy->Write();
     _root_histos[i].h_numu_Vxz->Write();
     _root_histos[i].h_numu_Vyz->Write();
