@@ -67,6 +67,12 @@ protected:
   TH1D* fShowerCutSelectionHist;
   TH1D* fSelectedTrueNue;
 
+  //shower true type
+  TH1D* fMuShowerSelectedNu;
+  TH1D* fEShowerSelectedNu;
+  TH1D* fGammaShowerSelectedNu;
+  TH1D* fOtherShowerSelectedNu;
+
 
   /** Configuration parameters */
   art::InputTag fTruthTag;  //!< art tag for MCTruth information

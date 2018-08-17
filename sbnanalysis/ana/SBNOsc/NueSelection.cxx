@@ -45,6 +45,11 @@ void NueSelection::Initialize(Json::Value* config) {
   fShowerCutSelectionHist = new TH1D("shower_cut_fid_only_nu_energy","",60,0,6);
   fSelectedTrueNue = new TH1D ("true_nue_selected","",60,0,6);
 
+  //shower true type
+  fMuShowerSelectedNu = new TH1D("mu_shower","",60,0,6);
+  fEShowerSelectedNu = new TH1D ("e_shower","",60,0,6);
+  fGammaShowerSelectedNu = new TH1D ("gamma_shower","",60,0,6);
+  fOtherShowerSelectedNu = new TH1D("other_shower","",60,0,6);
 
 
 
@@ -87,6 +92,10 @@ void NueSelection::Finalize() {
   fShowerCutSelectionHist->Write();
   fSelectedTrueNue->Write();
 
+  fMuShowerSelectedNu->Write();
+  fEShowerSelectedNu->Write();
+  fGammaShowerSelectedNu->Write();
+  fOtherShowerSelectedNu->Write();
 }
 
 
@@ -180,6 +189,9 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
 
   //matching
   std::vector<bool> matchedness;
+
+  std::vector<int> ShowerPDG; //shower true pdg code
+
   // Iterate through the neutrinos
   for (size_t i=0;i<mctruths.size();i++) {
     auto const& mctruth = mctruths.at(i);
@@ -198,11 +210,18 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       auto shower_pos = shower.DetProfile().Position();
       double distance = (nu_pos.Vect()-shower_pos.Vect()).Mag();
       fDiffLength->Fill(distance);
-      if (distance <= 5.) matched_shower_count++;
+      std::vector<int> assn_showers_pdg;
+      if (distance <= 5.) {
+        matched_shower_count++;
+        assn_showers_pdg.push_back(shower.PdgCode());
+      }
     }
+    if (!assn_showers_pdg.empty()) ShowerPDG.push_back(assn_showers_pdg[0]);
+    else ShowerPDG.push_back(0);
     if (matched_shower_count>0) matchedness.push_back(true);
     else matchedness.push_back(false);
   }
+  assert(ShowerPDG.size()==matchedness.size());
 
   // Iterate through the neutrinos/MCTruth
   for (size_t i=0; i<mctruths.size(); i++) {
@@ -231,6 +250,13 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if (matchedness[i]&&IsFid&&NotMuTrackness&&PassConversionGap[i]) {
       fCGSelectionHist->Fill(nu_E);
       if (nu.Nu().PdgCode() ==12) fSelectedTrueNue->Fill(nu_E);
+
+      //fill in shower pdg histograms
+      if (ShowerPDG[i]==13) fMuShowerSelectedNu->Fill(nu_E);
+      if (ShowerPDG[i]==11) fEShowerSelectedNu->Fill(nu_E);
+      if (ShowerPDG[i]==22) fGammaShowerSelectedNu->Fill(nu_E);
+      else fOtherShowerSelectedNu->Fill(nu_E);
+
       double lower_bound=0.;
       double upper_bound=1.;
       std::uniform_real_distribution<double> unif(lower_bound,upper_bound);
