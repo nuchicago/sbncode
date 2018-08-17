@@ -115,7 +115,7 @@ protected:
       hadron_E(0., hadron_smear) {}
 
     double Smear(double energy, int pdg, bool is_contained=false) {
-      if (pdg == 14 /* muon */) {
+      if (pdg == 13 /* muon */) {
         if (is_contained) return energy * contained_lepton_E(_gen);
         else return energy * exiting_lepton_E(_gen);
       }
