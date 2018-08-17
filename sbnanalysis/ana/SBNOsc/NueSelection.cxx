@@ -140,7 +140,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
   std::vector<bool> PassConversionGap; //bool vector storing passing info
   for (size_t i=0;i<mctruths.size();i++) {
     auto const& mctruth = mctruths.at(i);
-    auto const& nu = mctruths.GetNeutrino();
+    auto const& nu = mctruth.GetNeutrino();
     auto nu_pos = nu.Nu().Position();
     if (IsVisibleVertex[i]) { //if visible, check number of assn showers
       int AssnShowerCount=0;
