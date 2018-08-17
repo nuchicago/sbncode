@@ -189,11 +189,15 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
 
   // shower energy cut
   std::vector<int> EnergeticShowersIndices;
+  // mark dEdx
+  std::vector<bool> HasGooddEdx;
   for (size_t i=0;i<mcshowers.size();i++) {
     auto const& mcshower = mcshowers.at(i);
     double shower_E = mcshower.DetProfile().E();
     //fill in the dEdx hist
     double shower_dEdx = mcshower.dEdx();
+    bool dEdxQuality = (shower_dEdx<=1.5);
+    HasGooddEdx.push_back(dEdxQuality);
     int showerPDG = mcshower.PdgCode();
     fShowerdEdx->Fill(shower_dEdx);
     if (showerPDG == 11) fEShowerdEdx->Fill(shower_dEdx);
@@ -208,6 +212,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       fEnergeticShowerHist->Fill(shower_E);
       }
   }
+  assert (HasGooddEdx.size()==mcshowers.size());
 
 
 
@@ -235,7 +240,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       auto shower_pos = shower.DetProfile().Position();
       double distance = (nu_pos.Vect()-shower_pos.Vect()).Mag();
       fDiffLength->Fill(distance);
-      if (distance <= 5.) {
+      if ((distance <= 5.)&&(HasGooddEdx[j])) {
         matched_shower_count++;
         assn_showers_pdg.push_back(shower.PdgCode());
       }
