@@ -255,7 +255,8 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       if (ShowerPDG[i]==13) fMuShowerSelectedNu->Fill(nu_E);
       if (ShowerPDG[i]==11) fEShowerSelectedNu->Fill(nu_E);
       if (ShowerPDG[i]==22) fGammaShowerSelectedNu->Fill(nu_E);
-      else fOtherShowerSelectedNu->Fill(nu_E);
+      if ((ShowerPDG[i]!=13)&&(ShowerPDG[i]!=11)&&(ShowerPDG[i]!=22))
+        fOtherShowerSelectedNu->Fill(nu_E);
 
       double lower_bound=0.;
       double upper_bound=1.;
