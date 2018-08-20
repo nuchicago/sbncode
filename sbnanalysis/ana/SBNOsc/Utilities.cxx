@@ -45,7 +45,7 @@ Event::Interaction TruthReco(const simb::MCTruth& mctruth) {
 
   return interaction;
 }
-
+/*
 bool IsUsableTrack(const sim::MCTrack& mctrack) {
   int GoodStepCount =0;
   for (size_t i=0;i<mctrack.size();i++) {
@@ -99,7 +99,7 @@ double GetActiveLength(const sim::MCTrack& mctrack) {
   double active_length = (exiting_step.Position().Vect()-entering_step.Position().Vect()).Mag();
   return active_length;
   }
-
+*/
 
   }  // namespace SBNOsc
 }  // namespace ana
