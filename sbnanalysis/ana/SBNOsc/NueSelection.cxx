@@ -69,6 +69,7 @@ void NueSelection::Initialize(Json::Value* config) {
 
   // Load configuration parameters
   fEnergyThreshold =0.;
+  fAnother=0.;
   fNuCount=0;
   fTruthTag = { "generator" };
   fTrackTag = { "mcreco" };
@@ -76,6 +77,7 @@ void NueSelection::Initialize(Json::Value* config) {
 
   if (config) {
     fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold",123.0).asDouble();
+    fAnother = (*config)["SBNOsc"].get("another",123.0).asDouble();
     //fEnergyThreshold = { (*config)["SBNOsc"].get("energy_threshold",12.34).asDouble() };
     fTruthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
     fTrackTag = { (*config)["SBNOsc"].get("MCTrackTag", "mcreco").asString() };
@@ -83,6 +85,7 @@ void NueSelection::Initialize(Json::Value* config) {
   }
   AddBranch("energy_threshold",&fEnergyThreshold);
   AddBranch("nucount",&fNuCount);
+  AddBranch("another_parameter",&fAnother);
 
 
   hello();
