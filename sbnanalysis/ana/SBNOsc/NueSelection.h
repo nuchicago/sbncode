@@ -90,7 +90,7 @@ protected:
   art::InputTag fTrackTag; //! <art tag for MCTrack information
   art::InputTag fShowerTag; //! <art tag for MCShower information
   double fEnergyThreshold; //configurable parameter
-  double fAnother;
+  double fVertexAssnDis;
 };
 
   }  // namespace SBNOsc

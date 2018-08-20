@@ -77,7 +77,7 @@ void NueSelection::Initialize(Json::Value* config) {
 
   if (config) {
     fEnergyThreshold = (*config)["SBNOsc"].get("energy_threshold",123.0).asDouble();
-    fAnother = (*config)["SBNOsc"].get("another",123.0).asDouble();
+    fVertexAssnDis = (*config)["SBNOsc"].get("vertex_assn_dis_uppper_bnd",1.0).asDouble();
     //fEnergyThreshold = { (*config)["SBNOsc"].get("energy_threshold",12.34).asDouble() };
     fTruthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
     fTrackTag = { (*config)["SBNOsc"].get("MCTrackTag", "mcreco").asString() };
@@ -85,7 +85,7 @@ void NueSelection::Initialize(Json::Value* config) {
   }
   AddBranch("energy_threshold",&fEnergyThreshold);
   AddBranch("nucount",&fNuCount);
-  AddBranch("another_parameter",&fAnother);
+  AddBranch("vertex_association_distance_uppper_bound",&fVertexAssnDis);
 
 
   hello();
@@ -165,7 +165,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
       // 2a. loop through all tracks, and find ones that are within 5 cm to the vertex
       auto track_start_pos = mctrack.Start().Position();
       double dis = (nu_pos.Vect() - track_start_pos.Vect()).Mag(); //compute the distance between track starting position and vertex position
-      bool AssnVertex = (dis<=5.); //vertex association marker
+      bool AssnVertex = (dis<=fVertexAssnDis); //vertex association marker
 
       //2b. is proton track
       bool IsChargedHadron = (mctrack.PdgCode() ==2212); //truth-level proton pdg code

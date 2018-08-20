@@ -2,6 +2,6 @@
   "OutputFile": "output_SBNOsc_NueSelection.root",
   "SBNOsc": {
     "energy_threshold": 200.0,
-    "another": 627.0
+    "vertex_assn_dis_uppper_bnd": 5.0,
   }
 }
