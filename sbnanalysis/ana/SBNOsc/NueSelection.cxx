@@ -216,7 +216,7 @@ bool NueSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Int
     if (showerPDG == -11) fPositronShowerdEdx->Fill(shower_dEdx);
     if ((showerPDG!=11)&&(showerPDG!=22)&&(showerPDG!=-11)&&(showerPDG!=13)) fOtherShowerdEdx->Fill(shower_dEdx);
     fShowerEnergy->Fill(shower_E);
-    if (shower_E >= 200) {
+    if (shower_E >= fEnergyThreshold) {
       EnergeticShowersIndices.push_back(i); //have yet to implement the configurable energy threshold parameter
     // if (Shower_E > fEnergyThreshold) EnergeticShowers.push_back(mcshower);
       fEnergeticShowerHist->Fill(shower_E);
