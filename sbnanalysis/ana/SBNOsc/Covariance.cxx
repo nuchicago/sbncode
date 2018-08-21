@@ -136,15 +136,19 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         
         // Tree stuff
         Event *event = new Event;
-        std::cout << std::endl << "fScaleFactor is: " << sample.fScaleFactor << "." << std::endl << std::endl;
-        sample.tree->Print();
         sample.tree->SetBranchAddress("events", &event);
         
         // Loop over neutrinos (events)
-        for (int e = 0; e > sample.tree->GetEntries(); e++) {
-            for (int t = 0; t > event->truth.size(); t++) {
+        std::cout << std::endl << "For " << sample.sDet << ", sample.tree->GetEntries() = " << sample.tree->GetEntries() << std::endl;
+        int nucount = 0;
+        for (int e = 0; e < sample.tree->GetEntries(); e++) {
+            
+            sample.tree->GetEntry(e);
+            if (event->truth.size() == 0) { std::cout << "EMPTY truth IN EVENT" << e << "!!!" << std::endl; }
+            
+            for (int t = 0; t < event->truth.size(); t++) {
                 
-                sample.tree->GetEntry(e);
+                nucount++;
                 
                 // Add (reconstructed) energy to base universe histogram
                 double nuE = event->reco[t].neutrino.energy;
@@ -158,6 +162,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
                 
             }
         }
+        std::cout << std::endl << "For sample: " << sample.sDet << ", " << sample.sDesc << ", there were " << nucount << " neutrinos." << std::endl;
         
         // Rescale each bin's counts to /GeV
         for (int u = 0; u < temp_count_hists.size(); u++) {
@@ -195,6 +200,8 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     //// Get covariances, fractional covariances and correlation coefficients
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
+    std::cout << std::endl << "Getting covs..." << std::endl;
+    
     // Covariance and fractional covariance
     int nbins = count_hists[0]->GetNbinsX();
     TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
@@ -231,7 +238,9 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     }
     
     corrmat = corr;
-
+    
+    std::cout << std::endl << "Done with that." << std::endl;
+    
 }
 
 /*Covariance::Save(std::string directory) {
