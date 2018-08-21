@@ -55,7 +55,7 @@ void AcceptanceStack (){
   //TCanvas *c = new TCanvas ("c", "Generated and recontructed hists",10,10,1000,800);
 
   THStack *nustack = new THStack("nustack","Generated and reconstructed #nu_e after cuts");
-  nustack->Add(gen_nuhist);
+  //nustack->Add(gen_nuhist);
   nustack->Add(gen_nuhist_fidvol);
   nustack->Add(shower_fid);
   nustack->Add(shower_fid_track);
@@ -69,7 +69,7 @@ void AcceptanceStack (){
   nustack->SetTitle("Generated and recontructed #nu_e after cuts; Neutrino energy (GeV);# Events ");
   nustack->Draw("nostack");
   auto legend = new TLegend(0.1,0.7,0.48,0.9);
-  legend->AddEntry(gen_nuhist, "Generated #nu_e");
+  //legend->AddEntry(gen_nuhist, "Generated #nu_e");
   legend->AddEntry(gen_nuhist_fidvol, "Generated #nu_e after fiducial volume selection");
   legend->AddEntry(shower_fid,"+ >200MeV shower energy selection");
   legend->AddEntry(shower_fid_track, "+ < 1m track length selction");
