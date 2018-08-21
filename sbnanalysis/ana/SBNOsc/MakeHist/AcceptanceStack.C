@@ -68,7 +68,7 @@ void AcceptanceStack (){
 
   nustack->SetTitle("Generated and recontructed #nu_e after cuts; Neutrino energy (GeV);# Events ");
   nustack->Draw("nostack");
-  auto legend = new TLegend();
+  auto legend = new TLegend(0.1,0.7,0.48,0.9);
   legend->AddEntry(gen_nuhist, "Generated #nu_e");
   legend->AddEntry(gen_nuhist_fidvol, "Generated #nu_e after fiducial volume selection");
   legend->AddEntry(shower_fid,"+ >200MeV shower energy selection");
