@@ -30,4 +30,3 @@ Event::Interaction TruthReco(const simb::MCTruth& mctruth);
 }  // namespace ana
 
 #endif  // __sbnanalysis_ana_SBNOsc_Utilities__
-

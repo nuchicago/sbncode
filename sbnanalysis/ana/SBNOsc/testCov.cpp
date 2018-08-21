@@ -1,12 +1,5 @@
-#include <string>
 #include <vector>
-#include <TChain.h>
-#include <TTree.h>
-#include "Covariance.h"
-
-// My includes
-//#include <vector>
-//#include <string>
+#include <string>
 #include <map>
 #include <cmath>
 #include <iostream>
@@ -17,24 +10,73 @@
 #include <TH1D.h>
 #include <TH2D.h>
 #include <TROOT.h>
-// #include <TTree.h>
+#include <TTree.h>
 #include <TCanvas.h>
 #include <TMath.h>
-#include <core/Event.hh>
+#include "core/Event.hh"
 
-namespace ana {
-namespace SBNOsc {
+/*
 
-EventSample::EventSample(std::vector<std::string> filenames, float scaleFactor) : fScaleFactor(scaleFactor) {
+DESCRIPTION:
 
-    TChain* t = new TChain("sbnana");
+Point of this is just to get us a covariance matrix and plot it. No inverting it or anything.
+So just need to:
+- Get data and put it all into one single histogram
+- Get cov mat, frac cov mat, corr mat; plot (with labels somehow... new input into EventSample? som string with description of sample?)
+- Draw event dist with (alpha != 0) pink boxes that show total, systematic and statistical uncertainties
 
-    for (size_t i=0; i<filenames.size(); i++) {
-        t->Add(filenames[i].c_str());
+Inputs we'll need from config file:
+- Binning (standard is proposal, non-standard can be given)
+- Additional cuts on other vars (how to format these?)
+- What ‘samples’ to use (why not just input only the ones we want to use rather than make this a config input?)
+- What to plot (thought it was set...)
+- POT to normalise each det to (would have to then have some sort of indication of what det each sample corresponds         to and this would have to be in EventSample)
+- Which weights to use (standard is all, also make two options – "flux" and "event" – that, predictably, only 
+    use flux and event weights, respectively)
+- (Tentative:) How many universes to create?
+    
+Extra inputs we'll need in EventSample:
+- some sort of (std::string) label – very concise, I'll put it into the plot too
+- which det it came from (std::string) from "sbnd", "uboone" or "icarus"
+    (to know what to normalise it to and for label in plot)
+
+*/
+
+
+// Simple version of class we'll get, just so I can get started here...
+class EventSample {
+    
+    public:
+        
+    EventSample(TTree* _tree, float ScaleFactor, std::string Det, std::string Desc) : tree(_tree), fScaleFactor(ScaleFactor), sDet(Det), sDesc(Desc) {
+        
+        // Detector
+        if (Det == "sbnd") {
+            sDet = "SBND";
+        } else if (Det == "uboone") {
+            sDet = "MicroBooNE";
+        } else if (Det == "icarus") {
+            sDet = "ICARUS";
+        } else {
+            std::cout << std::endl << "ERROR: " << Det << " not valid detector." << std::endl << std::endl;
+            assert(false);
+        }
+            
+        // Description
+        if (Desc == "nu") {
+            sDesc = "Neutrino";
+        } else {
+            std::cout << std::endl << "ERROR: Sample type" << Desc << " not supported." << std::endl << std::endl;
+            assert(false);
+        }
+        
     }
-
-    tree = dynamic_cast<TTree*>(t);
-
+    
+    TTree* tree;            // Should contain events (counts) and weights we'll analyse
+    float fScaleFactor;     // Some factor to scale this by, eg. exposure
+    std::string sDet;       // What detector it comes from
+    std::string sDesc;      // (Very concise) Description of sample
+    
 };
 
 // Function that gets scale factor for different universes
@@ -94,7 +136,39 @@ std::vector <double> syst_err(TH1D *counts, TH2D *cov) {
     return errors;
 }
 
-Covariance::Covariance(std::vector<EventSample> samples) {
+
+void testCov() {
+    
+    clock_t start = clock(); // n of ticks since start of program
+    gROOT->ProcessLine(".L $SBN_LIB_DIR/libsbnanalysis_Event.so");
+    
+    
+    //// Prepare (imitation) input
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    // For now I'll assume all samples are neutrino counts and that fScaleFactor is the total scale factor (i.e.
+    // contains what to normalise TO, not just what to normalise FROM). This way I can just use the current format
+    // of EventSample. Later I'll add more features.
+    
+    std::vector <std::string> DETLIST = {"SBND", "MicroBooNE", "ICARUS"},
+        detlist = {"sbnd", "uboone", "icarus"},
+        desclist = {"nu", "nu", "nu"};
+    std::vector <float> scalelist = {3.0958e18, 8.87435e19, 6.59165e18};
+    std::vector <EventSample> samples;
+    
+    for (int d = 0; d < detlist.size(); d++) {
+        
+        std::string det = detlist[d], desc = desclist[d];
+        float scale = scalelist[d];
+        
+        TFile f(((std::string)"/sbnd/data/users/gavarela/selection/new/output_" + det + (std::string)".root").c_str());
+        
+        samples.push_back(EventSample((TTree*)f.Get("sbnana"), scale, det, desc));
+        
+    }
+    
+    // Now we can start: ...
+    
     
     //// Get counts on each (base and alternative) universe
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -136,15 +210,13 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         
         // Tree stuff
         Event *event = new Event;
-        std::cout << std::endl << "fScaleFactor is: " << sample.fScaleFactor << "." << std::endl << std::endl;
-        sample.tree->Print();
         sample.tree->SetBranchAddress("events", &event);
         
         // Loop over neutrinos (events)
         for (int e = 0; e > sample.tree->GetEntries(); e++) {
             for (int t = 0; t > event->truth.size(); t++) {
                 
-                sample.tree->GetEntry(e);
+                tree->GetEntry(e);
                 
                 // Add (reconstructed) energy to base universe histogram
                 double nuE = event->reco[t].neutrino.energy;
@@ -170,11 +242,11 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         
         // Put into (vector of) big histogram(s)
         int offset = num_nuE_bins*(3 + s - done_base_nuEs);
-        if (sample.sDesc == "Neutrino") {
+        if (sample.desc == "Neutrino") {
             
-            if (sample.sDet == "SBND") { offset = 0;
-            } else if (sample.sDet == "MicroBooNE") { offset = 2*num_nuE_bins;
-            } else if (sample.sDet == "ICARUS") { offset = 3*num_nuE_bins; }
+            if (sample.det == "SBND") { offset = 0;
+            } else if (sample.det == "MicroBooNE") { offset = 2*num_nuE_bins;
+            } else if (sample.det == "ICARUS") { offset = 3*num_nuE_bins; }
             
             done_base_nuEs++;
             
@@ -182,7 +254,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         
         for (int h = 0; h < temp_count_hists.size(); h++) {
             for (int bin = 0; bin < num_nuE_bins; bin++) {
-                count_hists[h]->SetBinContent(offset+bin+1, temp_count_hists[h]->GetBinContent(bin+1));
+                count_hists[h]->SetBinContent(offset+b+1, temp_count_hists[h]->GetBinContent(b+1));
             }
         }
         
@@ -196,14 +268,14 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // Covariance and fractional covariance
-    int nbins = count_hists[0]->GetNbinsX();
+    nbins = count_hists[0]->GetNbinsX();
     TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
          *fcov = new TH2D("fcov", "Fractional Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
             
-            double covij = 0;
+            double covij = 0
             for (int u = 0; u < n_alt_unis; u++) {
                 covij += (count_hists[0]->GetBinContent(i+1) - count_hists[u]->GetBinContent(i+1)) * 
                          (count_hists[0]->GetBinContent(j+1) - count_hists[u]->GetBinContent(j+1));
@@ -217,7 +289,13 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         }
     }
     
-    covmat = cov; fcovmat = fcov;
+    cov->Write("/sbnd/data/users/gavarela/selection/new/cov_output/root/cov_output_cov.root");
+    fcov->Write("/sbnd/data/users/gavarela/selection/new/cov_output/root/cov_output_fcov.root");
+    
+    TCanvas *canvas = new TCanvas();
+    cov->Draw("colz"); canvas->Write("/sbnd/data/users/gavarela/selection/new/cov_output/png/cov_plot.png");
+    fcov->Draw("colz"); canvas->Write("/sbnd/data/users/gavarela/selection/new/cov_output/png/fcov_plot.png");
+    
     
     // Pearson Correlation Coefficients
     TH2D *corr = new TH2D("corr", "Correlation Matrix", nbins, 0, nbins, nbins, 0, nbins);
@@ -230,22 +308,60 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         }
     }
     
-    corrmat = corr;
-
+    corr->Write("/sbnd/data/users/gavarela/selection/new/cov_output/root/cov_output_corr.root");
+    corr->Draw("colz"); canvas->Write("/sbnd/data/users/gavarela/selection/new/cov_output/png/corr_plot.png");
+    
+    
+    //// Pink box plot
+    //// ~~~~~~~~~~~~~
+    
+    /*
+    // Get errors
+    std::vector <double> stat_errors = stat_err(count_hists[0], cov),
+                         syst_errors = syst_err(count_hists[0], cov),
+                          tot_errors = stat_errors;
+    for (int i = 0; i < stat_errors.size(); i++) {
+        tot_errors[i] += syst_errors[i];
+    }
+    std::vector <std::vector <double> > errors = {stat_errors, syst_errors, tot_errors};
+    
+    // Make all hists (in vectors)
+    std::vector <std::vector <TH1D*> > pink_box_hists;
+    std::vector <std::string> errs = {"stat", "syst", "tot"}, ERRS = {"Statistical", "Systematic", "Total"},
+        dets = {"sbnd", "uboone", "icarus"}, DETS = {"SBND", "MicroBooNE", "ICARUS"};
+    
+    for (int d = 0; d < dets.size(); d++) {
+        
+        pink_box_hists.push_back({});
+        for (int e = 0; e < errs.size(); e++) {
+            
+            std::string name = ERRS[e] + " errors" + " "*(d==1) + "  "*(d==2);
+            TH1D *temphist = new TH1D(name, "", )
+            
+        }
+        
+    }
+    */  
+    
+    
+    
+    
+    // What's left?
+    // 1. DONE: Calculate covariances, frac cov and corr (in TH2D*s)
+    // 2. Plot of pink boxes (TCanvas of 3 TH1Ds)
+    // 3. Save those in a tree in a .root file
+                          
+    
+    
+    
+    
+    
 }
 
-/*Covariance::Save(std::string directory) {
+int main(int argc, char* argv[]) {
     
-    cov->Write("/sbnd/data/users/gavarela/selection/new/cov_output/root/cov_output_cov.root");
-    fcov->Write("/sbnd/data/users/gavarela/selection/new/cov_output/root/cov_output_fcov.root");
-    corr->Write("/sbnd/data/users/gavarela/selection/new/cov_output/root/cov_output_corr.root");
+    testCov();
     
-    TCanvas *canvas = new TCanvas();
-    cov->Draw("colz"); canvas->Write((directory + (std::string)"/cov_plot.png").c_str());
-    fcov->Draw("colz"); canvas->Write((directory + (std::string)"/fcov_plot.png").c_str());
-    corr->Draw("colz"); canvas->Write((directory + (std::string)"/corr_plot.png").c_str());
+    return 0;
     
-}*/
-
-}   // namespace SBNOsc
-}   // namespace ana
+}

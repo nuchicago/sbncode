@@ -45,4 +45,3 @@ Event::Interaction TruthReco(const simb::MCTruth& mctruth) {
 
   }  // namespace SBNOsc
 }  // namespace ana
-

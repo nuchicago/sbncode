@@ -5,6 +5,10 @@ project(SBNOsc)
 # parent CMakeLists.txt, one directory up).
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories($ENV{LARSIM_INC})
+
+find_library(LARSIM_BASE_LIBRARY larsim_EventWeight_Base HINTS $ENV{LARSIM_LIB})
+find_library(LARSIM_BASE_DICT larsim_EventWeight_Base_dict HINTS $ENV{LARSIM_LIB})
 
 # Declare libraries to build
 # Note that the library names (the first argument) should follow the convention
@@ -20,6 +24,8 @@ add_library(sbnanalysis_SBNOsc_Chi2Sensitivity SHARED Chi2Sensitivity.cxx)
 target_link_libraries(sbnanalysis_SBNOsc_NueSelection sbnanalysis_SBNOsc_Utilities)
 target_link_libraries(sbnanalysis_SBNOsc_NumuSelection sbnanalysis_SBNOsc_Utilities)
 target_link_libraries(sbnanalysis_SBNOsc_Chi2Sensitivity sbnanalysis_SBNOsc_Covariance)
+target_link_libraries(${LARSIM_BASE_LIBRARY})
+target_link_libraries(${LARSIM_BASE_DICT})
 
 # Build executables
 add_executable(sbn-cov sbn-cov.cxx)
