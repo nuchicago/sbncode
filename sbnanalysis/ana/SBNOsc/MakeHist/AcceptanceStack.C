@@ -8,7 +8,7 @@
 #include <algorithm>
 
 void AcceptanceStack (){
-  TFile *myFile = TFile::Open("output_SBNOsc_NueSelection.root");
+  TFile *myFile = TFile::Open("output_SBNOsc_NueSelection_0821.root");
   if (myFile==0){
     printf("File not correctly opened!\n");
     return;

@@ -6,11 +6,7 @@
 #include <iostream>
 
 void GenType() {
-  std::string filename;
-  std::cout<<"Enter your filename: ";
-  getline (std::cin,filename);
-  std::cout<<"Your filename is: "<<filename<<std::endl;
-  TFile *myFile = TFile::Open(filename);
+  TFile *myFile = TFile::Open("output_SBNOsc_NueSelection_0821.root");
   if (myFile==0){
     printf("File not correctly opened!\n");
     return;
