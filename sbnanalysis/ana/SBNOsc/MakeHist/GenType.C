@@ -3,9 +3,14 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <iostream>
 
 void GenType() {
-  TFile *myFile = TFile::Open("output_SBNOsc_NueSelection.root");
+  std::string filename;
+  std::cout<<"Enter your filename: ";
+  getline (std::cin,filename);
+  std::cout<<"Your filename is: "<<filename<<std::endl;
+  TFile *myFile = TFile::Open(filename);
   if (myFile==0){
     printf("File not correctly opened!\n");
     return;
