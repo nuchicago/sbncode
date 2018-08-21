@@ -45,13 +45,13 @@ void AcceptanceStack (){
 
 
 
-  gen_nuhist->SetFillColor(kSpring-5);
-  gen_nuhist_fidvol->SetFillColor(kSpring-4);
-  shower_fid->SetFillColor(kSpring-3);
-  shower_fid_track->SetFillColor(kSpring+1);
-  nodedx->SetFillColor(kSpring+2);
-  shower_fid_track_cg->SetFillColor(kSpring+5);
-  shower_fid_track_cg_reco->SetFillColor(kSpring+7);
+  gen_nuhist->SetFillColor(kRed);
+  gen_nuhist_fidvol->SetFillColor(kPink-6);
+  shower_fid->SetFillColor(kMagenta);
+  shower_fid_track->SetFillColor(kViolet+6);
+  nodedx->SetFillColor(kBlue);
+  shower_fid_track_cg->SetFillColor(kAzure+7);
+  shower_fid_track_cg_reco->SetFillColor(kSpring);
   //TCanvas *c = new TCanvas ("c", "Generated and recontructed hists",10,10,1000,800);
 
   THStack *nustack = new THStack("nustack","Generated and reconstructed #nu_e after cuts");
