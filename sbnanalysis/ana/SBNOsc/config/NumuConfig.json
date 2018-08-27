@@ -1,7 +1,9 @@
 {
   "OutputFile": "output_SBNOsc_NumuSelection.root",
   "NumuSelection": {
+    "verbose": false,
     "doFVCut": true,
+    "doTruthCut": false,
     // Using Uboone UBXSec analysis volume
     "fiducial_volumes": [
        // first FV is the upstream one (relative to beam direction)
@@ -31,10 +33,7 @@
       "zmax": 1036.9
      },
      "minLengthContainedLepton": 50, // value taken from proposal
-     "minLengthExitingLepton": 100, // value taken from proposal
-     "containedLeptonESmear": 0.05, // from UBXSEC contained resolution
-     "exitingLeptonESmear": 0.25, // from UBXSec MCS resolution
-     "hadronESmear": 0.0 // not sure what this one should be
+     "minLengthExitingLepton": 100 // value taken from proposal
    }
 }
 
