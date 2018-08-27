@@ -22,6 +22,9 @@
 #include "core/Event.hh"
 #include "NumuSelection.h"
 #include "Utilities.h"
+#include "util/Interaction.hh"
+
+using namespace util;
 
 namespace ana {
   namespace SBNOsc {

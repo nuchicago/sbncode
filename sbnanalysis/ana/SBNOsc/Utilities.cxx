@@ -82,34 +82,6 @@ double NuMuOscillation(double numu_energy, double numu_dist, double osc_dm2, dou
 
 }
 
-double PDGMass(int pdg) {
-  static const TDatabasePDG *PDGTable(new TDatabasePDG);
-  // regular particle
-  if (pdg < 1000000000) {
-    TParticlePDG* ple = PDGTable->GetParticle(pdg);
-    return ple->Mass() * 1000.0;
-  }
-  // ion
-  else {
-    int p = (pdg % 10000000) / 10000;
-    int n = (pdg % 10000) / 10 - p;
-    return (PDGTable->GetParticle(2212)->Mass() * p +
-            PDGTable->GetParticle(2112)->Mass() * n) * 1000.0;
-  }
-}
-
-bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show, float distance)  {
-  TLorentzVector nuVtx = mc.GetNeutrino().Nu().Trajectory().Position(0);
-  TLorentzVector showStart = show.Start().Position();
-  return (showStart - nuVtx).Mag() < distance;
-}
-
-bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track, float distance) {
-  TLorentzVector nuVtx = mc.GetNeutrino().Nu().Trajectory().Position(0);
-  TLorentzVector trkStart = track.Start().Position();
-  return (trkStart - nuVtx).Mag() < distance;
-}
-
 double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes) {
   static const geoalgo::GeoAlgo algo;
 

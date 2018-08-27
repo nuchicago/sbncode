@@ -28,6 +28,7 @@ target_link_libraries(sbnanalysis_SBNOsc_NueSelection sbnanalysis_SBNOsc_Utiliti
 target_link_libraries(sbnanalysis_SBNOsc_NumuSelection 
   sbnanalysis_SBNOsc_Utilities
   sbnanalysis_SBNOsc_classes
+  sbnanalysis_util_Interaction
   # include uboone stuff
   uboonecode_uboone_BasicTool_GeoAlgo
 )

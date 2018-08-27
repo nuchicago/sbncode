@@ -54,6 +54,9 @@ void ProcessorBase::Setup(Json::Value* config) {
   if (config) {
     fTruthTag = { config->get("MCTruthTag", "generator").asString() };
     fWeightTag = { config->get("MCWeightTag", "eventweight").asString() };
+    fMCTrackTag = { config->get("MCTrackTag", "mcreco").asString() };
+    fMCShowerTag = { config->get("MCShowerTag", "mcreco").asString() };
+    fMCParticleTag = { config->get("MCParticleTag", "largeant").asString() };
     fOutputFilename = config->get("OutputFile", "output.root").asString();
   }
 
@@ -122,6 +125,9 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
     interaction.neutrino.w = nu.W();
     interaction.neutrino.energy = nu.Nu().EndMomentum().Energy();
     interaction.neutrino.momentum = nu.Nu().EndMomentum().Vect();
+
+    // total up visible energy
+    interaction.neutrino.visible_energy = util::visibleEnergy(ev, mctruth, fMCTrackTag, fMCShowerTag);
 
     // Primary lepton
     const simb::MCParticle& lepton = nu.Lepton();

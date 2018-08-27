@@ -13,8 +13,6 @@
  * Author: A. Mastbaum <mastbaum@uchicago.edu>
  */
 
-#include "TDatabasePDG.h"
-
 #include "nusimdata/SimulationBase/MCTruth.h"
 
 #include "lardataobj/MCBase/MCShower.h"
@@ -55,34 +53,6 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  * \returns Probability of muon neutrino not oscillating in 3+1 model. 
  * */
 double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, double osc_angle);
-
-/** Get mass from PDGID of particle in MeV/c^2.
- *
- * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
- *
- * \returns Mass of particle in MeV/c^2
- *
- * */
-double PDGMass(int pdg);
-
-/** Returns whether track/shower object is from the neutrino vertex
- *
- * \param mc MCTruth corresponding to neutrino interaction
- * \param show The object to be matched
- * \param distance between shower start and interaction vertex
- * \returns Whether track/shower object is from neutrino vertex
- * */
-bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
-                           float distance=5.0);
-/** Returns whether track/shower object is from the neutrino vertex
- *
- * \param mc MCTruth corresponding to neutrino interaction
- * \param track The object to be matched
- * \param distance between track start and interaction vertex
- * \returns Whether track/shower object is from neutrino vertex
- * */
-bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
-                            float distance=5.0);
 
 /* Finds length of line segment contained inside AABox. Make sure that AABox and TVector's use the same units.
  *
