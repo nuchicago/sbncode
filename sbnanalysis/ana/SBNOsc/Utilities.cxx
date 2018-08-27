@@ -5,6 +5,7 @@
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
 #include "core/Event.hh"
+#include "util/Interaction.hh"
 
 #include "Utilities.h"
 
@@ -20,12 +21,13 @@ void hello() {
 }
 
 
-Event::Interaction TruthReco(const simb::MCTruth& mctruth) {
+Event::Interaction TruthReco(const gallery::Event& ev, const simb::MCTruth& mctruth) {
   Event::Interaction interaction;
 
   // Neutrino
   const simb::MCNeutrino& nu = mctruth.GetNeutrino();
   interaction.neutrino.energy = nu.Nu().EndMomentum().Energy();
+  interaction.neutrino.visible_energy = util::visibleEnergy(ev, mctruth);
 
   // Primary lepton
   const simb::MCParticle& lepton = nu.Lepton();

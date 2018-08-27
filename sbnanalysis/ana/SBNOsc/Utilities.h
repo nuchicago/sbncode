@@ -17,6 +17,7 @@
 
 #include "lardataobj/MCBase/MCShower.h"
 #include "lardataobj/MCBase/MCTrack.h"
+#include "gallery/Event.h"
 
 #include "core/Event.hh"
 
@@ -30,7 +31,7 @@ void hello();
 
 
 /** Extract truth information to approximate reconstruction. */
-Event::Interaction TruthReco(const simb::MCTruth& mctruth);
+Event::Interaction TruthReco(const gallery::Event& ev, const simb::MCTruth& mctruth);
 
 /** Calculate CCQE energy from associated lepton information (and optional distortion). Energy in GeV. 
  *

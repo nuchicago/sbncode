@@ -152,7 +152,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 
     // build the interaction
-    Event::Interaction interaction = TruthReco(mctruth);
+    Event::Interaction interaction = TruthReco(ev, mctruth);
 
     // Get selection-specific info
     //
