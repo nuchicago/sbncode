@@ -168,7 +168,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     NuMuInteraction intInfo = interactionInfo(ev, mctruth);
 
     // run selection
-    std::vector<bool> selection = Select(ev, mctruth, i, intInfo);
+    std::array<bool, NumuSelection::nCuts> selection = Select(ev, mctruth, i, intInfo);
 
     // pass iff pass each cut
     bool pass_selection = std::find(selection.begin(), selection.end(), false) == selection.end();
@@ -262,7 +262,8 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   return {contained_in_FV, l_contained_length, l_length};
 }
 
-std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo) {
+std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, 
+      unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo) {
   // get the neutrino
   const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 

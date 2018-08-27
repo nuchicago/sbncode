@@ -10,6 +10,7 @@
  */
 
 #include <iostream>
+#include <array>
 
 #include "canvas/Utilities/InputTag.h"
 #include "core/SelectionBase.hh"
@@ -123,7 +124,10 @@ protected:
  *
  *  \returns A list containing whether the interaction passed each cut (ordered in the same way as the "cutNames()")
  * */
-  std::vector<bool> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo);
+
+  static const unsigned nCuts = 4; //!< number of cuts
+
+  std::array<bool, nCuts> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo);
   /** Get associated interaction information from monte carlo 
  * \param ev The gallery event.
  * \param mctruth The mctruth object associated with the currently considered interaction.
@@ -141,11 +145,10 @@ protected:
   unsigned _event_counter;  //!< Count processed events
   unsigned _nu_count;  //!< Count selected events
 
-  static const unsigned nCuts = 4; //!< number of cuts
   /** Names of cuts 
  * \returns List of names of cuts (for histogram names)
  * */
-  static const std::vector<std::string> cutNames() {
+  static const std::array<std::string, nCuts> cutNames() {
     return {"CC", "FV", "min_L", "reco_V"};
   }
 
