@@ -40,7 +40,7 @@ Event::Interaction TruthReco(const gallery::Event& ev, const simb::MCTruth& mctr
  * \param energy_distortion Optional energy distortion in GeV
  * \param angle_distortion Optiona langle distortion 
  *
- * \returns CCQE energy in GeV.
+ * \return CCQE energy in GeV.
  * */
 double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distortion=0., double angle_distortion=0.);
 
@@ -51,7 +51,7 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  * \param osc_dm2 dm^2 of sterile netrino in eV^2
  * \param osc_angle Sterile neutrino mixing angle
  *
- * \returns Probability of muon neutrino not oscillating in 3+1 model. 
+ * \return Probability of muon neutrino not oscillating in 3+1 model. 
  * */
 double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, double osc_angle);
 
@@ -61,7 +61,7 @@ double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, doub
  * \param v1 the second point of the line segment
  * \param boxes a list of fiducial volumes instantiated as AABoxes
  * 
- * \returns Length of line segment contained in the list of AABox's.
+ * \return Length of line segment contained in the list of AABox's.
  * */
 double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes);
 

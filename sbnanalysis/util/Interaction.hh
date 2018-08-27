@@ -16,7 +16,7 @@ namespace util {
  * \param mctruth The MCTruth object corresponding to the interaction.
  * \param mctTag Art tag to get a handle to MCTruth objects.
  * \param mcsTag Art tag to get a handle to MCShower objects.
- * \returns Visble energy in MeV.
+ * \return Visble energy in MeV.
  */
 double visibleEnergy(const gallery::Event &ev, const simb::MCTruth &mctruth, const art::InputTag &mctTag={ "mcreco" }, const art::InputTag &mcsTag={ "mcreco" });
 
@@ -24,7 +24,7 @@ double visibleEnergy(const gallery::Event &ev, const simb::MCTruth &mctruth, con
  *
  * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
  *
- * \returns Mass of particle in MeV/c^2
+ * \return Mass of particle in MeV/c^2
  *
  * */
 double PDGMass(int pdg);
@@ -32,7 +32,7 @@ double PDGMass(int pdg);
 /** Get charge from PDGID of particle in |e|/3.
  * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
  *
- * \returns Charge of particle in |e|/3.
+ * \return Charge of particle in |e|/3.
  */
 double PDGCharge(int pdg);
 
@@ -41,7 +41,7 @@ double PDGCharge(int pdg);
  * \param mc MCTruth corresponding to neutrino interaction
  * \param show The object to be matched
  * \param distance between shower start and interaction vertex
- * \returns Whether track/shower object is from neutrino vertex
+ * \return Whether track/shower object is from neutrino vertex
  * */
 bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
                            float distance=5.0);
@@ -50,7 +50,7 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
  * \param mc MCTruth corresponding to neutrino interaction
  * \param track The object to be matched
  * \param distance between track start and interaction vertex
- * \returns Whether track/shower object is from neutrino vertex
+ * \return Whether track/shower object is from neutrino vertex
  * */
 bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
                             float distance=5.0);
