@@ -71,10 +71,10 @@ public:
 protected:
   /** Configuration parameters */
   struct Config {
-    art::InputTag truthTag; //!< art tag for MCTruth information
-    art::InputTag mctTag;
-    art::InputTag mcsTag;
-    art::InputTag mcpTag;
+    art::InputTag truthTag; //!< art tag for MCTruth
+    art::InputTag mctTag; //!< art tag for MCTrack
+    art::InputTag mcsTag; //!< art tag for MCShower
+    art::InputTag mcpTag; //!< art tag for MCParticle
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume
@@ -139,8 +139,8 @@ protected:
   /** Helper function -- whether point is contained in fiducial volume list */
   bool containedInFV(const TVector3 &v);
 
-  unsigned fEventCounter;  //!< Count processed events
-  unsigned fNuCount;  //!< Count selected events
+  unsigned _event_counter;  //!< Count processed events
+  unsigned _nu_count;  //!< Count selected events
 
   static const unsigned nCuts = 4; //!< number of cuts
   /** Names of cuts */

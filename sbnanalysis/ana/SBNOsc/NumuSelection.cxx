@@ -1,5 +1,5 @@
 #include <iostream>
-#include <math.h> 
+#include <cmath> 
 #include <vector>
 
 #include <json/json.h>
@@ -28,8 +28,8 @@ namespace ana {
 
 NumuSelection::NumuSelection() : 
   SelectionBase(), 
-  fEventCounter(0), 
-  fNuCount(0), 
+  _event_counter(0), 
+  _nu_count(0), 
   _interactionInfo(new std::vector<NuMuInteraction>) {}
 
 
@@ -51,25 +51,25 @@ void NumuSelection::Initialize(Json::Value* config) {
       double xmin, xmax, ymin, ymax, zmin, zmax;
       xmin = xmax = ymin = ymax = zmin = zmax = 0;
       if ((*config)["NumuSelection"].isMember("active_volume")) {
-	xmin = (*config)["NumuSelection"]["active_volume"]["xmin"].asDouble();
-	xmax = (*config)["NumuSelection"]["active_volume"]["xmax"].asDouble();
-	ymin = (*config)["NumuSelection"]["active_volume"]["ymin"].asDouble();
-	ymax = (*config)["NumuSelection"]["active_volume"]["ymax"].asDouble();
-	zmin = (*config)["NumuSelection"]["active_volume"]["zmin"].asDouble();
-	zmax = (*config)["NumuSelection"]["active_volume"]["zmax"].asDouble();
+        xmin = (*config)["NumuSelection"]["active_volume"]["xmin"].asDouble();
+        xmax = (*config)["NumuSelection"]["active_volume"]["xmax"].asDouble();
+        ymin = (*config)["NumuSelection"]["active_volume"]["ymin"].asDouble();
+        ymax = (*config)["NumuSelection"]["active_volume"]["ymax"].asDouble();
+        zmin = (*config)["NumuSelection"]["active_volume"]["zmin"].asDouble();
+        zmax = (*config)["NumuSelection"]["active_volume"]["zmax"].asDouble();
       }
       else if ((*config)["NumuSelection"].isMember("fiducial_volumes")) {
-	xmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+        xmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
           [](const auto& lhs, const auto &rhs) { return lhs.Min()[0] < rhs.Min()[0];})->Min()[0];
-	xmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+        xmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
           [](const auto& lhs, const auto &rhs) { return lhs.Max()[0] < rhs.Max()[0];})->Max()[0];
-	ymin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+        ymin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
           [](const auto& lhs, const auto &rhs) { return lhs.Min()[1] < rhs.Min()[1];})->Min()[1];
-	ymax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+        ymax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
           [](const auto& lhs, const auto &rhs) { return lhs.Max()[1] < rhs.Max()[1];})->Max()[1];
-	zmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+        zmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
           [](const auto& lhs, const auto &rhs) { return lhs.Min()[2] < rhs.Min()[2];})->Min()[2];
-	zmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
+        zmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
           [](const auto& lhs, const auto &rhs) { return lhs.Max()[2] < rhs.Max()[2];})->Max()[2];
       }
       _config.active_volume = geoalgo::AABox(xmin, ymin, zmin, xmax, ymax, zmax);
@@ -140,14 +140,14 @@ void NumuSelection::Finalize() {
 
 
 bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Interaction>& reco) {
-  if (fEventCounter % 10 == 0) {
-    std::cout << "NumuSelection: Processing event " << fEventCounter << " "
-              << "(" << fNuCount << " neutrinos selected)"
+  if (_event_counter % 10 == 0) {
+    std::cout << "NumuSelection: Processing event " << _event_counter << " "
+              << "(" << _nu_count << " neutrinos selected)"
               << std::endl;
   }
 
   // clean up containers
-  fEventCounter++;
+  _event_counter++;
   _interactionInfo->clear();
 
   // Get truth
@@ -167,7 +167,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     // Get selection-specific info
     //
     // Start with the interaction stuff
-    auto intInfo = interactionInfo(ev, mctruth);
+    NuMuInteraction intInfo = interactionInfo(ev, mctruth);
 
     // run selection
     std::vector<bool> selection = Select(ev, mctruth, i, intInfo);
@@ -180,7 +180,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
       // store local info
       _interactionInfo->push_back(intInfo);
 
-      fNuCount++;
+      _nu_count++;
       selected = true;
     }
     

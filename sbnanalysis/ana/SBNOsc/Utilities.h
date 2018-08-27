@@ -41,6 +41,7 @@ Event::Interaction TruthReco(const simb::MCTruth& mctruth);
  * \param energy_distortion Optional energy distortion in GeV
  * \param angle_distortion Optiona langle distortion 
  *
+ * \returns CCQE energy in GeV.
  * */
 double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distortion=0., double angle_distortion=0.);
 
@@ -51,12 +52,15 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  * \param osc_dm2 dm^2 of sterile netrino in eV^2
  * \param osc_angle Sterile neutrino mixing angle
  *
+ * \returns Probability of muon neutrino not oscillating in 3+1 model. 
  * */
 double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, double osc_angle);
 
 /** Get mass from PDGID of particle in MeV/c^2.
  *
  * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
+ *
+ * \returns Mass of particle in MeV/c^2
  *
  * */
 double PDGMass(int pdg);
@@ -66,6 +70,7 @@ double PDGMass(int pdg);
  * \param mc MCTruth corresponding to neutrino interaction
  * \param show The object to be matched
  * \param distance between shower start and interaction vertex
+ * \returns Whether track/shower object is from neutrino vertex
  * */
 bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
                            float distance=5.0);
@@ -74,16 +79,18 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCShower& show,
  * \param mc MCTruth corresponding to neutrino interaction
  * \param track The object to be matched
  * \param distance between track start and interaction vertex
+ * \returns Whether track/shower object is from neutrino vertex
  * */
 bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
                             float distance=5.0);
 
-/* Finds length of line segment contained inside AABox
+/* Finds length of line segment contained inside AABox. Make sure that AABox and TVector's use the same units.
  *
  * \param v0 the first point of the line segment
  * \param v1 the second point of the line segment
  * \param boxes a list of fiducial volumes instantiated as AABoxes
  * 
+ * \returns Length of line segment contained in the list of AABox's.
  * */
 double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector<geoalgo::AABox> &boxes);
 
