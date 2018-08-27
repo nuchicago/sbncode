@@ -9,7 +9,8 @@
 #include "core/Event.hh"
 
 namespace util {
-/* Get the visible energy from a neutrino interaction.
+/* Get the "visible" energy from a neutrino interaction. Is equal to sum of non-neutral hadronic kinetic energies and lepton total energies. 
+ * Does not account for containment or tracking.
  *
  * \param ev The gallery event.
  * \param mctruth The MCTruth object corresponding to the interaction.
@@ -27,6 +28,13 @@ double visibleEnergy(const gallery::Event &ev, const simb::MCTruth &mctruth, con
  *
  * */
 double PDGMass(int pdg);
+
+/** Get charge from PDGID of particle in |e|/3.
+ * \param pdg The Particle Data Group ID of the particle (as returned by i.e. an MCTruth object)
+ *
+ * \returns Charge of particle in |e|/3.
+ */
+double PDGCharge(int pdg);
 
 /** Returns whether track/shower object is from the neutrino vertex
  *
