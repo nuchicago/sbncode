@@ -217,7 +217,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // get lepton track
   int lepton_ind = -1;
   for (int i = 0; i < mctrack_list.size(); i++) {
-    if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 13 && mctrack_list[i].size() > 0) {
+    if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 13 && mctrack_list[i].size() > 0 && mctrack_list[i].Process() == "primary") {
       lepton_ind = i;
       break;
     }
