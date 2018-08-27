@@ -73,12 +73,10 @@ void NumuSelection::Initialize(Json::Value* config) {
       _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
+    _config.doTruthCut = (*config)["NumuSelection"].get("doTruthCut", true).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
     _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
     _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
-    _config.containedLeptonESmear = (*config)["NumuSelection"].get("containedLeptonESmear", 0).asDouble();
-    _config.exitingLeptonESmear = (*config)["NumuSelection"].get("exitingLeptonESmear", 0).asDouble();
-    _config.hadronESmear = (*config)["NumuSelection"].get("hadronESmear", 0).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
 
@@ -258,7 +256,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 
   // select true CC events
-  bool pass_true_CC = (nu.CCNC() == simb::kCC && (nu.Mode() == 0 || nu.Mode() == 10) && nu.Nu().PdgCode() == 14);
+  bool pass_true_CC = (!_config.doTruthCut || (nu.CCNC() == simb::kCC && (nu.Mode() == 0 || nu.Mode() == 10) && nu.Nu().PdgCode() == 14));
 
   // pass fiducial volume cut
   bool pass_FV = passFV(nu.Nu().Position().Vect());

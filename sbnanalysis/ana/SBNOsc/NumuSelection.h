@@ -71,13 +71,11 @@ protected:
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume
+    bool doTruthCut; //!< Whether to apply cut on truth interaction
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
     double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
     double minLengthExitingLepton; //!< Minimum length [cm] of exiting leptons.  Will not apply cut if value is negative.
-    double containedLeptonESmear; //!< % to smear truth energy of contained CC leptons.
-    double exitingLeptonESmear; //!< % to smear truth energy of exiting CC leptons.
-    double hadronESmear; //!< % to smear truth energy of hadrons.
   };
 
   /** Histograms made for output */
