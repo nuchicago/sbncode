@@ -60,9 +60,19 @@ public:
 
   /** Additional information used by the selection per neutrino interaction */
   struct NuMuInteraction {
-    bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
-    double l_contained_length; //!< the length of the lepton track contained in the fiducial volume [cm]
-    double l_length; //!< total length of lepton track [cm]
+    bool t_is_contained; //!< whether the (maybe faked) lepton track is totally contained in the fiducial volume
+    double t_contained_length; //!< the length of the (maybe faked) lepton track contained in the fiducial volume [cm]
+    double t_length; //!< total length of (maybe faked) lepton track [cm]
+    int t_pid; //!< PID of primary track (muon or pi+)
+
+    // default constructor -- fills with bogus info
+    /*
+    NuMuInteraction():
+      t_is_contained(false),
+      t_contained_length(-1),
+      t_length(-1),
+      t_pid(-1) 
+      {}*/
   };
 
 protected:
@@ -132,6 +142,15 @@ protected:
  * \return NuMuInteraction object containing information from the mctruth object
  * */
   NuMuInteraction interactionInfo(const gallery::Event& ev, const simb::MCTruth &mctruth);
+
+ /** Get the interaction info associated with a track. This works right now because
+ * all interaction info comes from the primary track. Might have to re-think structure 
+ * going forward.
+ *
+ * \param track The primary track.
+ * \return Interaction info filled in from this track.
+ */
+  NuMuInteraction trackInfo(const sim::MCTrack &track);
 
   /** Helper function -- whether point is contained in fiducial volume list 
  * \param v The point vector.

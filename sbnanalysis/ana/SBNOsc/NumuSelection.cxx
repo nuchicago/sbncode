@@ -73,7 +73,7 @@ void NumuSelection::Initialize(Json::Value* config) {
       _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
-    _config.doTruthCut = (*config)["NumuSelection"].get("doTruthCut", true).asBool();
+    _config.doTruthCut = (*config)["NumuSelection"].get("doTruthCut", false).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
     _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
     _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
@@ -179,9 +179,9 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
         _root_histos[select_i].h_numu_visibleE->Fill(interaction.neutrino.visible_energy);
         _root_histos[select_i].h_numu_true_v_visibleE->Fill(interaction.neutrino.visible_energy - interaction.neutrino.energy);
-        _root_histos[select_i].h_numu_l_length->Fill(intInfo.l_length);
-        _root_histos[select_i].h_numu_contained_L->Fill(intInfo.l_contained_length);
-        _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.l_is_contained);
+        _root_histos[select_i].h_numu_l_length->Fill(intInfo.t_length);
+        _root_histos[select_i].h_numu_contained_L->Fill(intInfo.t_contained_length);
+        _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.t_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
@@ -191,12 +191,61 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
   return selected;
 }
 
+NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &track) {
+  double contained_length = 0;
+  double length = 0;
+  bool contained_in_FV = true;
+  int pdgid = track.PdgCode(); 
+
+  // Get the length and determine if any point leaves the fiducial volume
+  TLorentzVector pos = track.Start().Position();
+  for (int i = 1; i < track.size(); i++) {
+    // update if track is contained
+    if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
+      
+    // update length
+    contained_length += containedLength(track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
+    length += (track[i].Position().Vect() - pos.Vect()).Mag();
+      
+    pos = track[i].Position();
+  }
+  
+  return NumuSelection::NuMuInteraction({contained_in_FV, contained_length, length, pdgid});
+}
+
 NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Event &ev, const simb::MCTruth &mctruth) {
   // get handle to tracks and showers
   auto const& mctrack_list = \
     *ev.getValidHandle<std::vector<sim::MCTrack> >(fMCTrackTag);
   auto const& mcshower_list = \
     *ev.getValidHandle<std::vector<sim::MCShower> >(fMCShowerTag);
+
+  // print out track/shower info
+  if (_config.verbose) {
+    std::cout << "\n\nINTERACTION:\n";
+    std::cout << "MODE: " << mctruth.GetNeutrino().Mode() << std::endl;
+    std::cout << "CC: " << mctruth.GetNeutrino().CCNC() << std::endl;
+    std::cout << "\nTRACKS:\n";
+    for (auto const &mct: mctrack_list) {
+      std::cout << "TRACK:\n";
+      std::cout << "PDG: " << mct.PdgCode() << std::endl;
+      std::cout << "Vertex: " << isFromNuVertex(mctruth, mct) << std::endl;
+      std::cout << "Energy: " << mct.Start().E() << std::endl;
+      std::cout << "Kinetic: " << mct.Start().E() - PDGMass(mct.PdgCode()) << std::endl;
+      std::cout << "Length: " << (mct.Start().Position().Vect() - mct.End().Position().Vect()).Mag() << std::endl;
+      std::cout << "Process: " << mct.Process() << std::endl;
+    }
+    std::cout << "\nSHOWERS:\n";
+    for (auto const &mcs: mcshower_list) { 
+      std::cout << "SHOWER:\n";
+      std::cout << "PDG: " << mcs.PdgCode() << std::endl;
+      std::cout << "Vertex: " << isFromNuVertex(mctruth, mcs) << std::endl;
+      std::cout << "Energy: " << mcs.Start().E() << std::endl;
+      std::cout << "Kinetic: " << mcs.Start().E() - PDGMass(mcs.PdgCode()) << std::endl;
+      std::cout << "Length: " << (mcs.Start().Position().Vect() - mcs.End().Position().Vect()).Mag() << std::endl;
+      std::cout << "Process: " << mcs.Process() << std::endl;
+    }
+  }
 
   // and particles
   auto const& mcparticle_list = \
@@ -205,49 +254,30 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // Get the length and determine if any point leaves the fiducial volume
   //
   // get lepton track
-  int lepton_ind = -1;
+  int track_ind = -1;
   for (int i = 0; i < mctrack_list.size(); i++) {
-    if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 13 && mctrack_list[i].size() > 0 && mctrack_list[i].Process() == "primary") {
-      lepton_ind = i;
+    if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 13 && mctrack_list[i].Process() == "primary") {
+      track_ind = i;
       break;
     }
   } 
-
-  // parameters only make sense if lepton exists
-  bool contained_in_FV = false;
-  double l_contained_length = -1;
-  double l_length = -1;
-
-  if (lepton_ind != -1) {
-    // if lepton exists, assume contained by default
-    contained_in_FV = true;
-    l_contained_length = 0;
-    l_length = 0;
-
-    auto const& lepton_track = mctrack_list.at(lepton_ind);
-    
-    // Get the length and determine if any point leaves the fiducial volume
-    TLorentzVector pos = lepton_track.Start().Position();
-    for (int i = 1; i < lepton_track.size(); i++) {
-      // update if track is contained
-      if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
-      
-      // update length
-      l_contained_length += containedLength(lepton_track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
-      l_length += (lepton_track[i].Position().Vect() - pos.Vect()).Mag();
-      
-      pos = lepton_track[i].Position();
+  // if there's no lepton, look for a pi+ that can "fake" a muon 
+  // if there's multiple, get the longest one
+  if (track_ind == -1) {
+    int track_contained_length = -1;
+    for (int i = 0; i < mctrack_list.size(); i++) {
+      if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 211 && mctrack_list[i].Process() == "primary") {
+        std::cout << "PION\n";
+        double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 
+        if (track_contained_length < 0 || this_contained_length > track_contained_length) {
+          track_ind = i;
+          track_contained_length = this_contained_length;
+        }
+      }
     }
-    
-    // determine if stopped in TPC
-    // sim::MCStep end = lepton_track.End();
-    // geoalgo::Point_t l_end_pos(end.Position().Vect());
-    // bool stop_in_tpc = _config.active_volume.Contain(l_end_pos);
-
   }
-    
-  // convert visible energies to GeV
-  return {contained_in_FV, l_contained_length, l_length};
+
+  return (track_ind != -1) ? trackInfo(mctrack_list[track_ind]) : NumuSelection::NuMuInteraction({false, -1, -1, -1});
 }
 
 std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, 
@@ -262,7 +292,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   bool pass_FV = passFV(nu.Nu().Position().Vect());
 
   // min length cut
-  bool pass_min_length = passMinLength(intInfo.l_contained_length, intInfo.l_is_contained);
+  bool pass_min_length = passMinLength(intInfo.t_contained_length, intInfo.t_is_contained);
 
   // pass vertex reconstruction cut
   bool pass_reco_vertex = true;
@@ -292,6 +322,8 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
     std::cout << "Pos: " << nu.Nu().Vx() << " " << nu.Nu().Vy() << " " << nu.Nu().Vz() << std::endl;
     std::cout << "pass FV: " << pass_FV << std::endl;
     std::cout << "pass Reco: " << pass_reco_vertex << std::endl;
+    std::cout << "Length: " << intInfo.t_contained_length << " Contained: " << intInfo.t_is_contained << std::endl;
+    std::cout << "pass Length: " << pass_min_length << std::endl;
   }
 
   // retrun list of cuts
