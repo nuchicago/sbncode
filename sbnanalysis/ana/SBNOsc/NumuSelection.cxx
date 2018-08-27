@@ -183,9 +183,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     }
     
     // fill histos
-    unsigned select_i = 0; 
-    for (bool pass: selection) {
-      if (pass) {
+    for (size_t select_i=0; select_i < selection.size(); select_i++) {
+      if (selection[select_i]) {
         _root_histos[select_i].h_numu_trueE->Fill(interaction.neutrino.energy);
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
         _root_histos[select_i].h_numu_visibleE->Fill(interaction.neutrino.visible_energy);
@@ -197,7 +196,6 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
       }
-      select_i ++;
     }
   }
   return selected;
