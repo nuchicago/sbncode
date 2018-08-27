@@ -97,24 +97,54 @@ protected:
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram
   };
 
-  /** Returns whether to apply FV cut on neutrino */
+  /* Applies FV cut 
+  * \param v The neutrino interaction vertex
+  * \returns Whether to apply FV cut on neutrino 
+  *
+  * */
   bool passFV(const TVector3 &v) { return containedInFV(v); }
-  /** Applies reco-truth vertex matching cut */
+  /** Applies reco-truth vertex matching cut 
+ * \param truth_v Truth vertex vector
+ * \param reco_v Reconstructed vertex vector
+ * \returns Whether to apply reco-truth vertex matching cut: true == passed cut
+ * */
   bool passRecoVertex(const TVector3 &truth_v, const TVector3 &reco_v);
-  /** Applies truth length cut */
+  /** Applies truth length cut 
+ *  \param length Distance travelled by lepton
+ *  \param stop_in_tpc Whether the lepton stopped in the TPC volume
+ *  \returns Whether to apply length cut: true == passed cut
+ * */
   bool passMinLength(double length, bool stop_in_tpc);
-  /** Run Selection on a neutrino */
+  /** Run Selection on a neutrino 
+ *  \param ev The gallery event.
+ *  \param mctruth The mctruth object associated with the currently considered interaction.
+ *  \param truth_ind The index into the vector of MCTruth objects in the gallery event from which the "mctruth" object is
+ *  \param intInfo The interaction info object associated with this mctruth object.
+ *
+ *  \returns A list containing whether the interaction passed each cut (ordered in the same way as the "cutNames()")
+ * */
   std::vector<bool> Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo);
-  /** Get associated interaction information from monte carlo */
+  /** Get associated interaction information from monte carlo 
+ * \param ev The gallery event.
+ * \param mctruth The mctruth object associated with the currently considered interaction.
+ *
+ * \return NuMuInteraction object containing information from the mctruth object
+ * */
   NuMuInteraction interactionInfo(const gallery::Event& ev, const simb::MCTruth &mctruth);
-  /** Helper function -- whether point is contained in fiducial volume list */
+  /** Helper function -- whether point is contained in fiducial volume list 
+ * \param v The point vector.
+ *
+ * \returns Whether the point is contained in the configured list of fiducial volumes.
+ * */
   bool containedInFV(const TVector3 &v);
 
   unsigned _event_counter;  //!< Count processed events
   unsigned _nu_count;  //!< Count selected events
 
   static const unsigned nCuts = 4; //!< number of cuts
-  /** Names of cuts */
+  /** Names of cuts 
+ * \returns List of names of cuts (for histogram names)
+ * */
   static const std::vector<std::string> cutNames() {
     return {"CC", "FV", "min_L", "reco_V"};
   }
