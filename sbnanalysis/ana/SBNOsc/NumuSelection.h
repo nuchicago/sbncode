@@ -68,10 +68,6 @@ public:
 protected:
   /** Configuration parameters */
   struct Config {
-    art::InputTag truthTag; //!< art tag for MCTruth
-    art::InputTag mctTag; //!< art tag for MCTrack
-    art::InputTag mcsTag; //!< art tag for MCShower
-    art::InputTag mcpTag; //!< art tag for MCParticle
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume

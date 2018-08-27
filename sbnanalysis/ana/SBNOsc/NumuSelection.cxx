@@ -37,18 +37,7 @@ NumuSelection::NumuSelection() :
 
 
 void NumuSelection::Initialize(Json::Value* config) {
-  // Load configuration parameters
-  _config.truthTag = { "generator" };
-  _config.mctTag = { "mcreco" };
-  _config.mcsTag = { "mcreco" };
-  _config.mcpTag = { "largeant" };
-
   if (config) {
-    _config.truthTag = { (*config)["SBNOsc"].get("MCTruthTag", "generator").asString() };
-    _config.mctTag = { (*config)["SBNOsc"].get("MCTrackTag", "mcreco").asString() };
-    _config.mcsTag = { (*config)["SBNOsc"].get("MCShowerTag", "mcreco").asString() };
-    _config.mcpTag = { (*config)["SBNOsc"].get("MCParticleTag", "largeant").asString() };
-
     // setup active volume bounding box
     {
       double xmin, xmax, ymin, ymax, zmin, zmax;
@@ -153,7 +142,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
 
   // Get truth
   auto const& mctruths = \
-    *ev.getValidHandle<std::vector<simb::MCTruth> >(_config.truthTag);
+    *ev.getValidHandle<std::vector<simb::MCTruth> >(fTruthTag);
 
   // Iterate through the neutrinos
   bool selected = false;
@@ -207,13 +196,13 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
 NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Event &ev, const simb::MCTruth &mctruth) {
   // get handle to tracks and showers
   auto const& mctrack_list = \
-    *ev.getValidHandle<std::vector<sim::MCTrack> >(_config.mctTag);
+    *ev.getValidHandle<std::vector<sim::MCTrack> >(fMCTrackTag);
   auto const& mcshower_list = \
-    *ev.getValidHandle<std::vector<sim::MCShower> >(_config.mcsTag);
+    *ev.getValidHandle<std::vector<sim::MCShower> >(fMCShowerTag);
 
   // and particles
   auto const& mcparticle_list = \
-    *ev.getValidHandle<std::vector<simb::MCParticle>>(_config.mcpTag);
+    *ev.getValidHandle<std::vector<simb::MCParticle>>(fMCParticleTag);
 
   // Get the length and determine if any point leaves the fiducial volume
   //
