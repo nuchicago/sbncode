@@ -6,6 +6,12 @@
 // Generated at Wed Aug  1 12:45:20 2018 by Gray Putnam using cetskelgen
 // from cetlib version v3_03_01.
 ////////////////////////////////////////////////////////////////////////
+//
+//
+// Stub class for creating information that you want to associate with a truth object.
+//
+// Currently does nothing. The "in_fv" variable is not really set. Not for use in actual
+// analysis, just as a way to toy around with larsoft stuff.
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -28,7 +34,6 @@
 #include <memory>
 
 #include "DataTypes/AssocTruthInfo.h"
-#include "Algorithms/FiducialVolume.h"
 
 namespace numuselection {
   class AssocTruthProducer;
@@ -54,7 +59,6 @@ private:
 
   // Declare member data here.
   art::InputTag _truth_tag;
-  numuselection::FiducialVolume _fv;
   bool _verbose;
 
 };
@@ -70,15 +74,6 @@ numuselection::AssocTruthProducer::AssocTruthProducer(fhicl::ParameterSet const 
 
   // get hook to geometry
   art::ServiceHandle<geo::Geometry> geo;
-
-  _fv.Configure(p.get<fhicl::ParameterSet>("FiducialVolumeSettings"), 
-    geo->DetHalfHeight(),
-    2.*geo->DetHalfWidth(),
-    geo->DetLength());
-  _verbose = p.get<bool>("verbose", false);
-  if (_verbose) {
-    _fv.PrintBoxes();
-  }
 }
 
 void numuselection::AssocTruthProducer::produce(art::Event & e)
@@ -102,7 +97,7 @@ void numuselection::AssocTruthProducer::produce(art::Event & e)
 
     // get FV 
     double pos[3] = {mc_truth->GetNeutrino().Nu().Vx(), mc_truth->GetNeutrino().Nu().Vy(), mc_truth->GetNeutrino().Nu().Vz()};
-    truth.in_FV =  _fv.InFV(pos);
+    truth.in_FV = true; // stub
     if (_verbose) {
       std::cout << "AssocTruth: Pos: " << pos[0] << " " << pos[1] << " " << pos[2] << std::endl;
       std::cout << "AssocTruth: In FV: " <<truth.in_FV << std::endl;

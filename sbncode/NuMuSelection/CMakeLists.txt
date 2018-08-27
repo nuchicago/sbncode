@@ -1,4 +1,3 @@
-add_subdirectory(Algorithms)
 add_subdirectory(DataTypes)
 add_subdirectory(fcl)
 
@@ -6,7 +5,6 @@ art_make(
           MODULE_LIBRARIES 
 			   uboonecode_uboone_BasicTool_GeoAlgo
 
-			   sbncode_NuMuSelection_Algorithms
 
 			   larcorealg_Geometry
                            larcore_Geometry_Geometry_service
