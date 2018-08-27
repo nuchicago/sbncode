@@ -73,7 +73,6 @@ void NumuSelection::Initialize(Json::Value* config) {
       _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
-    _config.doTruthCut = (*config)["NumuSelection"].get("doTruthCut", false).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
     _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
     _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
@@ -194,7 +193,11 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
 NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &track) {
   double contained_length = 0;
   double length = 0;
-  bool contained_in_FV = true;
+  // If the interaction is outside the active volume, then g4 won't generate positions for the track.
+  // So size == 0 => outside FV
+  //
+  // If size != 0, then we have to check fiducial volume
+  bool contained_in_FV = track.size() > 0;
   int pdgid = track.PdgCode(); 
 
   // Get the length and determine if any point leaves the fiducial volume
@@ -267,7 +270,6 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     int track_contained_length = -1;
     for (int i = 0; i < mctrack_list.size(); i++) {
       if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 211 && mctrack_list[i].Process() == "primary") {
-        std::cout << "PION\n";
         double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 
         if (track_contained_length < 0 || this_contained_length > track_contained_length) {
           track_ind = i;
@@ -285,8 +287,8 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   // get the neutrino
   const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 
-  // select true CC events
-  bool pass_true_CC = (!_config.doTruthCut || (nu.CCNC() == simb::kCC && (nu.Mode() == 0 || nu.Mode() == 10) && nu.Nu().PdgCode() == 14));
+  // has valid track
+  bool pass_valid_track = intInfo.t_pdgid != -1;
 
   // pass fiducial volume cut
   bool pass_FV = passFV(nu.Nu().Position().Vect());
@@ -318,7 +320,8 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   if (_config.verbose) {
     std::cout << "NEW EVENT" << std::endl;
     std::cout << "CCNC: " << nu.CCNC() << " MODE: " << nu.Mode() << " PDG: " << nu.Nu().PdgCode() << std::endl;
-    std::cout << "pass CC: " << pass_true_CC << std::endl;
+    std::cout << "Track PDG: " << intInfo.t_pdgid <<std::endl;
+    std::cout << "pass Valid Track: " << pass_valid_track << std::endl;
     std::cout << "Pos: " << nu.Nu().Vx() << " " << nu.Nu().Vy() << " " << nu.Nu().Vz() << std::endl;
     std::cout << "pass FV: " << pass_FV << std::endl;
     std::cout << "pass Reco: " << pass_reco_vertex << std::endl;
@@ -327,7 +330,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   }
 
   // retrun list of cuts
-  return {pass_true_CC, pass_true_CC && pass_FV, pass_true_CC && pass_FV && pass_min_length, pass_true_CC && pass_FV && pass_reco_vertex};
+  return {pass_valid_track, pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex};
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {

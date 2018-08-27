@@ -3,7 +3,6 @@
   "NumuSelection": {
     "verbose": false,
     "doFVCut": true,
-    "doTruthCut": false,
     // Using Uboone UBXSec analysis volume
     "fiducial_volumes": [
        // first FV is the upstream one (relative to beam direction)

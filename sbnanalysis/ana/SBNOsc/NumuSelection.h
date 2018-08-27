@@ -63,7 +63,7 @@ public:
     bool t_is_contained; //!< whether the (maybe faked) lepton track is totally contained in the fiducial volume
     double t_contained_length; //!< the length of the (maybe faked) lepton track contained in the fiducial volume [cm]
     double t_length; //!< total length of (maybe faked) lepton track [cm]
-    int t_pid; //!< PID of primary track (muon or pi+)
+    int t_pdgid; //!< PDGID of primary track (muon or pi+)
 
     // default constructor -- fills with bogus info
     /*
@@ -71,7 +71,7 @@ public:
       t_is_contained(false),
       t_contained_length(-1),
       t_length(-1),
-      t_pid(-1) 
+      t_pdgid(-1) 
       {}*/
   };
 
@@ -81,7 +81,6 @@ protected:
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
     geoalgo::AABox active_volume; //!< Active volume
-    bool doTruthCut; //!< Whether to apply cut on truth interaction
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
     double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
@@ -166,7 +165,7 @@ protected:
  * \return List of names of cuts (for histogram names)
  * */
   static const std::array<std::string, nCuts> cutNames() {
-    return {"CC", "FV", "min_L", "reco_V"};
+    return {"Track", "FV", "min_L", "reco_V"};
   }
 
   Config _config; //!< The config
