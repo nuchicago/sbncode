@@ -81,6 +81,7 @@ public:
     double w;              //!< Hadronic invariant mass W
     double t;              //!< Kinematic t
     double energy;         //!< Neutrino energy (GeV)
+    double visible_energy; //!< Visible energy from neutrino interaction
     TVector3 momentum;     //!< Neutrino three-momentum
   };
 

@@ -89,8 +89,6 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.hadronESmear = (*config)["NumuSelection"].get("hadronESmear", 0).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
-  // setup smearing from config
-  _smear = new Smearing(_config.containedLeptonESmear, _config.exitingLeptonESmear, _config.hadronESmear);
 
   // Setup histo's for root output
   fOutputFile->cd();
@@ -190,8 +188,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
       if (pass) {
         _root_histos[select_i].h_numu_trueE->Fill(interaction.neutrino.energy);
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
-        _root_histos[select_i].h_numu_visibleE->Fill(intInfo.visible_energy);
-        _root_histos[select_i].h_numu_true_v_visibleE->Fill(intInfo.visible_energy - interaction.neutrino.energy);
+        _root_histos[select_i].h_numu_visibleE->Fill(interaction.neutrino.visible_energy);
+        _root_histos[select_i].h_numu_true_v_visibleE->Fill(interaction.neutrino.visible_energy - interaction.neutrino.energy);
         _root_histos[select_i].h_numu_l_length->Fill(intInfo.l_length);
         _root_histos[select_i].h_numu_contained_L->Fill(intInfo.l_contained_length);
         _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.l_is_contained);
@@ -231,14 +229,12 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   bool contained_in_FV = false;
   double l_contained_length = -1;
   double l_length = -1;
-  double smeared_eccqe = -1;
 
   if (lepton_ind != -1) {
-    // if lepton exists, addume contained by default
+    // if lepton exists, assume contained by default
     contained_in_FV = true;
     l_contained_length = 0;
     l_length = 0;
-    smeared_eccqe = 0;
 
     auto const& lepton_track = mctrack_list.at(lepton_ind);
     
@@ -260,43 +256,10 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
     // geoalgo::Point_t l_end_pos(end.Position().Vect());
     // bool stop_in_tpc = _config.active_volume.Contain(l_end_pos);
 
-    // While we're here, get the smeared ECCQE
-    smeared_eccqe = ECCQE(lepton_track.Start().Momentum().Vect(), lepton_track.Start().E()/1000., 
-      _smear->Smear(lepton_track.Start().E()/1000., 14, contained_in_FV));
   }
     
-  // get visible energy
-  // "Reconstruct" visible energy from tracks + showers
-  // Also do smearing
-  //
-  // Track energy and masses are in MeV
-  double visible_E = 0.;
-  double smeared_visible_E = 0.;
-  // first the tracks
-  for (auto const &mct: mctrack_list) {
-    if (isFromNuVertex(mctruth, mct)) {
-      // don't subtract mass for muon
-      double mass = (mct.PdgCode() == 13) ? 0:PDGMass(mct.PdgCode());
-      double this_visible_energy = mct.Start().E() - mass;
-      double this_smeared_visible_energy = this_visible_energy + _smear->Smear(this_visible_energy, mct.PdgCode(), contained_in_FV);
-      visible_E += this_visible_energy;
-      smeared_visible_E += this_smeared_visible_energy; 
-    }
-  }
-  // now the showers
-  for (auto const &mcs: mcshower_list) {
-    if (isFromNuVertex(mctruth, mcs)) {
-      double mass = PDGMass(mcs.PdgCode());
-      double this_visible_energy = mcs.Start().E() - mass;
-      double this_smeared_visible_energy = this_visible_energy + _smear->Smear(this_visible_energy, mcs.PdgCode(), contained_in_FV);
-      visible_E += this_visible_energy;
-      smeared_visible_E += this_smeared_visible_energy; 
-    }
-  }
-
-
   // convert visible energies to GeV
-  return {contained_in_FV, l_contained_length, l_length, visible_E / 1000., smeared_visible_E / 1000., smeared_eccqe}; 
+  return {contained_in_FV, l_contained_length, l_length};
 }
 
 std::vector<bool> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, unsigned truth_ind, const NumuSelection::NuMuInteraction &intInfo) {

@@ -10,7 +10,6 @@
  */
 
 #include <iostream>
-#include <random>
 
 #include "canvas/Utilities/InputTag.h"
 #include "core/SelectionBase.hh"
@@ -63,9 +62,6 @@ public:
     bool l_is_contained; //!< whether the lepton track is totally contained in the fiducial volume
     double l_contained_length; //!< the length of the lepton track contained in the fiducial volume
     double l_length; //!< total length of lepton track
-    double visible_energy; //!< sum of kinetic energies of particles produced directly in interaction
-    double smeared_visible_energy; //!< visible energy with component particle energies smeared
-    double smeared_eccqe; //!< CCQE energy w/ lepton energy smeared
   };
 
 protected:
@@ -101,31 +97,6 @@ protected:
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram
   };
 
-  /** cpp distributions for smearing energies */
-  struct Smearing {
-    std::mt19937 _gen;
-    std::normal_distribution<double> contained_lepton_E;
-    std::normal_distribution<double> exiting_lepton_E;
-    std::normal_distribution<double> hadron_E;
-
-    Smearing(double contained_l_smear, double exiting_l_smear, double hadron_smear):
-      _gen( time(0) ),
-      contained_lepton_E(0., contained_l_smear),
-      exiting_lepton_E(0., exiting_l_smear),
-      hadron_E(0., hadron_smear) {}
-
-    double Smear(double energy, int pdg, bool is_contained=false) {
-      if (pdg == 13 /* muon */) {
-        if (is_contained) return energy * contained_lepton_E(_gen);
-        else return energy * exiting_lepton_E(_gen);
-      }
-      else {
-        return hadron_E(_gen);
-      }
-    }
-  };
-
-
   /** Returns whether to apply FV cut on neutrino */
   bool passFV(const TVector3 &v) { return containedInFV(v); }
   /** Applies reco-truth vertex matching cut */
@@ -153,8 +124,6 @@ protected:
   std::vector<NuMuInteraction> *_interactionInfo; //!< Branch holder
 
   RootHistos _root_histos[nCuts]; //!< Histos (one group per cut)
-
-  Smearing *_smear; //!< Instance for smearing FSP energies
 };
 
   }  // namespace SBNOsc
