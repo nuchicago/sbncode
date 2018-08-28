@@ -274,7 +274,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // if there's no lepton, look for a pi+ that can "fake" a muon 
   // if there's multiple, get the longest one
   if (track_ind == -1) {
-    int track_contained_length = -1;
+    double track_contained_length = -1;
     for (int i = 0; i < mctrack_list.size(); i++) {
       if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 211 && mctrack_list[i].Process() == "primary") {
         double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 

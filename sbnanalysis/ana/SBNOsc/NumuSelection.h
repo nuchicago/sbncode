@@ -91,10 +91,10 @@ protected:
 
   /** Histograms made for output */
   struct RootHistos {
-    TH1D *h_numu_ccqe; //!< histogram w/ CCQE energy veriable [MeV]
-    TH1D *h_numu_trueE; //!< histogram w/ truth energy variable [MeV]
-    TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy) [MeV]
-    TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy [MeV] 
+    TH1D *h_numu_ccqe; //!< histogram w/ CCQE energy veriable [GeV]
+    TH1D *h_numu_trueE; //!< histogram w/ truth energy variable [GeV]
+    TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy) [GeV]
+    TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy [GeV] 
     TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated lepton is contained in FV 
     TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of lepton in CC event [cm]
     TH1D *h_numu_l_length; //!< histogram w/ total length of associated lepton [cm]
