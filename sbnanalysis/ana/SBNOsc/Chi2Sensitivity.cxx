@@ -5,6 +5,8 @@
 #include <TDecompLU.h>
 #include <TMatrixDSym.h>
 
+#include <TF1.h>
+
 namespace ana {
   namespace SBNOsc {
 
@@ -31,13 +33,13 @@ Chi2Sensitivity::Chi2Sensitivity(TH2D* cov, TH1D *counts, std::vector <std::stri
     std::cout << std::endl << "Inverting full error matrix, E_{ij}..." << std::endl;
     
     // Create error (statistical and systematic) matrix
-    TMatrixDSym E_mat(cov.GetNbinsX());
+    TMatrixDSym E_mat(cov->GetNbinsX());
     
-    for (int i = 0; i < cov.GetNbinsX(); i++) {
-        for (int j = 0; j < cov.GetNbinsY(); j++) {
+    for (int i = 0; i < cov->GetNbinsX(); i++) {
+        for (int j = 0; j < cov->GetNbinsY(); j++) {
             
-            E_mat[i][j] = cov.GetBinContent(i+1, j+1);
-            if (i == j) { E_mat[i][i] += counts.GetBinContent(i+1); }
+            E_mat[i][j] = cov->GetBinContent(i+1, j+1);
+            if (i == j) { E_mat[i][i] += counts->GetBinContent(i+1); }
             
         }
     }
@@ -80,11 +82,11 @@ Chi2Sensitivity::Chi2Sensitivity(TH2D* cov, TH1D *counts, std::vector <std::stri
         
         // Set dist for the sample
         double tempdist = 0;
-        if (std::find(sample_order[s].begin(), sample_order.end(), "SBND") != std::string::npos) {
+        if (sample_order[s].find("SBND") != std::string::npos) {
             tempdist = SBND_dist;
-        } else if (std::find(sample_order[s].begin(), sample_order.end(), "MicroBooNE") != std::string::npos) {
+        } else if (sample_order[s].find("MicroBooNE") != std::string::npos) {
             tempdist = MicroBooNE_dist;
-        } else if (std::find(sample_order[s].begin(), sample_order.end(), "SBND") != std::string::npos) {
+        } else if (sample_order[s].find("ICARUS") != std::string::npos) {
             tempdist = ICARUS_dist;
         }
         
@@ -96,11 +98,11 @@ Chi2Sensitivity::Chi2Sensitivity(TH2D* cov, TH1D *counts, std::vector <std::stri
     }
     
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
-    std::vector <int> oscillate(counts.GetNbinsX(), 0);
+    std::vector <int> oscillate(counts->GetNbinsX(), 0);
     for (int i = 0; i < oscillate.size(); i++) {
-        if (std::find(sample_order[i].begin(), sample_order[i].end(), "#nu_{#mu}") != std::string::npos) {
+        if (sample_order[i].find("#nu_{#mu}") != std::string::npos) {
             oscillate[i] = 1;
-        } else if (std::find(sample_order[i].begin(), sample_order[i].end(), "#nu_{e}") != std::string::npos) {
+        } else if (sample_order[i].find("#nu_{e}") != std::string::npos) {
             oscillate[i] = 2;
         }
     }
