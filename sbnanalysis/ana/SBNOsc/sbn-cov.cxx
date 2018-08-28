@@ -13,6 +13,11 @@
 #include <TFile.h>
 #include <TCanvas.h>
 
+#include <TChain.h>
+#include <TFileCollection.h>
+#include <TTreePlayer.h>
+#include <fstream>
+
 double getPOTs(std::string filelist) {
     
     /* Stolen from Swapnil */

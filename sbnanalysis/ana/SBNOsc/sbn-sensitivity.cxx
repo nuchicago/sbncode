@@ -15,6 +15,7 @@
 #include <TChain.h>
 #include <TFileCollection.h>
 #include <TTreePlayer.h>
+#include <fstream>
 
 double getPOTs(std::string filelist) {
     
