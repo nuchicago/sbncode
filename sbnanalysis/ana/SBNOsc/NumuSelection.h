@@ -18,6 +18,7 @@
 
 #include "TH1D.h"
 #include "TDatabasePDG.h"
+#include "TGraph.h"
 
 #include "nusimdata/SimulationBase/MCTruth.h"
 
@@ -160,6 +161,7 @@ protected:
 
   unsigned _event_counter;  //!< Count processed events
   unsigned _nu_count;  //!< Count selected events
+  TGraph *_cut_counts; //!< Keep track of neutrinos per cut
 
   /** Names of cuts 
  * \return List of names of cuts (for histogram names)

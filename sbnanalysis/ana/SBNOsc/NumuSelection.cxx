@@ -101,6 +101,9 @@ void NumuSelection::Initialize(Json::Value* config) {
       20, _config.active_volume.Min()[2], _config.active_volume.Min()[2]);
   }
 
+  // set up TGraph keeping track of cut counts
+  _cut_counts = new TGraph(NumuSelection::nCuts + 1);
+
   // add branches
   fTree->Branch("numu_interaction", &_interactionInfo);
 
@@ -123,6 +126,7 @@ void NumuSelection::Finalize() {
     _root_histos[i].h_numu_Vxz->Write();
     _root_histos[i].h_numu_Vyz->Write();
   }
+  _cut_counts->Write();
 }
 
 
@@ -136,6 +140,9 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
   // clean up containers
   _event_counter++;
   _interactionInfo->clear();
+
+  // update total count of interactions
+  _cut_counts->SetPoint(0, 0, _cut_counts->GetY()[0] + 1);
 
   // Get truth
   auto const& mctruths = \
@@ -184,6 +191,9 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
+
+        // also update cut count
+        _cut_counts->SetPoint(select_i+1, select_i+1, _cut_counts->GetY()[select_i+1] + 1);
       }
     }
   }
@@ -330,7 +340,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   }
 
   // retrun list of cuts
-  return {pass_valid_track, pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex};
+  return {pass_valid_track, pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex && pass_min_length};
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
