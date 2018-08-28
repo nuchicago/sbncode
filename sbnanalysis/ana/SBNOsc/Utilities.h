@@ -107,9 +107,9 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  * \param mctruth The MCTruth object corresponding to the interaction.
  * \param mctrack_list Vector of MCTrack objects in the gallery event.
  * \param mcshower_list Vector of MCShower objects in the gallery event.
- * \param track_threshold Energy threshold of track energy counted in calculation [MeV].
- * \param shower_treshold Energy threshold of shower energy counted in calculation [MeV].
- * \return Visble energy in MeV.
+ * \param track_threshold Energy threshold of track energy counted in calculation [GeV].
+ * \param shower_treshold Energy threshold of shower energy counted in calculation [GeV].
+ * \return Visble energy in GeV.
  */
 double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list, 
     double track_threshold=0., double shower_threshold=0.);

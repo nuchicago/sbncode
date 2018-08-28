@@ -337,7 +337,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   }
 
   // retrun list of cuts
-  return {pass_valid_track, pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex};
+  return {pass_valid_track, pass_valid_track && pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex};
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {

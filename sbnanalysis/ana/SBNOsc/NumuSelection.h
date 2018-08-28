@@ -86,7 +86,7 @@ protected:
     bool verbose; //!< Whether to print out info associated w/ selection.
     double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
     double minLengthExitingLepton; //!< Minimum length [cm] of exiting leptons.  Will not apply cut if value is negative.
-    double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [MeV].
+    double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [GeV].
   };
 
   /** Histograms made for output */
