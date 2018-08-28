@@ -73,7 +73,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
     _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
     _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
-    _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble() * 1000 /* convert to MeV */;
+    _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
 
