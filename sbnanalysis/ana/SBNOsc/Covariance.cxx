@@ -158,10 +158,10 @@ std::vector <std::string> get_plot_order(std::vector<EventSample> samples) {
     
     // Get order descriptions will be plotted in (nue, numu, rest)
     std::vector <std::string> desc_order;
-    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{e}") != std::string::npos) {
+    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{e}") != all_descs.end()) {
         desc_order.push_back("#nu_{e}");
     }
-    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{#mu}") != std::string::npos) {
+    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{#mu}") != all_descs.end()) {
         desc_order.push_back("#nu_{#mu}");
     }
     for (int d = 0; d < all_descs.size(); d++) {
@@ -172,10 +172,10 @@ std::vector <std::string> get_plot_order(std::vector<EventSample> samples) {
     
     // Get order detectors will be plotted in
     std::vector <std::string> det_order;
-    if (std::find(all_dets.begin(), all_dets.end(), "SBND") != std::string::npos) {
+    if (std::find(all_dets.begin(), all_dets.end(), "SBND") != all_dets.end()) {
         det_order.push_back("SBND");
     }
-    if (std::find(all_dets.begin(), all_dets.end(), "ICARUS") != std::string::npos) {
+    if (std::find(all_dets.begin(), all_dets.end(), "ICARUS") != all_dets.end()) {
         det_order.push_back("ICARUS");
     }
     if (std::find(all_dets.begin(), all_dets.end(), "MicroBooNE") != all_dets.end()) {
