@@ -19,7 +19,10 @@ double visibleEnergy(const gallery::Event &ev, const simb::MCTruth &mctruth, con
     if (isFromNuVertex(mctruth, mct) && abs(PDGCharge(mct.PdgCode())) > 1e-4) {
       double mass = (mct.PdgCode() == 13 || mct.PdgCode() == 11) ? 0:PDGMass(mct.PdgCode());
       double this_visible_energy = mct.Start().E() - mass;
-      visible_E += this_visible_energy;
+      // energy threshold of 21 MeV (from SBN Proposal)
+      if (this_visible_energy > 0.021) {
+        visible_E += this_visible_energy;
+      }
     }
   }
 
