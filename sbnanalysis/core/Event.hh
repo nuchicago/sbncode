@@ -132,8 +132,8 @@ public:
       RecoInteraction() {}
       /** Fill in truth information -- leaves other fields unset */
       explicit RecoInteraction(const Interaction &t): truth(t) {}
-      Interaction truth;
-      double reco_energy;
+      Interaction truth; //!< Contains truth level information about interaction
+      double reco_energy; //!< User defined reconstructed energy of neutrino. Units in GeV to keep consistent w/ Interaction class.
   };
 
   Metadata metadata;  //!< Event metadata
