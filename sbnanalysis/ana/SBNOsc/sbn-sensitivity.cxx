@@ -12,6 +12,10 @@
 #include "Covariance.h"
 #include "Chi2Sensitivity.h"
 
+#include <TChain.h>
+#include <TFileCollection.h>
+#include <TTreePlayer.h>
+
 double getPOTs(std::string filelist) {
     
     /* Stolen from Swapnil */
