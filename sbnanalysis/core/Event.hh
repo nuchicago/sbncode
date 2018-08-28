@@ -122,10 +122,26 @@ public:
     std::map<std::string, std::vector<double> > weights;
   };
 
+  /**
+   * \class RecoInteraction
+   * \brief Contains truth level information and additional fields for user-defined reconstruction information
+   */
+  class RecoInteraction {
+    public:
+      /** Default Constructor */
+      RecoInteraction() {}
+      /** Fill in truth information -- leaves other fields unset */
+      explicit RecoInteraction(const Interaction &t): truth(t) {}
+      Interaction truth;
+      double reco_energy;
+  };
+
   Metadata metadata;  //!< Event metadata
   std::vector<Interaction> truth; //!< All truth interactions
-  std::vector<Interaction> reco; //!< Reconstructed interactions
+  std::vector<RecoInteraction> reco; //!< Reconstructed interactions
 };
+
+
 
 #endif  // __sbnanalysis_core_Event__
 

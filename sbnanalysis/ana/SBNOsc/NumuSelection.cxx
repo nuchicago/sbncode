@@ -22,9 +22,6 @@
 #include "core/Event.hh"
 #include "NumuSelection.h"
 #include "Utilities.h"
-#include "util/Interaction.hh"
-
-using namespace util;
 
 namespace ana {
   namespace SBNOsc {
@@ -76,6 +73,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
     _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
     _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
+    _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble() * 1000 /* convert to MeV */;
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
 
@@ -126,7 +124,7 @@ void NumuSelection::Finalize() {
 }
 
 
-bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Interaction>& reco) {
+bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::RecoInteraction>& reco) {
   if (_event_counter % 10 == 0) {
     std::cout << "NumuSelection: Processing event " << _event_counter << " "
               << "(" << _nu_count << " neutrinos selected)"
@@ -140,6 +138,11 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
   // Get truth
   auto const& mctruths = \
     *ev.getValidHandle<std::vector<simb::MCTruth> >(fTruthTag);
+  // get tracks and showers
+  auto const& mctracks = \
+    *ev.getValidHandle<std::vector<sim::MCTrack> >(fMCTrackTag);
+  auto const& mcshowers = \
+    *ev.getValidHandle<std::vector<sim::MCShower> >(fMCShowerTag);
 
   // Iterate through the neutrinos
   bool selected = false;
@@ -149,7 +152,10 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 
     // build the interaction
-    Event::Interaction interaction = TruthReco(ev, mctruth);
+    Event::Interaction interaction = TruthReco(mctruth);
+    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, _config.trackVisibleEnergyThreshold) / 1000. /* Convert to GeV*/;
+    Event::RecoInteraction reco_interaction(interaction);
+    reco_interaction.reco_energy = visible_energy;
 
     // Get selection-specific info
     //
@@ -163,7 +169,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
     bool pass_selection = std::find(selection.begin(), selection.end(), false) == selection.end();
     if (pass_selection) { 
       // store interaction in reco tree
-      reco.push_back(interaction);
+      reco.push_back(reco_interaction);
       // store local info
       _interactionInfo->push_back(intInfo);
 
@@ -176,8 +182,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
       if (selection[select_i]) {
         _root_histos[select_i].h_numu_trueE->Fill(interaction.neutrino.energy);
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
-        _root_histos[select_i].h_numu_visibleE->Fill(interaction.neutrino.visible_energy);
-        _root_histos[select_i].h_numu_true_v_visibleE->Fill(interaction.neutrino.visible_energy - interaction.neutrino.energy);
+        _root_histos[select_i].h_numu_visibleE->Fill(visible_energy);
+        _root_histos[select_i].h_numu_true_v_visibleE->Fill(visible_energy - interaction.neutrino.energy);
         _root_histos[select_i].h_numu_l_length->Fill(intInfo.t_length);
         _root_histos[select_i].h_numu_contained_L->Fill(intInfo.t_contained_length);
         _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.t_is_contained);
@@ -187,6 +193,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
       }
     }
   }
+
   return selected;
 }
 

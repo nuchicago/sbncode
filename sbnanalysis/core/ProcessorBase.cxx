@@ -126,9 +126,6 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
     interaction.neutrino.energy = nu.Nu().EndMomentum().Energy();
     interaction.neutrino.momentum = nu.Nu().EndMomentum().Vect();
 
-    // total up visible energy
-    interaction.neutrino.visible_energy = util::visibleEnergy(ev, mctruth, fMCTrackTag, fMCShowerTag);
-
     // Primary lepton
     const simb::MCParticle& lepton = nu.Lepton();
     interaction.lepton.pdg = lepton.PdgCode();

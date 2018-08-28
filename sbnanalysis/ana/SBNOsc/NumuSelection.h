@@ -20,6 +20,7 @@
 #include "TDatabasePDG.h"
 
 #include "nusimdata/SimulationBase/MCTruth.h"
+#include "lardataobj/MCBase/MCTrack.h"
 
 // take the geobox stuff from uboonecode
 #include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
@@ -56,7 +57,7 @@ public:
    * \param Reconstructed interactions
    * \return True to keep event
    */
-  bool ProcessEvent(const gallery::Event& ev, std::vector<Event::Interaction>& reco);
+  bool ProcessEvent(const gallery::Event& ev, std::vector<Event::RecoInteraction>& reco);
 
   /** Additional information used by the selection per neutrino interaction */
   struct NuMuInteraction {
@@ -85,6 +86,7 @@ protected:
     bool verbose; //!< Whether to print out info associated w/ selection.
     double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
     double minLengthExitingLepton; //!< Minimum length [cm] of exiting leptons.  Will not apply cut if value is negative.
+    double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation. Configure in GeV, stored in MeV.
   };
 
   /** Histograms made for output */
