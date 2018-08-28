@@ -158,14 +158,14 @@ std::vector <std::string> get_plot_order(std::vector<EventSample> samples) {
     
     // Get order descriptions will be plotted in (nue, numu, rest)
     std::vector <std::string> desc_order;
-    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{e}#") != std::string::npos) {
-        desc_order.push_back("#nu_{e}#");
+    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{e}") != std::string::npos) {
+        desc_order.push_back("#nu_{e}");
     }
-    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{#mu}#") != std::string::npos) {
-        desc_order.push_back("#nu_{#mu}#");
+    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{#mu}") != std::string::npos) {
+        desc_order.push_back("#nu_{#mu}");
     }
     for (int d = 0; d < all_descs.size(); d++) {
-        if (all_descs[d] != "#nu_{e}#" && all_descs[d] != "#nu_{#mu}") {
+        if (all_descs[d] != "#nu_{e}" && all_descs[d] != "#nu_{#mu}") {
             desc_order.push_back(all_descs[d]);
         }
     }
