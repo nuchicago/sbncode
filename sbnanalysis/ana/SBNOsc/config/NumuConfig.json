@@ -33,7 +33,7 @@
      },
      "minLengthContainedLepton": 50, // value taken from proposal
      "minLengthExitingLepton": 100, // value taken from proposal
-     "trackVisibleEnergyThreshold": 21 // [MeV] taken from pospoal
+     "trackVisibleEnergyThreshold": 0.021 // [GeV] taken from pospoal
    }
 }
 
