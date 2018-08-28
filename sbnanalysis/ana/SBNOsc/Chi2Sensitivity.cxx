@@ -129,11 +129,13 @@ Chi2Sensitivity::Chi2Sensitivity(TH2D* cov, TH1D *counts, std::vector <std::stri
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
             // Find null and oscillation fluxes and detections and calculate chisq
-            for (int k = 0; k < counts[0].size(); k++) {
-                for (int l = 0; l < counts[0].size(); l++) {
+            for (int k = 0; k < counts->GetNbinsX(); k++) {
+                for (int l = 0; l < counts->GetNbinsX(); l++) {
                     
                     if ((E_inv[k][l] != 0) && (oscillate[k] == 1 && oscillate[l] == 1)) {
-                        chisq[i][j] += (counts[0][k] * (1 - numu_to_numu(distance[k]/energy[k]))) * E_inv[k][l] * (counts[0][l] * (1 - nutonu(distance[l]/energy[l])));
+                        
+                        chisq[i][j] += (counts->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/counts->GetBinCenter(k+1)))) * E_inv[k][l] * (counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/counts->GetBinCenter(l+1))));
+                        
                     }
                 }
                 
