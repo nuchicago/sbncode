@@ -150,12 +150,13 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         for (auto const& mcpart : mcparticle) {
             
             // Look only at muons and pions
-            if (mcpart->PdgCode()*mcpart->PdgCode() == 13*13 || mcpart->PdgCode()*mcpart->PdgCode() == 211*211) {
+            if ((mcpart->PdgCode()*mcpart->PdgCode() == 13*13 && nu.CCNC() == simb::kCC) || 
+                (mcpart->PdgCode()*mcpart->PdgCode() == 211*211 && nu.CCNC() == simb::kNC)) {
                 
                 // Cut off those whose total track length is less than 50cm
                 if (mcpart->Trajectory().TotalLength() < 50) { continue; }
                 
-                // Muon (0) or pion (1)?
+                // Muon (0) or pion (1)? Could create extra branch for this, potentially...
                 int part_ind = 0;
                 if (mcpart->PdgCode()*mcpart->PdgCode() == 211*211) { part_ind = 1; }
                 
@@ -185,13 +186,6 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
             reco.push_back(interaction);
         }
         
-        /*
-        if (nu.CCNC() == simb::kCC && nu.Mode() == 0 && nu.Nu().PdgCode() == 14) {
-            Event::Interaction interaction = TruthReco(mctruth);
-            reco.push_back(interaction);
-        }
-        */
-        
     }
 
     bool selected = !reco.empty();
@@ -205,7 +199,7 @@ void NumuSelection::Finalize() {
     
     std::cout << std::endl << std::endl << std::endl 
     << " In all, had " << fNuinFid << " neutrinos that reacted in the fiducial volume" << std::endl
-    << "and selected " << fNuCount << " of those (" << (double)fNuCount/fNuinFid << ")." 
+    << "and selected " << fNuCount << " of those (a proportion " << (double)fNuCount/fNuinFid << ")." 
     << std::endl << std::endl << std::endl;
     
 }

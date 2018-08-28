@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <string>
 #include <iostream>
 #include <cassert>
@@ -24,39 +25,16 @@ class EventSample {
     
     public:
         /** Constructors. */
+        EventSample();
         EventSample(TTree* _tree, float scaleFactor) : tree(_tree), fScaleFactor(scaleFactor) {}
         EventSample(std::vector<std::string> filenames, float fScaleFactor);
-        
-        // My own... (Added two new public members: string for detector and string for description of sample)
-        EventSample(TFile* _file, TTree* _tree, float ScaleFactor, std::string Det, std::string Desc) : file(_file), tree(_tree), fScaleFactor(ScaleFactor), sDet(Det), sDesc(Desc) {
-
-            // Detector
-            if (Det == "sbnd") {
-                sDet = "SBND";
-            } else if (Det == "uboone") {
-                sDet = "MicroBooNE";
-            } else if (Det == "icarus") {
-                sDet = "ICARUS";
-            } else {
-                std::cout << std::endl << "ERROR: " << Det << " not valid detector." << std::endl << std::endl;
-                assert(false);
-            }
-
-            // Description
-            if (Desc == "nu") {
-                sDesc = "Neutrino";
-            } else {
-                std::cout << std::endl << "ERROR: Sample type" << Desc << " not supported." << std::endl << std::endl;
-                assert(false);
-            }
-
-        }
+        EventSample(TFile* _file, TTree* _tree, float ScaleFactor, std::string Det, std::string Desc);
         
         TFile* file;            //!< File containing the tree
         TTree* tree;            //!< Event tree
         float fScaleFactor;     //!< Factor for POT (etc.) scaling
-        std::string sDet;       //!< What detector it comes from
-        std::string sDesc;      //!< (Very concise) Description of sample
+        std::string fDet;       //!< What detector it comes from
+        std::string fDesc;      //!< (Very concise) Description of sample
     
 };
 
@@ -67,7 +45,10 @@ class Covariance {
         Covariance(std::vector<EventSample> samples);
         //SavePNGs(std::string directory);
         
-        TH2D *covmat, *fcovmat, *corrmat;   // Covariance, fractional covariance and correlation matrices.
+        TH2D *covmat, *fcovmat, *corrmat;       // Covariance, fractional covariance and correlation matrices.
+        TH1D *CV_counts;                        // CV universe counts.
+        std::vector <std::string> sample_order; // Description of samples used, in order they were plotted.
+        std::vector <int> sample_bins;          // Bin limits of samples.
     
 };
 
