@@ -50,6 +50,7 @@ class NumuSelection : public core::SelectionBase {
 
     protected:
         unsigned fEventCounter; //!< Count processed events
+        unsigned fNuAll;        //!< Count all events
         unsigned fNuCount;      //!< Count selected events
         unsigned fNuinFid;      //!< Count nus that reacted in the fiducial volume
 

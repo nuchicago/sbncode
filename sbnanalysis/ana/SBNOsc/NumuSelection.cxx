@@ -93,7 +93,7 @@ std::vector <double> get_lens(auto mcpart, std::string det) {
     
 }
 
-NumuSelection::NumuSelection() : SelectionBase(), fEventCounter(0), fNuCount(0), fNuinFid(0) {}
+NumuSelection::NumuSelection() : SelectionBase(), fEventCounter(0), fNuAll(0), fNuCount(0), fNuinFid(0) {}
 
 void NumuSelection::Initialize(Json::Value* config) {
     
@@ -138,7 +138,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         const simb::MCNeutrino& nu = mctruth.GetNeutrino();
         
         /* Skip if vertex is outside fiducial volume */
-        fNuinFid++;
+        fNuAll++; fNuinFid++;
         std::vector <double> vertex = {nu.Nu().Vx(), nu.Nu().Vy(), nu.Nu().Vz()};
         if (!in_detector(vertex, fDet)) { fNuinFid--; continue; }
         
@@ -198,9 +198,12 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
 void NumuSelection::Finalize() {
     
     std::cout << std::endl << std::endl << std::endl 
-    << " In all, had " << fNuinFid << " neutrinos that reacted in the fiducial volume" << std::endl
-    << "and selected " << fNuCount << " of those (a proportion " << (double)fNuCount/fNuinFid << ")." 
+    << "In all, we had " << fNuAll << " neutrinos" << std::endl
+    << "Of these, " << fNuinFid << " reacted in the fiducial volume (a proportion" << (double)fNuinFid/fNuAll << ")" << std::endl
+    << "And we selected " << fNuCount << " of those (a proportion " << (double)fNuCount/fNuinFid << ")." 
     << std::endl << std::endl << std::endl;
+    
+    std::cout << fNuAll << " & " << fNuinFid << " (" << (double)fNuinFid/fNuAll << ") & " << fNuCount << " (" << (double)fNuCount/fNuinFid << ") " << std::endl << std::endl;
     
 }
 
