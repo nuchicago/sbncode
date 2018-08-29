@@ -106,7 +106,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     
     std::cout << std::endl << "cov.sample_bins: ";
     for (int i = 0; i < cov.sample_bins.size(); i++) {
-        std::cout << cov.sample.bins[i] << ", ";
+        std::cout << cov.sample_bins[i] << ", ";
     }
     std::cout << std::endl;
     
