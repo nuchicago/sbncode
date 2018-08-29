@@ -81,7 +81,6 @@ public:
     double w;              //!< Hadronic invariant mass W
     double t;              //!< Kinematic t
     double energy;         //!< Neutrino energy (GeV)
-    double visible_energy; //!< "Visible" energy from neutrino interaction. Contains sum of non-neutral hadronic kinetic energy and lepton total energy. Does not account for containment.
     TVector3 momentum;     //!< Neutrino three-momentum
   };
 
