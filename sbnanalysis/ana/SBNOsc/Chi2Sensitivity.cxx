@@ -193,7 +193,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     }
     
     logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
-    gStyle->SetPalette(1);
+    //gStyle->SetPalette(1);
     logchisqplot->Draw("surf1");
     chisqcanvas->SaveAs("/sbnd/data/users/gavarela/selection/new/cov_output/chisq.pdf");
     
