@@ -47,6 +47,7 @@ class Covariance {
         
         TH2D *covmat, *fcovmat, *corrmat;       // Covariance, fractional covariance and correlation matrices.
         TH1D *CV_counts;                        // CV universe counts.
+        std::vector <double> energies;          // Bin centre (energy) for CV hist (and cov, fcov, corr).
         std::vector <std::string> sample_order; // Description of samples used, in order they were plotted.
         std::vector <int> sample_bins;          // Bin limits of samples.
     

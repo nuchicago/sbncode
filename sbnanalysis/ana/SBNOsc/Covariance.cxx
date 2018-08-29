@@ -259,6 +259,8 @@ Covariance::Covariance(std::vector<EventSample> samples) {
             *alt5_canvas = new TCanvas("alt5_canvas", "Fifth Alternative Universe", 950, 345);
     base_canvas->Divide(3, 1); alt5_canvas->Divide(3, 1);
     
+    std::vector <double> energies;
+    
     for (int o = 0; o < plot_order.size(); o++) {
         
         // Get relevant sample
@@ -342,16 +344,20 @@ Covariance::Covariance(std::vector<EventSample> samples) {
             }
         }
         
-        // Pass onto the big histograms and normalise POT
+        // Pass onto the big histograms and get energies
         for (int h = 0; h < temp_count_hists.size(); h++) {
             
             for (int bin = 0; bin < nbins; bin++) {
+                
+                if (h == 0) { energies.push_back(temp_count_hists[h]->GetBinCenter(bin+1)); }
                 count_hists[h]->SetBinContent(1+offset[o]+bin, temp_count_hists[h]->GetBinContent(bin+1));
+                
             }
             
             count_hists[h]->GetXaxis()->SetBinLabel(offset[o]+nbins/2, (sample.fDet+" "+sample.fDesc).c_str());
             count_hists[h]->GetXaxis()->LabelsOption("h");
             // temp_count_hists[h]->Delete();
+            
         }
         
     }
@@ -433,6 +439,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     //// ~~~~~~~~~~~~~~~~~~~~~~~
     
     CV_counts = count_hists[0];
+    energies = energies
     
     sample_order = plot_order;
     sample_bins = offset;

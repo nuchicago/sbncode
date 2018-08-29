@@ -14,10 +14,9 @@ class Chi2Sensitivity {
     
     public:
         Chi2Sensitivity(std::vector<EventSample> samples);
-        Chi2Sensitivity(TH2D* cov, TH1D *counts, std::vector <std::string> sample_order, std::vector <int> sample_bins);
+        Chi2Sensitivity(Covariance::Covariance cov);
         
-        // TGraph
-    
+        TGraph *contour_90pct, contour_3sigma, contour_5sigma;
     
 };
 
