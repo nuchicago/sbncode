@@ -141,6 +141,12 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
     
+    std::cout << std::endl << "About to calculate covariances. First, here are the counts, energies and distances (and osc)!" << std::endl;
+    for (int i = 0; i < cov.energies.size(); i++) {
+        std::cout << "   " << cov.CV_counts->GetBinContent(i+1) << " , " << cov.energies[i] << " , " << distance[i] << "(" << oscillate[i] << ")" << std::endl;
+    }
+    std::cout << std::endl;
+    
     double minchisq = 1e99, fardetected_osc;
     std::vector <double> npzeros(np, 0);
     std::vector <std::vector <double> > chisq(np, npzeros);
