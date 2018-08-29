@@ -80,6 +80,7 @@ public:
     double modq_lab;       //!< |q|, lab frame
     double w;              //!< Hadronic invariant mass W
     double t;              //!< Kinematic t
+    double eccqe;          //!< CCQE energy
     double energy;         //!< Neutrino energy (GeV)
     TVector3 momentum;     //!< Neutrino three-momentum
   };
