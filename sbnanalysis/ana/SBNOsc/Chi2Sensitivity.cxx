@@ -144,7 +144,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
         std::cout << "     " << k << ") " << cov.CV_counts->GetBinContent(k+1) << ", " << cov.energies[k] << std::endl;
     }
-    std::endl;
+    std::cout << std::endl;
     
     double minchisq = 1e99, fardetected_osc;
     std::vector <double> npzeros(np, 0);
