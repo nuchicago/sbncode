@@ -362,6 +362,12 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         
     }
     
+    std::cout << std::endl << "Created energies in Covariance. Length " << energies.size() << ". Here it is: ";
+    for (int i = 0; i < energies.size(); i++) {
+        std::cout << energies[i] << ", ";
+    }
+    std::endl;
+    
     TCanvas *tempcanvas = new TCanvas();
     count_hists[0]->Draw(); count_hists[0]->SetStats(kFALSE);
     tempcanvas->SaveAs("/sbnd/data/users/gavarela/selection/new/cov_output/base.pdf");

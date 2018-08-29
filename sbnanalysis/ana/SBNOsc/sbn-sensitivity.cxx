@@ -95,6 +95,12 @@ int main(int argc, char* argv[]) {
     
     ana::SBNOsc::Covariance cov(samples);
     
+    std::cout << std::endl << "Finished running cov in sbn-sensitivity. cov.energies length " << cov.energies.size() << ". Here it is: ";
+    for (int i = 0; i < cov.energies.size(); i++) {
+        std::cout << cov.energies[i] << ", ";
+    }
+    std::endl;
+    
     // Write to file
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
     
