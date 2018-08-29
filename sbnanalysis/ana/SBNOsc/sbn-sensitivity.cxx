@@ -68,10 +68,10 @@ int main(int argc, char* argv[]) {
                               detlist = {"sbnd", "uboone", "icarus"},
                              desclist = {"numu", "numu", "numu"};
     
-    //std::string prelist = "/sbnd/data/users/gavarela/selection/", postlist = "/spatel_output/spatel.list";
-    //std::vector <float> scalelist = {getPOTs(prelist+"sbnd"+postlist), getPOTs(prelist+"uboone"+postlist), getPOTs(prelist+"icarus"+postlist)};
+    std::string prelist = "/sbnd/data/users/gavarela/selection/", postlist = "/spatel_output/spatel.list";
+    std::vector <float> scalelist = {getPOTs(prelist+"sbnd"+postlist), getPOTs(prelist+"uboone"+postlist), getPOTs(prelist+"icarus"+postlist)};
     
-    std::vector <float> scalelist = {3.0958e18, 8.87435e19, 6.59165e18};
+    //std::vector <float> scalelist = {3.0958e18, 8.87435e19, 6.59165e18};
     std::vector <ana::SBNOsc::EventSample> samples;
     
     std::vector <TFile*> tfiles;
