@@ -20,7 +20,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples) {
 }
       
 // Personal preference (more explicit about what is used)...
-Chi2Sensitivity::Chi2Sensitivity(Covariance::Covariance cov) {
+Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     
     /*
         Inputs: 
