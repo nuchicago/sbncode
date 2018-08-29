@@ -7,6 +7,8 @@
 
 #include "Covariance.h"
 
+#include <TGraph.h>
+
 namespace ana {
 namespace SBNOsc {
 
@@ -16,7 +18,7 @@ class Chi2Sensitivity {
         Chi2Sensitivity(std::vector<EventSample> samples);
         Chi2Sensitivity(Covariance::Covariance cov);
         
-        TGraph *contour_90pct, contour_3sigma, contour_5sigma;
+        TGraph *contour_90pct, *contour_3sigma, *contour_5sigma;
     
 };
 
