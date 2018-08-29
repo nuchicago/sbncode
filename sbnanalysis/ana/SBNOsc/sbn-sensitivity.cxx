@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < cov.energies.size(); i++) {
         std::cout << cov.energies[i] << ", ";
     }
-    std::endl;
+    std::cout << std::endl;
     
     // Write to file
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";

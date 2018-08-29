@@ -366,7 +366,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     for (int i = 0; i < energies.size(); i++) {
         std::cout << energies[i] << ", ";
     }
-    std::endl;
+    std::cout << std::endl;
     
     TCanvas *tempcanvas = new TCanvas();
     count_hists[0]->Draw(); count_hists[0]->SetStats(kFALSE);
