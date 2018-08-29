@@ -36,7 +36,7 @@ bool in_MicroBooNE(std::vector <double> coords) {
 
 bool in_ICARUS(std::vector <double> coords) {
     
-    return (coords[0] > -354.49)*(coords[0] < -226.29)*(coords[1] > -163.41)*(coords[1] < 153.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652) + (coords[0] > -206.14)*(coords[0] < -77.94)*(coords[1] > -163.41)*(coords[1] < 153.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652);
+    return (coords[0] > -354.49)*(coords[0] < -226.29)*(coords[1] > -163.41)*(coords[1] < 133.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652) + (coords[0] > -206.14)*(coords[0] < -77.94)*(coords[1] > -163.41)*(coords[1] < 133.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652);
     
     // Still need to add other TPCs if the simulation starts including them...
     
