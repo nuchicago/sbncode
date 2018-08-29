@@ -95,12 +95,6 @@ int main(int argc, char* argv[]) {
     
     ana::SBNOsc::Covariance cov(samples);
     
-    std::cout << std::endl << "Finished running cov in sbn-sensitivity. cov.energies length " << cov.energies.size() << ". Here it is: ";
-    for (int i = 0; i < cov.energies.size(); i++) {
-        std::cout << cov.energies[i] << ", ";
-    }
-    std::cout << std::endl;
-    
     // Write to file
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
     
@@ -178,7 +172,7 @@ int main(int argc, char* argv[]) {
     range->Draw("P same");
     gr_bestfit->Draw("P same");
     
-    contour_canvas->SaveAs("PNGs/Sensitivity.pdf");
+    contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
     
 
     return 0;
