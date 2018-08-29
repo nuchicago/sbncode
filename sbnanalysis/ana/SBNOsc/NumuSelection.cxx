@@ -24,21 +24,19 @@ namespace SBNOsc {
 
 bool in_SBND(std::vector <double> coords) {
 
-    return (coords[0] > -189.15)*(coords[0] < -12.65)*(coords[1] > -190)*(coords[1] < 190)*(coords[2] > 10)*(coords[2] < 490) + (coords[0] > 12.65)*(coords[0] < 189.15)*(coords[1] > -190)*(coords[1] < 190)*(coords[2] > 10)*(coords[2] < 490);
+    return (coords[0] > -174.15)*(coords[0] < -27.65)*(coords[1] > -175)*(coords[1] < 175)*(coords[2] > 30)*(coords[2] < 450) + (coords[0] > 27.65)*(coords[0] < 174.15)*(coords[1] > -175)*(coords[1] < 175)*(coords[2] > 30)*(coords[2] < 450);
 
 }
 
 bool in_MicroBooNE(std::vector <double> coords) {
     
-    return (coords[0] > 8.45)*(coords[0] < 244.8)*(coords[1] > -105.53)*(coords[1] < 107.47)*(coords[2] > 10.1)*(coords[2] < 1026.9);
+    return (coords[0] > 23.45)*(coords[0] < 229.8)*(coords[1] > -90.53)*(coords[1] < 92.47)*(coords[2] > 30.1)*(coords[2] < 986.9);
     
 }
 
 bool in_ICARUS(std::vector <double> coords) {
     
-    return (coords[0] > -354.49)*(coords[0] < -226.29)*(coords[1] > -163.41)*(coords[1] < 133.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652) + (coords[0] > -206.14)*(coords[0] < -77.94)*(coords[1] > -163.41)*(coords[1] < 133.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652);
-    
-    // Still need to add other TPCs if the simulation starts including them...
+    return (coords[0] > -339.49)*(coords[0] < -241.29)*(coords[1] > -158.41)*(coords[1] < 118.41)*(coords[2] > -884.950652)*(coords[2] < 854.950652) + (coords[0] > -191.14)*(coords[0] < -92.94)*(coords[1] > -163.41)*(coords[1] < 133.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652) + (coords[0] > -42.94)*(coords[0] < -191.14)*(coords[1] > -158.41)*(coords[1] < 118.41)*(coords[2] > -884.950652)*(coords[2] < 854.950652) + (coords[0] > 241.29)*(coords[0] < 339.49)*(coords[1] > -163.41)*(coords[1] < 133.41)*(coords[2] > -899.950652)*(coords[2] < 869.950652);
     
 }
 
