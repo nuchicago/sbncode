@@ -17,6 +17,10 @@
 #include <TTreePlayer.h>
 #include <fstream>
 
+#include <TCanvas.h>
+#include <TGraph.h>
+#include <TLegend.h>
+
 double getPOTs(std::string filelist) {
     
     /* Stolen from Swapnil */

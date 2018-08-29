@@ -6,6 +6,7 @@
 #include <TMatrixDSym.h>
 
 #include <TF1.h>
+#include <TGraph.h>
 
 namespace ana {
   namespace SBNOsc {
