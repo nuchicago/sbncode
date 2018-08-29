@@ -98,7 +98,7 @@ int main(int argc, char* argv[]) {
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
     
     TFile* covfile = TFile::Open((directory + "cov.root").c_str(), "recreate");
-    assert(covfile && newfile->IsOpen());
+    assert(covfile && covfile->IsOpen());
     
     cov.covmat->Write();
     cov.fcovmat->Write();
@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
     std::vector <int> colours = {30, 38, 46};
     std::vector <TGraph*> contour_graphs = {chi2.contour_90pct, chi2.contour_3sigma, chi2.contour_5sigma};
     
-    for (int g = 0; g < graphs.size(); g++) {
+    for (int g = 0; g < contour_graphs.size(); g++) {
         
         contour_graphs[g]->SetMarkerStyle(20);
         contour_graphs[g]->SetMarkerSize(0.1);
@@ -153,9 +153,9 @@ int main(int argc, char* argv[]) {
     contour_graphs[0]->SetTitle("SBN Sensitivity; sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
     
     TLegend *legend = new TLegend();
-    legend->AddEntry(graphs[0], "90% CL", "l");
-    legend->AddEntry(graphs[1], "3#sigma CL", "l");
-    legend->AddEntry(graphs[2], "5#sigma CL", "l");
+    legend->AddEntry(contour_graphs[0], "90% CL", "l");
+    legend->AddEntry(contour_graphs[1], "3#sigma CL", "l");
+    legend->AddEntry(contour_graphs[2], "5#sigma CL", "l");
     legend->AddEntry(gr_bestfit, "Best Fit Point", "p");
     
     contour_canvas->SetLogy();
