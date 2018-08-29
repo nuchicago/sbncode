@@ -12,6 +12,7 @@
 #include "json/json.h"
 #include "Event.hh"
 #include "Loader.hh"
+#include "util/Interaction.hh"
 #include "ProcessorBase.hh"
 
 namespace core {
@@ -131,6 +132,9 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
     interaction.lepton.pdg = lepton.PdgCode();
     interaction.lepton.energy = lepton.Momentum(0).Energy();
     interaction.lepton.momentum = lepton.Momentum(0).Vect();
+
+    // get CCQE energy from lepton info
+    interaction.neutrino.eccqe = util::ECCQE(interaction.lepton.momentum, interaction.lepton.energy);
 
     // Hadronic system
     TLorentzVector q_labframe = nu.Nu().EndMomentum() - lepton.Momentum(0);
