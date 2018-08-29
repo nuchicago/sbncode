@@ -104,17 +104,26 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
         
     }
     
+    std::cout << std::endl << "cov.sample_bins: ";
+    for (int i = 0; i < cov.sample_bins.size(); i++) {
+        std::cout << cov.sample.bins[i] << ", ";
+    }
+    std::cout << std::endl;
+    
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
     std::vector <int> oscillate(cov.CV_counts->GetNbinsX(), 0);
-    for (int i = 0; i < oscillate.size(); i++) {
-        std::cout << std::endl << "On index " << i << " have sample " << cov.sample_order[i] << std::endl;
+    for (int i = 0; i < cov.sample_order.size(); i++) {
+        
         if (cov.sample_order[i].find("#nu_{#mu}") != std::string::npos) {
-            oscillate[i] = 1;
-            std::cout << "   Got in numu!" << std::endl;
+            for (int j = cov.sample_bins[i]; j < cov.sample_bins[i+1]; j++) {
+                oscillate[j] = 1;
+            }
         } else if (cov.sample_order[i].find("#nu_{e}") != std::string::npos) {
-            oscillate[i] = 2;
-            std::cout << "   Got in nue!" << std::endl;
+            for (int j = cov.sample_bins[i]; j < cov.sample_bins[i+1]; j++) {
+                oscillate[j] = 2;
+            }
         }
+        
     }
     
     // Phase space
