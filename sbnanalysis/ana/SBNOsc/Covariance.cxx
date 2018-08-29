@@ -259,7 +259,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
             *alt5_canvas = new TCanvas("alt5_canvas", "Fifth Alternative Universe", 950, 345);
     base_canvas->Divide(3, 1); alt5_canvas->Divide(3, 1);
     
-    std::vector <double> energies;
+    //std::vector <double> energies;
     
     for (int o = 0; o < plot_order.size(); o++) {
         
@@ -445,7 +445,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     //// ~~~~~~~~~~~~~~~~~~~~~~~
     
     CV_counts = count_hists[0];
-    energies = energies;
+    //energies = energies;
     
     sample_order = plot_order;
     sample_bins = offset;
