@@ -439,7 +439,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
     //// ~~~~~~~~~~~~~~~~~~~~~~~
     
     CV_counts = count_hists[0];
-    energies = energies
+    energies = energies;
     
     sample_order = plot_order;
     sample_bins = offset;
