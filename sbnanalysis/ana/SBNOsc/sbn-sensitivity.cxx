@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
                         weight *= it.second.at(wind);
                     }
                     
-                    std::cout << "Det " << det << " and uni " << u << std::endl;
+                    std::cout << "Det " << det << " and uni " << u << " with weight " << weight << std::endl;
                     
                     temphists[u+1]->Fill(ev->reco[n].neutrino.energy, weight);
 
