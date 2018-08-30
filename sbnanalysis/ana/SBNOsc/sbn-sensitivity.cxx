@@ -35,12 +35,10 @@ int main(int argc, char* argv[]) {
 
     std::cout << std::endl << "Hello!" << std::endl << std::endl;
 
-    // From scratch
-
-    .L $SBN_LIB_DIR/libsbnanalysis_Event.so
+    /* From scratch */
 
 
-    // Get counts
+    /* Get counts */
 
     int n_unis = 100;
     Double_t bins[] = { 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.25, 1.5, 2, 2.5, 3 };
@@ -120,7 +118,7 @@ int main(int argc, char* argv[]) {
 
     }
 
-    // Plot base
+    /* Plot base */
 
     TCanvas *basec = new TCanvas();
     basec->Divide(3 1);
@@ -134,7 +132,7 @@ int main(int argc, char* argv[]) {
     basec->SaveAs("test/basecounts.png");
 
 
-    // Get cov, fcov and corr
+    /* Get cov, fcov and corr */
 
     TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
          *fcov = new TH2D("fcov", "Fractional Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins);
@@ -167,7 +165,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    // Plot
+    /* Plot */
 
     TCanvas *c = new TCanvas();
     cov->Draw("hist"); c->SaveAs("test/cov.png");
@@ -175,7 +173,7 @@ int main(int argc, char* argv[]) {
     corr->Draw("hist"); c->SaveAs("test/corr.png");
 
 
-    // Invert Error
+    /* Invert Error */
 
     TMatrixDSym E_mat(cov.covmat->GetNbinsX());
 
@@ -190,7 +188,7 @@ int main(int argc, char* argv[]) {
 
     TMatrixD E_inv = E_mat.Invert();
 
-    // Get chisq
+    /* Get chisq */
 
     TF1 numu_to_numu("numu_to_numu", "1 - [0] * (sin(1.27 * [1] * x))^2", 0, 25);
 
@@ -217,14 +215,12 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
 
-            // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
 
-            // Find null and oscillation fluxes and detections and calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
                 for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
 
-                    if ((E_inv[k][l] != 0) && (oscillate[k] == 1 && oscillate[l] == 1)) {
+                    if (E_inv[k][l] != 0) {
 
                         chisq[i][j] += (hists[0]->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/energies[k])));
 
@@ -237,7 +233,6 @@ int main(int argc, char* argv[]) {
 
             }
 
-            // Check if min chisq
             if (chisq[i][j] < minchisq) {
                 minchisq = chisq[i][j];
             }
@@ -259,7 +254,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    // Plot
+    /* Plot */
 
     TCanvas *chisqcanvas = new TCanvas();
 
@@ -276,7 +271,7 @@ int main(int argc, char* argv[]) {
     chisqcanvas->SaveAs("test/chisq.png");
 
 
-    // Get contour
+    /* Get contour */
 
 
 
