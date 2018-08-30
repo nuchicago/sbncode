@@ -212,7 +212,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
         // Proposal uses below but I don't have enough events for it to look good:
         // { 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1, 1.25, 1.5, 2, 2.5, 3 };
     
-    std::map <std::string, float> scale_tgt = {{"SBND", 6.6e20}, {"MicroBooNE", 13.2e21}, {"ICARUS", 6.6e20}};
+    std::map <std::string, float> scale_tgt = {{"SBND", 6.6e20}, {"MicroBooNE", 1.32e21}, {"ICARUS", 6.6e20}};
     
     // Some stuff related to binning and plotting
     Int_t num_nue_bins = sizeof(nue_bins)/sizeof(Double_t) - 1,
@@ -300,12 +300,12 @@ Covariance::Covariance(std::vector<EventSample> samples) {
                 
                 // Add (reconstructed) energy to base universe histogram
                 double nuE = event->reco[t].neutrino.energy;
-                temp_count_hists[0]->Fill(nuE, 1 + 1*(sample.fDet=="ICARUS"));
+                temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each universe
                 std::vector <double> uweights = get_uni_weights(event->truth[t].weights, n_alt_unis);
                 for (int u = 0; u < uweights.size(); u++) {
-                    temp_count_hists[u+1]->Fill(nuE, (1 + 1*(sample.fDet=="ICARUS"))*uweights[u]);
+                    temp_count_hists[u+1]->Fill(nuE, uweights[u]);
                 }
                 
             }
