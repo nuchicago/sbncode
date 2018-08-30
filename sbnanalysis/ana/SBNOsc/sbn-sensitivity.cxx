@@ -132,13 +132,17 @@ int main(int argc, char* argv[]) {
         std::cout << "Doing basehist " << h << std::endl;
         
         basec->cd(h+1);
-        basehists[h]->Draw("hist");
+        //basehists[h]->Draw("hist");
 
     }
 
-    basec->SaveAs((dir+"test/basecounts.png").c_str());
+    //basec->SaveAs((dir+"test/basecounts.png").c_str());
 
-
+    
+    TCanvas *can = new TCanvas();
+    hists[0]->Draw("hist");
+    can->SaveAs((dir+"test/basecounts.png").c_str());
+    
     /* Get cov, fcov and corr */
 
     TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
