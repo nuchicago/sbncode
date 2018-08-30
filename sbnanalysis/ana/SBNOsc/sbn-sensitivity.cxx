@@ -145,9 +145,10 @@ int main(int argc, char* argv[]) {
     can->SaveAs((dir+"test/basecounts.png").c_str());
     
     /* Get cov, fcov and corr */
-
-    TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
-         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins);
+    int allbins = hists[0]->GetNbinsX();
+    
+    TH2D *cov = new TH2D("cov", "Covariance Matrix", allbins, 0, allbins, allbins, 0, allbins),
+         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", allbins, 0, allbins, allbins, 0, allbins);
 
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -166,7 +167,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    TH2D *corr = new TH2D("corr", "Correlation Matrix", nbins, 0, nbins, nbins, 0, nbins);
+    TH2D *corr = new TH2D("corr", "Correlation Matrix", allbins, 0, allbins, allbins, 0, allbins);
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
 
