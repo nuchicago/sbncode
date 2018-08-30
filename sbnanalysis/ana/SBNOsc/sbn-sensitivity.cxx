@@ -36,7 +36,8 @@ int main(int argc, char* argv[]) {
     std::cout << std::endl << "Hello!" << std::endl << std::endl;
 
     /* From scratch */
-
+    
+    std::string dir = "/sbnd/data/users/gavarela/selection/new/";
 
     /* Get counts */
 
@@ -58,7 +59,7 @@ int main(int argc, char* argv[]) {
 
         std::string det = dets[d];
 
-        TFile f(("output_" + det + "_new.root").c_str());
+        TFile f((dir + "output_" + det + "_new.root").c_str());
         TTree *tree = (TTree*) f.Get("sbnana");
 
         Event *ev = new Event;
@@ -129,7 +130,7 @@ int main(int argc, char* argv[]) {
 
     }
 
-    basec->SaveAs("test/basecounts.png");
+    basec->SaveAs((dir+"test/basecounts.png").c_str();
 
 
     /* Get cov, fcov and corr */
@@ -168,9 +169,9 @@ int main(int argc, char* argv[]) {
     /* Plot */
 
     TCanvas *c = new TCanvas();
-    cov->Draw("hist"); c->SaveAs("test/cov.png");
-    fcov->Draw("hist"); c->SaveAs("test/fcov.png");
-    corr->Draw("hist"); c->SaveAs("test/corr.png");
+    cov->Draw("hist"); c->SaveAs((dir + "test/cov.png").c_str());
+    fcov->Draw("hist"); c->SaveAs((dir+"test/fcov.png").c_str());
+    corr->Draw("hist"); c->SaveAs((dir+"test/corr.png").c_str());
 
 
     /* Invert Error */
@@ -267,7 +268,7 @@ int main(int argc, char* argv[]) {
 
     logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
     logchisqplot->Draw("surf1");
-    chisqcanvas->SaveAs("test/chisq.png");
+    chisqcanvas->SaveAs((dir+"test/chisq.png").c_str());
 
 
     /* Get contour */
