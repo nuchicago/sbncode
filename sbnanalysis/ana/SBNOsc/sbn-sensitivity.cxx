@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
     Int_t nbins = sizeof(bins)/sizeof(Double_t) - 1;
 
     std::vector <std::string> dets = {"SBND", "MicroBooNE", "ICARUS"};
-    std::vector <double> scale_factor = {6.6e20/3.0958e18, 1.32e21/8.87435e19, 6.6e20/6.59165e18};
+    std::vector <double> scalefactor = {6.6e20/3.0958e18, 1.32e21/8.87435e19, 6.6e20/6.59165e18};
 
     std::vector <TH1D*> hists = {new TH1D("base", "Base; GeV;", 3*nbins, 0, 3*nbins)}, basehists;
     for (int i = 0; i < n_unis; i++) {
@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 
                     double weight = 1;
                     int wind;
-                    for (auto it : weights) {
+                    for (auto it : ev->truth[n].weights) {
                         wind = u;
                         while (wind >= it.second.size()) { wind -= it.second.size(); }
                         weight *= it.second.at(wind);
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
             }
 
             for (int h = 0; h < temphists.size(); h++) {
-                for (int b = 0; b < temphists[u]->GetNbinsX(); b++) {
+                for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {
 
                     if (h == 0) {
 
@@ -121,7 +121,7 @@ int main(int argc, char* argv[]) {
     /* Plot base */
 
     TCanvas *basec = new TCanvas();
-    basec->Divide(3 1);
+    basec->Divide(3, 1);
     for (int h = 0; h < basehists.size(); h++) {
 
         basec->cd(h+1);
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
 
             double covij = 0;
-            for (int u = 0; u < n_alt_unis; u++) {
+            for (int u = 0; u < n_unis; u++) {
                 covij += (hists[0]->GetBinContent(i+1) - hists[u]->GetBinContent(i+1)) * 
                          (hists[0]->GetBinContent(j+1) - hists[u]->GetBinContent(j+1));
             }
@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    TH2D *corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    TH2D *corr = new TH2D("corr", "Correlation Matrix", nbins, 0, nbins, nbins, 0, nbins);
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
 
@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
 
     /* Invert Error */
 
-    TMatrixDSym E_mat(cov.covmat->GetNbinsX());
+    TMatrixDSym E_mat(cov->GetNbinsX());
 
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -195,7 +195,7 @@ int main(int argc, char* argv[]) {
     std::vector <double> distance, detdist = {0.1, 0.47, 0.6};
     for (int d = 0; d < detdist.size(); d++){
         for (int i = 0; i < nbins; i++){
-            distance.push_back(detsist[d]);
+            distance.push_back(detdist[d]);
         }
     }
 
@@ -217,8 +217,8 @@ int main(int argc, char* argv[]) {
 
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
 
-            for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
-                for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
+            for (int k = 0; k < hists[0]->GetNbinsX(); k++) {
+                for (int l = 0; l < hists[0]->GetNbinsX(); l++) {
 
                     if (E_inv[k][l] != 0) {
 
@@ -266,7 +266,6 @@ int main(int argc, char* argv[]) {
     }
 
     logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
-    gStyle->SetPalette(1);
     logchisqplot->Draw("surf1");
     chisqcanvas->SaveAs("test/chisq.png");
 
