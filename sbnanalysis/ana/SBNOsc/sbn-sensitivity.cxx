@@ -17,163 +17,270 @@
 #include <TTreePlayer.h>
 #include <fstream>
 
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TTree.h>
+#include <core/Event.hh>
+#include <TFile.h>
+#include <TGraph2D.h>
+#include <TMatrixD.h>
+#include <TDecompLU.h>
+#include <TMatrixDSym.h>
+#include <TF1.h>
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TLegend.h>
 
-double getPOTs(std::string filelist) {
-    
-    /* Stolen from Swapnil */
-    
-    TChain chain("SubRuns");
-    TFileCollection f("dum");
-    f.AddFromFile(filelist.c_str());
-    chain.AddFileInfoList(f.GetList());
-    ((TTreePlayer*)(chain.GetPlayer()))->SetScanRedirect(true);
-    ((TTreePlayer*)(chain.GetPlayer()))->SetScanFileName("total_pot.list");
-    chain.Scan("sumdata::POTSummary_generator__GenieGen.obj.totpot");
-    
-    
-    std::ifstream input("total_pot.list");
-    double total = 0.0;
-    
-    std::string line;
-    while(std::getline(input,line)) {
-        
-        if (line.empty()) continue;
-        std::istringstream is(line);
-        
-        std::string dim1, dim2, dim3;
-        int row;
-        double pot;
-        if (is >> dim1 >> row >> dim2 >> pot >> dim3) { total += pot; }
-        
-    }
-    
-    //remove((std::string)"total_pot.list");
-    
-    //std::cout << "Total Exposure in ICARUS = " << total << std::endl;
-    return total;
-    
-}
-
 int main(int argc, char* argv[]) {
 
     std::cout << std::endl << "Hello!" << std::endl << std::endl;
-    
-    //// Build sample (temporary)
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    std::vector <std::string> DETLIST = {"SBND", "MicroBooNE", "ICARUS"},
-                              detlist = {"sbnd", "uboone", "icarus"},
-                             desclist = {"numu", "numu", "numu"};
-    
-    //std::string prelist = "/sbnd/data/users/gavarela/selection/", postlist = "/spatel_output/spatel.list";
-    //std::vector <float> scalelist = {getPOTs(prelist+"sbnd"+postlist), getPOTs(prelist+"uboone"+postlist), getPOTs(prelist+"icarus"+postlist)};
-    //std::cout << std::endl << "SBND's POT was " << scalelist[0] << ", MicroBooNE's was " << scalelist[1] << " and ICARUS' was " << scalelist[2] << std::endl;
-    
-    std::vector <float> scalelist = {3.0958e18, 8.87435e19, 6.59165e18};
-    std::vector <ana::SBNOsc::EventSample> samples;
-    
-    std::vector <TFile*> tfiles;
-    for (int d = 0; d < detlist.size(); d++) {
-        
-        std::string det = detlist[d], DET = DETLIST[d], desc = desclist[d];
-        float scale = scalelist[d];
-        
-        tfiles.push_back(new TFile(((std::string)"/sbnd/data/users/gavarela/selection/new/output_" + DET + (std::string)"_new.root").c_str()));
-        
-        samples.push_back(ana::SBNOsc::EventSample(tfiles[d], (TTree*)tfiles[d]->Get("sbnana"), scale, det, desc));
-        
+
+    // From scratch
+
+    .L $SBN_LIB_DIR/libsbnanalysis_Event.so
+
+
+    // Get counts
+
+    int n_unis = 100;
+    Double_t bins[] = { 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.25, 1.5, 2, 2.5, 3 };
+    Int_t nbins = sizeof(bins)/sizeof(Double_t) - 1;
+
+    std::vector <std::string> dets = {"SBND", "MicroBooNE", "ICARUS"};
+    std::vector <double> scale_factor = {6.6e20/3.0958e18, 1.32e21/8.87435e19, 6.6e20/6.59165e18};
+
+    std::vector <TH1D*> hists = {new TH1D("base", "Base; GeV;", 3*nbins, 0, 3*nbins)}, basehists;
+    for (int i = 0; i < n_unis; i++) {
+        hists.push_back(new TH1D(("alt" + std::to_string(i+1)).c_str(), "Alt; GeV;", 3*nbins, 0, 3*nbins));
     }
-    
-    assert(!samples.empty());
-    
-    
-    //// Get covariances
-    //// ~~~~~~~~~~~~~~~
-    
-    ana::SBNOsc::Covariance cov(samples);
-    
-    // Write to file
-    std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
-    
-    TFile* covfile = TFile::Open((directory + "cov.root").c_str(), "recreate");
-    assert(covfile && covfile->IsOpen());
-    
-    cov.covmat->Write();
-    cov.fcovmat->Write();
-    cov.corrmat->Write();
-    
-    // Save plots
-    TCanvas *canvas = new TCanvas();
-    cov.covmat->Draw("colz"); cov.covmat->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
-    cov.fcovmat->Draw("colz"); cov.fcovmat->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
-    cov.corrmat->Draw("colz"); cov.corrmat->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
-    
-    
-    //// Get sensitivity contours
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    ana::SBNOsc::Chi2Sensitivity chi2(cov);
-    
-    // Wite to file
-    TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
-    assert(chi2file && chi2file->IsOpen());
-    
-    chi2.contour_90pct->Write();
-    chi2.contour_3sigma->Write();
-    chi2.contour_5sigma->Write();
-    
-    // Save plot
-    TCanvas *contour_canvas = new TCanvas();
-    
-    std::vector <int> colours = {30, 38, 46};
-    std::vector <TGraph*> contour_graphs = {chi2.contour_90pct, chi2.contour_3sigma, chi2.contour_5sigma};
-    
-    for (int g = 0; g < contour_graphs.size(); g++) {
-        
-        contour_graphs[g]->SetMarkerStyle(20);
-        contour_graphs[g]->SetMarkerSize(0.1);
-        contour_graphs[g]->SetMarkerColor(colours[g]);
-        contour_graphs[g]->SetLineColor(colours[g]);
-    
+
+    std::vector <double> energies;
+
+    for (int d = 0; d < dets.size(); d++) {
+
+        std::string det = dets[d];
+
+        TFile f(("output_" + det + "_new.root").c_str());
+        TTree *tree = (TTree*) f.Get("sbnana");
+
+        Event *ev = new Event;
+        tree->SetBranchAddress("events", &ev);
+
+        std::vector <TH1D*> temphists = {new TH1D((det+"tempbase").c_str(), (det + "; GeV;").c_str(), nbins, bins)};
+        for (int i = 0; i < n_unis; i++) {
+            hists.push_back(new TH1D((det+"tempalt"+std::to_string(i+1)).c_str(), "Alt; GeV;", nbins, bins));
+        }
+
+        for (int e = 0; e < tree->GetEntries(); e++) {
+
+            tree->GetEntry(e);
+            if (ev->reco.size() != ev->truth.size()) { continue; }
+
+            for (int n = 0; n < ev->reco.size(); n++) {
+
+                temphists[0]->Fill(ev->reco[n].neutrino.energy);
+
+                for (int u = 0; u < n_unis; u++) {
+
+                    double weight = 1;
+                    int wind;
+                    for (auto it : weights) {
+                        wind = u;
+                        while (wind >= it.second.size()) { wind -= it.second.size(); }
+                        weight *= it.second.at(wind);
+                    }
+
+                    temphists[u+1]->Fill(ev->reco[n].neutrino.energy, weight);
+
+                }
+
+            }
+
+            for (int h = 0; h < temphists.size(); h++) {
+                for (int b = 0; b < temphists[u]->GetNbinsX(); b++) {
+
+                    if (h == 0) {
+
+                        temphists[u]->SetBinContent(b+1, temphists[u]->GetBinContent(b+1) * scalefactor[d] / temphists[u]->GetBinWidth(b+1));
+
+                        energies.push_back(temphists[u]->GetBinCenter(b+1));
+
+                    }
+
+                    int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
+
+                    hists[u]->SetBinContent(offset+b+1, temphists[u]->GetBinContent(b+1) * scalefactor[d] / temphists[u]->GetBinWidth(b+1));
+
+                }
+            }
+
+            basehists.push_back(temphists[0]);
+
+        }
+
     }
-    
-    TGraph *range = new TGraph();
-    range->SetPoint(0, 0.001, 0.01);
-    range->SetPoint(1, 1, 100);
-    range->SetMarkerColor(0);
-    
-    TGraph *gr_bestfit = new TGraph();
-    gr_bestfit->SetPoint(0, 0.062, 1.7);
-    gr_bestfit->SetMarkerStyle(29);
-    gr_bestfit->SetMarkerSize(1.6);
-    gr_bestfit->SetMarkerColor(40);
-    
-    contour_graphs[0]->SetTitle("SBN Sensitivity; sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
-    
-    TLegend *legend = new TLegend();
-    legend->AddEntry(contour_graphs[0], "90% CL", "l");
-    legend->AddEntry(contour_graphs[1], "3#sigma CL", "l");
-    legend->AddEntry(contour_graphs[2], "5#sigma CL", "l");
-    legend->AddEntry(gr_bestfit, "Best Fit Point", "p");
-    
-    contour_canvas->SetLogy();
-    contour_canvas->SetLogx();
-    
-    contour_graphs[0]->Draw("AP");
-    contour_graphs[0]->GetXaxis()->SetRangeUser(0.001, 1);
-    contour_graphs[0]->GetYaxis()->SetRangeUser(0.01, 100);
-    
-    contour_graphs[1]->Draw("P same");
-    contour_graphs[2]->Draw("P same");
-    legend->Draw();
-    range->Draw("P same");
-    gr_bestfit->Draw("P same");
-    
-    contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
-    
+
+    // Plot base
+
+    TCanvas *basec = new TCanvas();
+    basec->Divide(3 1);
+    for (int h = 0; h < basehists.size(); h++) {
+
+        basec->cd(h+1);
+        basehists[h]->Draw();
+
+    }
+
+    basec->SaveAs("test/basecounts.png");
+
+
+    // Get cov, fcov and corr
+
+    TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
+         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins);
+
+    for (int i = 0; i < cov->GetNbinsX(); i++) {
+        for (int j = 0; j < cov->GetNbinsY(); j++) {
+
+            double covij = 0;
+            for (int u = 0; u < n_alt_unis; u++) {
+                covij += (hists[0]->GetBinContent(i+1) - hists[u]->GetBinContent(i+1)) * 
+                         (hists[0]->GetBinContent(j+1) - hists[u]->GetBinContent(j+1));
+            }
+            covij /= n_unis;
+            cov->SetBinContent(i+1, j+1, covij);
+
+            double fcovij = covij / (hists[0]->GetBinContent(i+1) * hists[0]->GetBinContent(j+1));
+            fcov->SetBinContent(i+1, j+1, fcovij);
+
+        }
+    }
+
+    TH2D *corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    for (int i = 0; i < cov->GetNbinsX(); i++) {
+        for (int j = 0; j < cov->GetNbinsY(); j++) {
+
+            double corrij = cov->GetBinContent(i+1, j+1) / TMath::Sqrt(cov->GetBinContent(i+1, i+1) * cov->GetBinContent(j+1, j+1));
+            corr->SetBinContent(i+1, j+1, corrij);
+
+        }
+    }
+
+
+    // Plot
+
+    TCanvas *c = new TCanvas();
+    cov->Draw("hist"); c->SaveAs("test/cov.png");
+    fcov->Draw("hist"); c->SaveAs("test/fcov.png");
+    corr->Draw("hist"); c->SaveAs("test/corr.png");
+
+
+    // Invert Error
+
+    TMatrixDSym E_mat(cov.covmat->GetNbinsX());
+
+    for (int i = 0; i < cov->GetNbinsX(); i++) {
+        for (int j = 0; j < cov->GetNbinsY(); j++) {
+
+            E_mat[i][j] = cov->GetBinContent(i+1, j+1);
+            if (i == j) { E_mat[i][i] += hists[0]->GetBinContent(i+1); }
+
+        }
+    }
+
+    TMatrixD E_inv = E_mat.Invert();
+
+    // Get chisq
+
+    TF1 numu_to_numu("numu_to_numu", "1 - [0] * (sin(1.27 * [1] * x))^2", 0, 25);
+
+    std::vector <double> distance, detdist = {0.1, 0.47, 0.6};
+    for (int d = 0; d < detdist.size(); d++){
+        for (int i = 0; i < nbins; i++){
+            distance.push_back(detsist[d]);
+        }
+    }
+
+    int np = 500;
+    std::vector <double> dm2(np), sin2theta(np);
+    for (int i = 0; i < np; i++) {
+        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(np-1));
+        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
+    }
+
+    clock_t startchi = clock();
+    std::cout << std::endl << "Calculating chi squareds..." << std::endl;
+
+    double minchisq = 1e99;
+    std::vector <double> npzeros(np, 0);
+    std::vector <std::vector <double> > chisq(np, npzeros);
+    for (int i = 0; i < np; i++){
+        for (int j = 0; j < np; j++) {
+
+            // Set function parameters
+            numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
+
+            // Find null and oscillation fluxes and detections and calculate chisq
+            for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
+                for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
+
+                    if ((E_inv[k][l] != 0) && (oscillate[k] == 1 && oscillate[l] == 1)) {
+
+                        chisq[i][j] += (hists[0]->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/energies[k])));
+
+                        chisq[i][j] *= E_inv[k][l];
+
+                        chisq[i][j] *= (hists[0]->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/energies[l])));
+
+                    }
+                }
+
+            }
+
+            // Check if min chisq
+            if (chisq[i][j] < minchisq) {
+                minchisq = chisq[i][j];
+            }
+
+        }
+    }
+
+    clock_t endchi = clock();
+    clock_t tickschi = endchi - startchi;                    // in n of ticks
+    double timechi = tickschi / (double) CLOCKS_PER_SEC;     // make into secs
+
+    std::cout << "   Done in " << timechi << "s. " << std::endl;
+
+    std::vector <std::vector <double> > chisq_diffs(np, npzeros);
+    for (int i = 0; i < chisq.size(); i++) {
+        for (int j = 0; j < chisq[0].size(); j++) {
+            chisq_diffs[i][j] = chisq[i][j] - minchisq;
+        }
+    }
+
+
+    // Plot
+
+    TCanvas *chisqcanvas = new TCanvas();
+
+    TGraph2D *logchisqplot = new TGraph2D();
+    for (int i = 0; i < np; i++) {
+        for (int j = 0; j < np; j++) {
+            logchisqplot->SetPoint(i*np + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
+        }
+    }
+
+    logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
+    gStyle->SetPalette(1);
+    logchisqplot->Draw("surf1");
+    chisqcanvas->SaveAs("test/chisq.png");
+
+
+    // Get contour
+
+
+
+
 
     return 0;
 
