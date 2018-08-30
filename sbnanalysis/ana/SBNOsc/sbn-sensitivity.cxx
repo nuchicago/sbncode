@@ -100,7 +100,7 @@ int main(int argc, char* argv[]) {
         }
 
         for (int h = 0; h < temphists.size(); h++) {
-            for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {}
+            for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {
 
                 int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
 
@@ -113,11 +113,12 @@ int main(int argc, char* argv[]) {
                     energies.push_back(temphists[h]->GetBinCenter(b+1));
 
                 }
-
+                
             }
+        
+            basehists.push_back(temphists[0]);
+        
         }
-
-        basehists.push_back(temphists[0]);
 
     }
 
