@@ -294,7 +294,8 @@ Covariance::Covariance(std::vector<EventSample> samples) {
             
             sample.tree->GetEntry(e);
             
-            for (int t = 0; t < event->truth.size(); t++) {
+            if (event->reco.size() != event->truth.size()) { continue; }
+            for (int t = 0; t < event->reco.size(); t++) {
                 
                 nucount++;
                 

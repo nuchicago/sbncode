@@ -107,12 +107,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
         
     }
     
-    std::cout << std::endl << "cov.sample_bins: ";
-    for (int i = 0; i < cov.sample_bins.size(); i++) {
-        std::cout << cov.sample_bins[i] << ", ";
-    }
-    std::cout << std::endl;
-    
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
     std::vector <int> oscillate(cov.CV_counts->GetNbinsX(), 0);
     for (int i = 0; i < cov.sample_order.size(); i++) {
@@ -141,13 +135,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
     
-    std::cout << std::endl << "About to calculate covariances. First, here are the counts, energies and distances (and osc)!" << std::endl;
-    for (int i = 0; i < cov.energies.size(); i++) {
-        std::cout << "   " << cov.CV_counts->GetBinContent(i+1) << " , " << cov.energies[i] << " , " << distance[i] << "(" << oscillate[i] << ")" << std::endl;
-    }
-    std::cout << std::endl;
-    
-    double minchisq = 1e99, fardetected_osc;
+    double minchisq = 1e99;
     std::vector <double> npzeros(np, 0);
     std::vector <std::vector <double> > chisq(np, npzeros);
     for (int i = 0; i < np; i++){
