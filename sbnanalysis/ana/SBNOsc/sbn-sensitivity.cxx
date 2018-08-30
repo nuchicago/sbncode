@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 
             for (int n = 0; n < ev->reco.size(); n++) {
 
-                temphists[0]->Fill(ev->reco[n].neutrino.energy);
+                temphists[0]->Fill(ev->truth[n].neutrino.energy);
 
                 for (int u = 0; u < n_unis; u++) {
 
