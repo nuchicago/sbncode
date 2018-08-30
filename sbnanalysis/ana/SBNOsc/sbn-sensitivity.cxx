@@ -100,8 +100,12 @@ int main(int argc, char* argv[]) {
         }
 
         for (int h = 0; h < temphists.size(); h++) {
-            for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {
+            for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {}
 
+                int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
+
+                hists[h]->SetBinContent(offset+b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
+            
                 if (h == 0) {
 
                     temphists[h]->SetBinContent(b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
@@ -109,10 +113,6 @@ int main(int argc, char* argv[]) {
                     energies.push_back(temphists[h]->GetBinCenter(b+1));
 
                 }
-
-                int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
-
-                hists[h]->SetBinContent(offset+b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
 
             }
         }
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]) {
     }
 
     /* Plot base */
-    
+    /*
     std::cout << "Size of basehists " << basehists.size() << std::endl;
     
     TCanvas *basec = new TCanvas();
@@ -137,152 +137,152 @@ int main(int argc, char* argv[]) {
     }
 
     //basec->SaveAs((dir+"test/basecounts.png").c_str());
-
+    */
     
     TCanvas *can = new TCanvas();
     hists[0]->Draw("hist");
     can->SaveAs((dir+"test/basecounts.png").c_str());
     
-    /* Get cov, fcov and corr */
-
-    TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
-         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins);
-
-    for (int i = 0; i < cov->GetNbinsX(); i++) {
-        for (int j = 0; j < cov->GetNbinsY(); j++) {
-
-            double covij = 0;
-            for (int u = 0; u < n_unis; u++) {
-                covij += (hists[0]->GetBinContent(i+1) - hists[u]->GetBinContent(i+1)) * 
-                         (hists[0]->GetBinContent(j+1) - hists[u]->GetBinContent(j+1));
-            }
-            covij /= n_unis;
-            cov->SetBinContent(i+1, j+1, covij);
-
-            double fcovij = covij / (hists[0]->GetBinContent(i+1) * hists[0]->GetBinContent(j+1));
-            fcov->SetBinContent(i+1, j+1, fcovij);
-
-        }
-    }
-
-    TH2D *corr = new TH2D("corr", "Correlation Matrix", nbins, 0, nbins, nbins, 0, nbins);
-    for (int i = 0; i < cov->GetNbinsX(); i++) {
-        for (int j = 0; j < cov->GetNbinsY(); j++) {
-
-            double corrij = cov->GetBinContent(i+1, j+1) / TMath::Sqrt(cov->GetBinContent(i+1, i+1) * cov->GetBinContent(j+1, j+1));
-            corr->SetBinContent(i+1, j+1, corrij);
-
-        }
-    }
-
-
-    /* Plot */
-
-    TCanvas *c = new TCanvas();
-    cov->Draw("colz"); c->SaveAs((dir + "test/cov.png").c_str());
-    fcov->Draw("colz"); c->SaveAs((dir+"test/fcov.png").c_str());
-    corr->Draw("colz"); c->SaveAs((dir+"test/corr.png").c_str());
-
-
-    /* Invert Error */
-
-    TMatrixDSym E_mat(cov->GetNbinsX());
-
-    for (int i = 0; i < cov->GetNbinsX(); i++) {
-        for (int j = 0; j < cov->GetNbinsY(); j++) {
-
-            E_mat[i][j] = cov->GetBinContent(i+1, j+1);
-            if (i == j) { E_mat[i][i] += hists[0]->GetBinContent(i+1); }
-
-        }
-    }
-
-    TMatrixD E_inv = E_mat.Invert();
-
-    /* Get chisq */
-
-    TF1 numu_to_numu("numu_to_numu", "1 - [0] * (sin(1.27 * [1] * x))^2", 0, 25);
-
-    std::vector <double> distance, detdist = {0.1, 0.47, 0.6};
-    for (int d = 0; d < detdist.size(); d++){
-        for (int i = 0; i < nbins; i++){
-            distance.push_back(detdist[d]);
-        }
-    }
-
-    int np = 500;
-    std::vector <double> dm2(np), sin2theta(np);
-    for (int i = 0; i < np; i++) {
-        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(np-1));
-        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
-    }
-
-    clock_t startchi = clock();
-    std::cout << std::endl << "Calculating chi squareds..." << std::endl;
-
-    double minchisq = 1e99;
-    std::vector <double> npzeros(np, 0);
-    std::vector <std::vector <double> > chisq(np, npzeros);
-    for (int i = 0; i < np; i++){
-        for (int j = 0; j < np; j++) {
-
-            numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
-
-            for (int k = 0; k < hists[0]->GetNbinsX(); k++) {
-                for (int l = 0; l < hists[0]->GetNbinsX(); l++) {
-
-                    if (E_inv[k][l] != 0) {
-
-                        chisq[i][j] += (hists[0]->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/energies[k])));
-
-                        chisq[i][j] *= E_inv[k][l];
-
-                        chisq[i][j] *= (hists[0]->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/energies[l])));
-
-                    }
-                }
-
-            }
-
-            if (chisq[i][j] < minchisq) {
-                minchisq = chisq[i][j];
-            }
-
-        }
-    }
-
-    clock_t endchi = clock();
-    clock_t tickschi = endchi - startchi;                    // in n of ticks
-    double timechi = tickschi / (double) CLOCKS_PER_SEC;     // make into secs
-
-    std::cout << "   Done in " << timechi << "s. " << std::endl;
-
-    std::vector <std::vector <double> > chisq_diffs(np, npzeros);
-    for (int i = 0; i < chisq.size(); i++) {
-        for (int j = 0; j < chisq[0].size(); j++) {
-            chisq_diffs[i][j] = chisq[i][j] - minchisq;
-        }
-    }
-
-
-    /* Plot */
-
-    TCanvas *chisqcanvas = new TCanvas();
-
-    TGraph2D *logchisqplot = new TGraph2D();
-    for (int i = 0; i < np; i++) {
-        for (int j = 0; j < np; j++) {
-            logchisqplot->SetPoint(i*np + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
-        }
-    }
-
-    logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
-    logchisqplot->Draw("surf1");
-    chisqcanvas->SaveAs((dir+"test/chisq.png").c_str());
-
-
-    /* Get contour */
-
+//    /* Get cov, fcov and corr */
+//
+//    TH2D *cov = new TH2D("cov", "Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins),
+//         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", nbins, 0, nbins, nbins, 0, nbins);
+//
+//    for (int i = 0; i < cov->GetNbinsX(); i++) {
+//        for (int j = 0; j < cov->GetNbinsY(); j++) {
+//
+//            double covij = 0;
+//            for (int u = 0; u < n_unis; u++) {
+//                covij += (hists[0]->GetBinContent(i+1) - hists[u]->GetBinContent(i+1)) * 
+//                         (hists[0]->GetBinContent(j+1) - hists[u]->GetBinContent(j+1));
+//            }
+//            covij /= n_unis;
+//            cov->SetBinContent(i+1, j+1, covij);
+//
+//            double fcovij = covij / (hists[0]->GetBinContent(i+1) * hists[0]->GetBinContent(j+1));
+//            fcov->SetBinContent(i+1, j+1, fcovij);
+//
+//        }
+//    }
+//
+//    TH2D *corr = new TH2D("corr", "Correlation Matrix", nbins, 0, nbins, nbins, 0, nbins);
+//    for (int i = 0; i < cov->GetNbinsX(); i++) {
+//        for (int j = 0; j < cov->GetNbinsY(); j++) {
+//
+//            double corrij = cov->GetBinContent(i+1, j+1) / TMath::Sqrt(cov->GetBinContent(i+1, i+1) * cov->GetBinContent(j+1, j+1));
+//            corr->SetBinContent(i+1, j+1, corrij);
+//
+//        }
+//    }
+//
+//
+//    /* Plot */
+//
+//    TCanvas *c = new TCanvas();
+//    cov->Draw("colz"); c->SaveAs((dir + "test/cov.png").c_str());
+//    fcov->Draw("colz"); c->SaveAs((dir+"test/fcov.png").c_str());
+//    corr->Draw("colz"); c->SaveAs((dir+"test/corr.png").c_str());
+//
+//
+//    /* Invert Error */
+//
+//    TMatrixDSym E_mat(cov->GetNbinsX());
+//
+//    for (int i = 0; i < cov->GetNbinsX(); i++) {
+//        for (int j = 0; j < cov->GetNbinsY(); j++) {
+//
+//            E_mat[i][j] = cov->GetBinContent(i+1, j+1);
+//            if (i == j) { E_mat[i][i] += hists[0]->GetBinContent(i+1); }
+//
+//        }
+//    }
+//
+//    TMatrixD E_inv = E_mat.Invert();
+//
+//    /* Get chisq */
+//
+//    TF1 numu_to_numu("numu_to_numu", "1 - [0] * (sin(1.27 * [1] * x))^2", 0, 25);
+//
+//    std::vector <double> distance, detdist = {0.1, 0.47, 0.6};
+//    for (int d = 0; d < detdist.size(); d++){
+//        for (int i = 0; i < nbins; i++){
+//            distance.push_back(detdist[d]);
+//        }
+//    }
+//
+//    int np = 500;
+//    std::vector <double> dm2(np), sin2theta(np);
+//    for (int i = 0; i < np; i++) {
+//        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(np-1));
+//        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
+//    }
+//
+//    clock_t startchi = clock();
+//    std::cout << std::endl << "Calculating chi squareds..." << std::endl;
+//
+//    double minchisq = 1e99;
+//    std::vector <double> npzeros(np, 0);
+//    std::vector <std::vector <double> > chisq(np, npzeros);
+//    for (int i = 0; i < np; i++){
+//        for (int j = 0; j < np; j++) {
+//
+//            numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
+//
+//            for (int k = 0; k < hists[0]->GetNbinsX(); k++) {
+//                for (int l = 0; l < hists[0]->GetNbinsX(); l++) {
+//
+//                    if (E_inv[k][l] != 0) {
+//
+//                        chisq[i][j] += (hists[0]->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/energies[k])));
+//
+//                        chisq[i][j] *= E_inv[k][l];
+//
+//                        chisq[i][j] *= (hists[0]->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/energies[l])));
+//
+//                    }
+//                }
+//
+//            }
+//
+//            if (chisq[i][j] < minchisq) {
+//                minchisq = chisq[i][j];
+//            }
+//
+//        }
+//    }
+//
+//    clock_t endchi = clock();
+//    clock_t tickschi = endchi - startchi;                    // in n of ticks
+//    double timechi = tickschi / (double) CLOCKS_PER_SEC;     // make into secs
+//
+//    std::cout << "   Done in " << timechi << "s. " << std::endl;
+//
+//    std::vector <std::vector <double> > chisq_diffs(np, npzeros);
+//    for (int i = 0; i < chisq.size(); i++) {
+//        for (int j = 0; j < chisq[0].size(); j++) {
+//            chisq_diffs[i][j] = chisq[i][j] - minchisq;
+//        }
+//    }
+//
+//
+//    /* Plot */
+//
+//    TCanvas *chisqcanvas = new TCanvas();
+//
+//    TGraph2D *logchisqplot = new TGraph2D();
+//    for (int i = 0; i < np; i++) {
+//        for (int j = 0; j < np; j++) {
+//            logchisqplot->SetPoint(i*np + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
+//        }
+//    }
+//
+//    logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
+//    logchisqplot->Draw("surf1");
+//    chisqcanvas->SaveAs((dir+"test/chisq.png").c_str());
+//
+//
+//    /* Get contour */
+    
 
 
 
