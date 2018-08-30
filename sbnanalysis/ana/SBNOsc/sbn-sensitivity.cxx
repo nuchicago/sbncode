@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
 
                     if (h == 0) {
 
-                        temphists[u]->SetBinContent(b+1, temphists[u]->GetBinContent(b+1) * scalefactor[d] / temphists[u]->GetBinWidth(b+1));
+                        temphists[h]->SetBinContent(b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
 
                         energies.push_back(temphists[u]->GetBinCenter(b+1));
 
@@ -107,7 +107,7 @@ int main(int argc, char* argv[]) {
 
                     int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
 
-                    hists[u]->SetBinContent(offset+b+1, temphists[u]->GetBinContent(b+1) * scalefactor[d] / temphists[u]->GetBinWidth(b+1));
+                    hists[h]->SetBinContent(offset+b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
 
                 }
             }
