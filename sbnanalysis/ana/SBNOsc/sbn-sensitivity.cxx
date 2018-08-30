@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
 
                 temphists[0]->Fill(ev->reco[n].neutrino.energy);
                 
-                std::cout << "Det " << det << " and neutrino " << n << std::endl;
+                std::cout << "Det " << det << " and neutrino " << e << std::endl;
                 
                 for (int u = 0; u < n_unis; u++) {
 
@@ -96,28 +96,28 @@ int main(int argc, char* argv[]) {
                 }
 
             }
+            
+        }
 
-            for (int h = 0; h < temphists.size(); h++) {
-                for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {
+        for (int h = 0; h < temphists.size(); h++) {
+            for (int b = 0; b < temphists[h]->GetNbinsX(); b++) {
 
-                    if (h == 0) {
+                if (h == 0) {
 
-                        temphists[h]->SetBinContent(b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
+                    temphists[h]->SetBinContent(b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
 
-                        energies.push_back(temphists[h]->GetBinCenter(b+1));
-
-                    }
-
-                    int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
-
-                    hists[h]->SetBinContent(offset+b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
+                    energies.push_back(temphists[h]->GetBinCenter(b+1));
 
                 }
+
+                int offset = 0 + nbins*(det == "MicroBooNE") + 2*nbins*(det == "ICARUS");
+
+                hists[h]->SetBinContent(offset+b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
+
             }
-
-            basehists.push_back(temphists[0]);
-
         }
+
+        basehists.push_back(temphists[0]);
 
     }
 
