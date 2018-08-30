@@ -285,6 +285,139 @@ int main(int argc, char* argv[]) {
 
     /* Get contour */
     
+    clock_t startcont = clock();
+    std::cout << std::endl << "Getting contours." << std::endl;
+    
+    double target;
+    std::vector <double> target_dchisq = {1.64, 7.75, 23.40}, corners(4, 0), twozeros(2, 0);
+    std::vector <std::vector <double> > contour, sin_contour(target_dchisq.size()), dm2_contour(target_dchisq.size()), vecof2vecs(np, twozeros);
+    std::vector <std::vector <std::vector <double> > > box_minmax(np, vecof2vecs);
+    for  (int k = 0; k < target_dchisq.size(); k++){
+        
+        target = target_dchisq[k];
+        
+        // Initialise box_minmax
+        for (int i = 0; i < np-1; i++) {
+            for (int j = 0; j < np-1; j++) {
+                box_minmax[i][j] = {0, 0};
+            }
+        }
+        
+        // Fill box_minmax out
+        for (int i = 0; i < np-1; i++) {
+            for (int j = 0; j < np-1; j++) {
+                
+                corners = {chisq_diffs[i][j], chisq_diffs[i+1][j], chisq_diffs[i][j+1], chisq_diffs[i+1][j+1]};
+                box_minmax[i][j] = {corners[0], corners[0]};
+                for (int l = 1; l < 4; l++) {
+                    if (corners[l] > box_minmax[i][j][1]) {
+                        box_minmax[i][j][1] = corners[l];
+                    } else if (corners[l] < box_minmax[i][j][0]) {
+                        box_minmax[i][j][0] = corners[l];
+                    }
+                }
+                
+            }
+        }
+        
+        // Get the contour
+        contour.clear();
+        for (int i = 0; i < np-1; i++) {
+            for (int j = 0; j < np-1; j++) {
+                
+                if ((target >= box_minmax[i][j][0]) && (target <= box_minmax[i][j][1])) {
+                    contour.push_back({(sin2theta[i] + sin2theta[i+1])/2, (dm2[j] + dm2[j+1])/2});
+                }
+            
+            }
+        }
+        
+        // Save the contour
+        for (int j = 0; j < contour.size(); j++) {
+            sin_contour[k].push_back(contour[j][0]);
+            dm2_contour[k].push_back(contour[j][1]);
+        }
+        
+    }
+    
+    clock_t endcont = clock();
+    clock_t tickscont = endcont - startcont;                    // in n of ticks
+    double timecont = tickscont / (double) CLOCKS_PER_SEC;      // make into secs
+    
+    std::cout << "   Done in " << timecont << "s." << std::endl;
+    
+    std::cout << "sin contour sizes: " << sin_contour[0].size() << ", " << sin_contour[1].size() << ", " << sin_contour[2].size() << std::endl;
+    std::cout << "dm2 contour sizes: " << dm2_contour[0].size() << ", " << dm2_contour[1].size() << ", " << dm2_contour[2].size() << std::endl;
+    
+    
+    
+    // Plot
+    
+    
+    TCanvas *contour_canvas = new TCanvas();
+    
+    TGraph *gr_90 = new TGraph();
+    for (int i = 0; i < sin_contour[0].size(); i++) {
+        gr_90->SetPoint(i, sin_contour[0][i], dm2_contour[0][i]);
+    }
+    gr_90->SetMarkerStyle(20);
+    gr_90->SetMarkerSize(0.25);
+    gr_90->SetMarkerColor(30);
+    gr_90->SetLineColor(30);
+    
+    TGraph *gr_3 = new TGraph();
+    for (int i = 0; i < sin_contour[1].size(); i++) {
+        gr_3->SetPoint(i, sin_contour[1][i], dm2_contour[1][i]);
+    }
+    gr_3->SetMarkerStyle(20);
+    gr_3->SetMarkerSize(0.25);
+    gr_3->SetMarkerColor(38);
+    gr_3->SetLineColor(38);
+    
+    TGraph *gr_5 = new TGraph();
+    for (int i = 0; i < sin_contour[2].size(); i++) {
+        gr_5->SetPoint(i, sin_contour[2][i], dm2_contour[2][i]);
+    }
+    gr_5->SetMarkerStyle(20);
+    gr_5->SetMarkerSize(0.25);
+    gr_5->SetMarkerColor(46);
+    gr_5->SetLineColor(46);
+    
+    TGraph *range = new TGraph();
+    range->SetPoint(0, 0.001, 0.01);
+    range->SetPoint(1, 1, 100);
+    range->SetMarkerColor(0);
+    
+    TGraph *gr_bestfit = new TGraph();
+    gr_bestfit->SetPoint(0, 0.062, 1.7);
+    gr_bestfit->SetMarkerStyle(29);
+    gr_bestfit->SetMarkerSize(1.6);
+    gr_bestfit->SetMarkerColor(40);
+    
+    gr_90->SetTitle("SBN Sensitivity; sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
+    
+    TLegend *legend = new TLegend();
+    legend->AddEntry(gr_90, "90% CL", "l");
+    legend->AddEntry(gr_3, "3#sigma CL", "l");
+    legend->AddEntry(gr_5, "5#sigma CL", "l");
+    legend->AddEntry(gr_bestfit, "Best Fit Point", "p");
+    
+    contour_canvas->SetLogy();
+    contour_canvas->SetLogx();
+    
+    gr_90->Draw("AP");
+    gr_90->GetXaxis()->SetRangeUser(0.001, 1);
+    gr_90->GetYaxis()->SetRangeUser(0.01, 100);
+    
+    gr_3->Draw("P same");
+    gr_5->Draw("P same");
+    legend->Draw();
+    range->Draw("P same");
+    gr_bestfit->Draw("P same");
+    
+    contour_canvas->SaveAs((dir+"test/Sensitivity.png").c_str());
+    contour_canvas->SaveAs((dir+"PNGs/Sensitivity.root").c_str());
+    
 
 
 
