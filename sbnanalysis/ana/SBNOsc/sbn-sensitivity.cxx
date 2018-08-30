@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 
         std::vector <TH1D*> temphists = {new TH1D((det+"tempbase").c_str(), (det + "; GeV;").c_str(), nbins, bins)};
         for (int i = 0; i < n_unis; i++) {
-            hists.push_back(new TH1D((det+"tempalt"+std::to_string(i+1)).c_str(), "Alt; GeV;", nbins, bins));
+            temphists.push_back(new TH1D((det+"tempalt"+std::to_string(i+1)).c_str(), "Alt; GeV;", nbins, bins));
         }
 
         for (int e = 0; e < tree->GetEntries(); e++) {
