@@ -129,10 +129,11 @@ public:
   class RecoInteraction {
     public:
       /** Default Constructor */
-      RecoInteraction() {}
+      RecoInteraction(): truth_index(-1) {}
       /** Fill in truth information -- leaves other fields unset */
-      explicit RecoInteraction(const Interaction &t): truth(t) {}
+      explicit RecoInteraction(const Interaction &t, int index): truth(t), truth_index(index)  {}
       Interaction truth; //!< Contains truth level information about interaction
+      int truth_index; //!< Index into the vector of truth interaction objects in the Event (same as the index into MCTruth objects). Equal to -1 if there is not corresponding truth interaction.
       double reco_energy; //!< User defined reconstructed energy of neutrino. Units in GeV to keep consistent w/ Interaction class.
   };
 
