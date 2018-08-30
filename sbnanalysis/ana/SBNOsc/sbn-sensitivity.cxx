@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
 
     }
 
-    basec->SaveAs((dir+"test/basecounts.png").c_str();
+    basec->SaveAs((dir+"test/basecounts.png").c_str());
 
 
     /* Get cov, fcov and corr */
