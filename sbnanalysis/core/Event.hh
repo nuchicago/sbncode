@@ -80,8 +80,8 @@ public:
     double modq_lab;       //!< |q|, lab frame
     double w;              //!< Hadronic invariant mass W
     double t;              //!< Kinematic t
+    double eccqe;          //!< CCQE energy
     double energy;         //!< Neutrino energy (GeV)
-    double visible_energy; //!< "Visible" energy from neutrino interaction. Contains sum of non-neutral hadronic kinetic energy and lepton total energy. Does not account for containment.
     TVector3 momentum;     //!< Neutrino three-momentum
   };
 
@@ -122,10 +122,26 @@ public:
     std::map<std::string, std::vector<double> > weights;
   };
 
+  /**
+   * \class RecoInteraction
+   * \brief Contains truth level information and additional fields for user-defined reconstruction information
+   */
+  class RecoInteraction {
+    public:
+      /** Default Constructor */
+      RecoInteraction() {}
+      /** Fill in truth information -- leaves other fields unset */
+      explicit RecoInteraction(const Interaction &t): truth(t) {}
+      Interaction truth; //!< Contains truth level information about interaction
+      double reco_energy; //!< User defined reconstructed energy of neutrino. Units in GeV to keep consistent w/ Interaction class.
+  };
+
   Metadata metadata;  //!< Event metadata
   std::vector<Interaction> truth; //!< All truth interactions
-  std::vector<Interaction> reco; //!< Reconstructed interactions
+  std::vector<RecoInteraction> reco; //!< Reconstructed interactions
 };
+
+
 
 #endif  // __sbnanalysis_core_Event__
 
