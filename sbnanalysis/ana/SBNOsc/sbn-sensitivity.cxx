@@ -179,9 +179,9 @@ int main(int argc, char* argv[]) {
     /* Plot */
 
     TCanvas *c = new TCanvas();
-    cov->Draw("hist"); c->SaveAs((dir + "test/cov.png").c_str());
-    fcov->Draw("hist"); c->SaveAs((dir+"test/fcov.png").c_str());
-    corr->Draw("hist"); c->SaveAs((dir+"test/corr.png").c_str());
+    cov->Draw("colz"); c->SaveAs((dir + "test/cov.png").c_str());
+    fcov->Draw("colz"); c->SaveAs((dir+"test/fcov.png").c_str());
+    corr->Draw("colz"); c->SaveAs((dir+"test/corr.png").c_str());
 
 
     /* Invert Error */
