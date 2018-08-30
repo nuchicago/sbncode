@@ -78,7 +78,9 @@ int main(int argc, char* argv[]) {
             for (int n = 0; n < ev->reco.size(); n++) {
 
                 temphists[0]->Fill(ev->reco[n].neutrino.energy);
-
+                
+                std::cout << "Det " << det << " and neutrino " << n << std::endl;
+                
                 for (int u = 0; u < n_unis; u++) {
 
                     double weight = 1;
@@ -88,8 +90,6 @@ int main(int argc, char* argv[]) {
                         while (wind >= it.second.size()) { wind -= it.second.size(); }
                         weight *= it.second.at(wind);
                     }
-                    
-                    std::cout << "Det " << det << " and uni " << u << " with weight " << weight << std::endl;
                     
                     temphists[u+1]->Fill(ev->reco[n].neutrino.energy, weight);
 
@@ -122,13 +122,17 @@ int main(int argc, char* argv[]) {
     }
 
     /* Plot base */
-
+    
+    std::cout << "Size of basehists " << basehists.size() << std::endl;
+    
     TCanvas *basec = new TCanvas();
     basec->Divide(3, 1);
     for (int h = 0; h < basehists.size(); h++) {
-
+        
+        std::cout << "Doing basehist " << h << std::endl;
+        
         basec->cd(h+1);
-        basehists[h]->Draw();
+        basehists[h]->Draw("hist");
 
     }
 
