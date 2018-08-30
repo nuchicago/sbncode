@@ -77,7 +77,7 @@ int main(int argc, char* argv[]) {
 
             for (int n = 0; n < ev->reco.size(); n++) {
 
-                temphists[0]->Fill(ev->truth[n].neutrino.energy);
+                temphists[0]->Fill(ev->reco[n].neutrino.energy);
 
                 for (int u = 0; u < n_unis; u++) {
 
@@ -88,7 +88,9 @@ int main(int argc, char* argv[]) {
                         while (wind >= it.second.size()) { wind -= it.second.size(); }
                         weight *= it.second.at(wind);
                     }
-
+                    
+                    std::cout << "Det " << det << " and uni " << u << std::endl;
+                    
                     temphists[u+1]->Fill(ev->reco[n].neutrino.energy, weight);
 
                 }
