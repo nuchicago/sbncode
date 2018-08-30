@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
 
                         temphists[h]->SetBinContent(b+1, temphists[h]->GetBinContent(b+1) * scalefactor[d] / temphists[h]->GetBinWidth(b+1));
 
-                        energies.push_back(temphists[u]->GetBinCenter(b+1));
+                        energies.push_back(temphists[h]->GetBinCenter(b+1));
 
                     }
 
