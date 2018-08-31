@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
     for (int g = 0; g < contour_graphs.size(); g++) {
         
         contour_graphs[g]->SetMarkerStyle(20);
-        contour_graphs[g]->SetMarkerSize(0.1);
+        contour_graphs[g]->SetMarkerSize(0.25);
         contour_graphs[g]->SetMarkerColor(colours[g]);
         contour_graphs[g]->SetLineColor(colours[g]);
     
