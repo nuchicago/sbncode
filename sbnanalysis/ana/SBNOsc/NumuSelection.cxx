@@ -171,8 +171,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
                 // Pass cuts?
                 if (lens_forcuts[0] > 50 || lens_forcuts[1] > 100) { 
                     
-                    CCpass1 += 1*(lens_forcuts[0] > 0);
-                    CCpass2 += 1*(lens_forcuts[1] > 0);
+                    CCpass1 += (lens_forcuts[0] > 0);
+                    CCpass2 += (lens_forcuts[1] > 0);
                     
                     pass_cut[part_ind] += 1;
                 
@@ -206,8 +206,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
                 // Pass cuts?
                 if (lens_forcuts[0] > 50 || lens_forcuts[1] > 100) { 
                     
-                    NCpass1 += 1*(lens_forcuts[0] > 0);
-                    NCpass2 += 1*(lens_forcuts[1] > 0);
+                    NCpass1 += (lens_forcuts[0] > 0);
+                    NCpass2 += (lens_forcuts[1] > 0);
                     
                     pass_cut[part_ind] += 1;
                 
@@ -228,7 +228,9 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         if (CCesc > 0) {fNu_CCesc++; }
         if (NCesc > 0) {fNu_NCesc++; }
         
-        if (CCpass1 + CCpass2 + NCpass1 + NCpass2 == 1) {
+        if ((CCpass1 + CCpass2 + NCpass1 + NCpass2) == 1) {
+            
+            std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
             
             if (CCpass1 == 1) { fNu_CC_pass1++; }
             if (CCpass2 == 1) { fNu_CC_pass2++; }
