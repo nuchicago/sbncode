@@ -159,8 +159,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, const std::vector<Eve
     const simb::MCNeutrino& nu = mctruth.GetNeutrino();
 
     // build the interaction
-    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, _config.trackVisibleEnergyThreshold);
     Event::Interaction interaction = truth[i];
+    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, _config.trackVisibleEnergyThreshold);
     Event::RecoInteraction reco_interaction(interaction, i);
     reco_interaction.reco_energy = visible_energy;
 
