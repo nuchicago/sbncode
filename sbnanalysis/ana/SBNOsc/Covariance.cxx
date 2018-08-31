@@ -300,7 +300,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
                 nucount++;
                 
                 // Add (reconstructed) energy to base universe histogram
-                double nuE = event->truth[n].neutrino.energy;
+                double nuE = event->reco[n].neutrino.energy;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each universe
