@@ -160,7 +160,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, const std::vector<Eve
 
     // build the interaction
     Event::Interaction interaction = truth[i];
-    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, _config.trackVisibleEnergyThreshold);
+    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, _config.trackVisibleEnergyThreshold * 1000 /*convert GeV -> MeV*/) / 1000 /*convert MeV -> GeV*/;
     Event::RecoInteraction reco_interaction(interaction, i);
     reco_interaction.reco_energy = visible_energy;
 
