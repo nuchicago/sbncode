@@ -34,7 +34,7 @@ void ProcessorBlock::ProcessFiles(std::vector<std::string> filenames) {
       // catch an art exceptions
       bool accept = false;
       try {
-        accept = it.first->ProcessEvent(ev, *it.first->fReco);
+        accept = it.first->ProcessEvent(ev, it.first->fEvent->truth, *it.first->fReco);
       }
       catch (cet::exception e) {
         // in the event of an exception, gracefully fill the processor
