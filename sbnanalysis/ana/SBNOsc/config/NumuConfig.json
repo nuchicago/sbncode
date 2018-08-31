@@ -31,8 +31,8 @@
       "ymax": 117.47,
       "zmax": 1036.9
      },
-     "minLengthContainedLepton": 50, // value taken from proposal
-     "minLengthExitingLepton": 100, // value taken from proposal
+     "minLengthContainedTrack": 50, // value taken from proposal
+     "minLengthExitingTrack": 100, // value taken from proposal
      "trackVisibleEnergyThreshold": 0.021 // [GeV] taken from pospoal
    }
 }

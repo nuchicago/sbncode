@@ -85,8 +85,8 @@ protected:
     geoalgo::AABox active_volume; //!< Active volume
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
-    double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
-    double minLengthExitingLepton; //!< Minimum length [cm] of exiting leptons.  Will not apply cut if value is negative.
+    double minLengthContainedTrack; //!< Minimum length [cm] of contained tracks. Will not apply cut if value is negative.
+    double minLengthExitingTrack; //!< Minimum length [cm] of exiting tracks.  Will not apply cut if value is negative.
     double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [GeV].
   };
 
@@ -96,9 +96,9 @@ protected:
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable [GeV]
     TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy) [GeV]
     TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy [GeV] 
-    TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated lepton is contained in FV 
-    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of lepton in CC event [cm]
-    TH1D *h_numu_l_length; //!< histogram w/ total length of associated lepton [cm]
+    TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated track is contained in FV 
+    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of track in CC event [cm]
+    TH1D *h_numu_l_length; //!< histogram w/ total length of associated track [cm]
     TH2D *h_numu_Vxy; //!< 2D x-y vertex histogram [cm]
     TH2D *h_numu_Vxz; //!< 2D x-z vertex histogram [cm]
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram [cm]
