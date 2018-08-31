@@ -53,6 +53,7 @@ class NumuSelection : public core::SelectionBase {
         unsigned fNuAll;        //!< Count all events
         unsigned fNuCount;      //!< Count selected events
         unsigned fNuinFid;      //!< Count nus that reacted in the fiducial volume
+        unsigned fNu_CCmu, fNu_NCpi, fNu_CCesc, fNu_NCesc, fNu_CC_pass1, fNu_CC_pass2, fNu_NC_pass1, fNu_NC_pass2;
 
         /** Configuration parameters */
         art::InputTag fTruthTag;    //!< art tag for MCTruth information

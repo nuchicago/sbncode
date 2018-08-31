@@ -110,6 +110,8 @@ void NumuSelection::Initialize(Json::Value* config) {
     
     // For reconstructing energies
     mn = 0.93956541; mp = 0.93827208; ml = 0.10565837; Eb = 0.030;
+    
+    fNu_CCmu = 0; fNu_NCpi = 0; fNu_CCesc = 0; fNu_NCesc = 0; fNu_CC_pass1 = 0; fNu_CC_pass2 = 0; fNu_NC_pass1 = 0; fNu_NC_pass2 = 0;
 
 }
 
@@ -145,11 +147,14 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         
         std::vector <int> pass_cut(2); double nuE;
         
+        int CC = 0, NC = 0, CCesc = 0, NCesc = 0, CCpass1 = 0, CCpass2 = 0, NCpass1 = 0, NCpass2 = 0;
         for (auto const& mcpart : mcparticle) {
             
             // Look only at muons and pions
-            if ((mcpart->PdgCode()*mcpart->PdgCode() == 13*13 && nu.CCNC() == simb::kCC) || 
-                (mcpart->PdgCode()*mcpart->PdgCode() == 211*211 && nu.CCNC() == simb::kNC)) {
+            if ((mcpart->PdgCode()*mcpart->PdgCode() == 13*13 && nu.CCNC() == simb::kCC) /*|| 
+                (mcpart->PdgCode()*mcpart->PdgCode() == 211*211 && nu.CCNC() == simb::kNC)*/) {
+                
+                CC = 1;
                 
                 // Cut off those whose total track length is less than 50cm
                 if (mcpart->Trajectory().TotalLength() < 50) { continue; }
@@ -161,9 +166,49 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
                 // Store lens
                 std::vector <double> lens_forcuts = get_lens(mcpart, fDet);
                 
+                CCesc += (lens_forcuts[1] > 0);
+                
                 // Pass cuts?
                 if (lens_forcuts[0] > 50 || lens_forcuts[1] > 100) { 
+                    
+                    CCpass1 += (lens_forcuts[1] = 0);
+                    CCpass2 += (lens_forcuts[0] = 0);
+                    
+                    pass_cut[part_ind] += 1;
                 
+                    double px = mcpart->Px(), py = mcpart->Py(), pz = mcpart->Pz(), E = mcpart->E(),
+                        p = TMath::Sqrt(px*px + py*py + pz*pz), pxy = TMath::Sqrt(px*px + py*py),
+                        theta = TMath::ATan(pxy/pz);
+                    
+                    nuE = 0.5 * (mp*mp - (mn - Eb)*(mn - Eb) - ml*ml + 2*(mn - Eb)*E) / ((mn - Eb) - E + p*TMath::Cos(theta));
+                    
+                }
+                
+            }
+            
+            if (/*(mcpart->PdgCode()*mcpart->PdgCode() == 13*13 && nu.CCNC() == simb::kCC) */|| 
+                (mcpart->PdgCode()*mcpart->PdgCode() == 211*211 && nu.CCNC() == simb::kNC)) {
+                
+                NC = 1;
+                
+                // Cut off those whose total track length is less than 50cm
+                if (mcpart->Trajectory().TotalLength() < 50) { continue; }
+                
+                // Muon (0) or pion (1)? Could create extra branch for this, potentially...
+                int part_ind = 0;
+                if (mcpart->PdgCode()*mcpart->PdgCode() == 211*211) { part_ind = 1; }
+                
+                // Store lens
+                std::vector <double> lens_forcuts = get_lens(mcpart, fDet);
+                
+                NCesc += (lens_forcuts[1] > 0);
+                
+                // Pass cuts?
+                if (lens_forcuts[0] > 50 || lens_forcuts[1] > 100) { 
+                    
+                    NCpass1 += (lens_forcuts[1] = 0);
+                    NCpass2 += (lens_forcuts[0] = 0);
+                    
                     pass_cut[part_ind] += 1;
                 
                     double px = mcpart->Px(), py = mcpart->Py(), pz = mcpart->Pz(), E = mcpart->E(),
@@ -177,6 +222,21 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
             }
                 
         } // End loop over MCParticles
+        
+        if (CC > 0) { fNu_CCmu++; }
+        if (NC > 0) { fNu_NCpi++; }
+        if (CCesc > 0) {fNu_CCesc++; }
+        if (NCesc > 0) {fNu_NCesc++; }
+        
+        if (CCpass1 + CCpass2 + NCpass1 + NCpass2 == 1) {
+            
+            if (CCpass1 == 1) { fNu_CC_pass1++; }
+            if (CCpass1 == 2) { fNu_CC_pass2++; }
+            if (NCpass1 == 1) { fNu_NC_pass1++; }
+            if (NCpass1 == 2) { fNu_NC_pass2++; }
+            
+            
+        }
         
         if (pass_cut[0] + pass_cut[1] == 1) {
             Event::Interaction interaction = TruthReco(mctruth);
@@ -198,10 +258,29 @@ void NumuSelection::Finalize() {
     std::cout << std::endl << std::endl << std::endl 
     << "In all, we had " << fNuAll << " neutrinos" << std::endl
     << "Of these, " << fNuinFid << " reacted in the fiducial volume (a proportion" << (double)fNuinFid/fNuAll << ")" << std::endl
-    << "And we selected " << fNuCount << " of those (a proportion " << (double)fNuCount/fNuinFid << ")." 
+    << "Of these " << fNu_CCmu << " had CC muons and " << fNu_NCpi << " had NC pions (a proportion " << (double)(fNu_CCmu + fNu_NCpi)/fNuinFid << ")" << std::endl
+    << "  Of the ones with CC muons, " << fNu_CCesc << " had muons that escaped (" << (double)fNu_CCesc/fNu_CCmu << ")" << std::endl
+    << "                             " << fNu_CC_pass1 << " had muons that passed cut 1 (>50cm) (" << (double)fNu_CC_pass1/fNu_CCmu << ")" << std::endl
+    << "                             " << fNu_CC_pass2 << " had muons that passed cut 2 (>1m) (" << (double)fNu_CC_pass2/fNu_CCmu << ")" << std::endl
+    << "  Of the ones with NC pions, " << fNu_NCesc << " had muons that escaped (" << (double)fNu_NCesc/fNu_NCpi << ")" << std::endl
+    << "                             " << fNu_NC_pass1 << " had pions that passed cut 1 (>50cm) (" << (double)fNu_NC_pass1/fNu_NCpi << ")" << std::endl
+    << "                             " << fNu_NC_pass2 << " had pions that passed cut 2 (>1m) (" << (double)fNu_NC_pass2/fNu_NCpi << ")" << std::endl
+    << "In all, we selected " << fNuCount << " neutrinos (a proportion " << (double)fNuCount/(fNu_CCmu + fNu_NCpi) << " of those with CC muons or NC pions)." << std:endl
+    << "  Of these, " << fNu_CC_pass1+fNu_NC_pass1 << " passing cut 1 (a proportion" << (double)(fNu_CC_pass1+fNu_NC_pass1)/fNuCount << " of those that passed cuts at all) and" << std::endl
+    << "            " << fNu_CC_pass2+fNu_NC_pass2 << " passing cut 2 (a proportion" << (double)(fNu_CC_pass2+fNu_NC_pass2)/fNuCount << " of those that passed cuts at all)" << std::endl
+    << "            " << fNu_CC_pass1+fNu_CC_pass2 << " were CC muons (a proportion" << (double)(fNu_CC_pass1+fNu_CC_pass2)/fNuCount << " of those that passed cuts at all)" << std::endl
+    << "            " << fNu_NC_pass1+fNu_NC_pass2 << " were NC pions (a proportion" << (double)(fNu_CC_pass1+fNu_CC_pass2)/fNuCount << " of those that passed cuts at all)" << std::endl
     << std::endl << std::endl << std::endl;
     
-    std::cout << fNuAll << " & " << fNuinFid << " (" << (double)fNuinFid/fNuAll << ") & " << fNuCount << " (" << (double)fNuCount/fNuinFid << ") " << std::endl << std::endl;
+    std::cout << "textbf{" << fDet << "} & " << fNuAll << " & " 
+              << fNuinFid << " (" << (double)fNuinFid/fNuAll << ") & "
+              << fNu_CCmu+fNu_NCpi << " (" << (double)(fNu_CCmu+fNu_NCpi)/fNuinFid) << ") &"
+              << fNuCount << " (" << (double)fNuCount/(fNu_CCmu+fNu_NCpi) << ") "
+              << fNu_CC_pass1+fNu_NC_pass1 << " (" << (double)(fNu_CC_pass1+fNu_NC_pass1)/(fNu_CCmu+fNu_NCpi) << ") "
+              << fNu_CC_pass2+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") "
+              << fNu_CC_pass1+fNu_CC_pass2 << " (" << (double)(fNu_CC_pass1+fNu_CC_pass1)/(fNu_CCmu+fNu_NCpi) << ") "
+              << fNu_NC_pass1+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") "
+              << std::endl << std::endl;
     
 }
 
