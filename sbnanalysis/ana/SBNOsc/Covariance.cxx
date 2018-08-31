@@ -295,22 +295,23 @@ Covariance::Covariance(std::vector<EventSample> samples) {
             sample.tree->GetEntry(e);
             
             if (event->reco.size() != event->truth.size()) { continue; }
-            for (int t = 0; t < event->reco.size(); t++) {
+            for (int n = 0; n < event->reco.size(); n++) {
                 
                 nucount++;
                 
                 // Add (reconstructed) energy to base universe histogram
-                double nuE = event->reco[t].neutrino.energy;
+                double nuE = event->truth[n].neutrino.energy;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each universe
-                std::vector <double> uweights = get_uni_weights(event->truth[t].weights, n_alt_unis);
+                std::vector <double> uweights = get_uni_weights(event->truth[n].weights, n_alt_unis);
                 for (int u = 0; u < uweights.size(); u++) {
                     temp_count_hists[u+1]->Fill(nuE, uweights[u]);
                 }
                 
             }
         }
+        
         std::cout << std::endl << "For sample: " << sample.fDet << ", " << sample.fDesc << ", there were " << nucount << " neutrinos." << std::endl;
         
         // Rescale each bin's counts to /GeV and to desired POT
