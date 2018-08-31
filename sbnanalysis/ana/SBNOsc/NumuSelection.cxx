@@ -229,11 +229,11 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         if (NCesc > 0) {fNu_NCesc++; }
         
         // std::cout << std::endl << "OI ghfdfbnvvbcfgjhbnvcdytuhjbnfgjhbnvcfyuhjbngfghjbnbvfg"<< std::endl << std::endl;
-        std::cout << std::endl << CCpass1 << " " << CCpass2 << " " << NCpass1 << " " << NCpass2 << std::endl;
+        //std::cout << std::endl << CCpass1 << " " << CCpass2 << " " << NCpass1 << " " << NCpass2 << std::endl;
         
         if ((CCpass1 + CCpass2 + NCpass1 + NCpass2) == 1) {
             
-            std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
+            //std::cout << std::endl << std::endl << std::endl << std::endl << std::endl;
             
             if (CCpass1 == 1) { fNu_CC_pass1++; }
             if (CCpass2 == 1) { fNu_CC_pass2++; }
