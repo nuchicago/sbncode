@@ -171,8 +171,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
                 // Pass cuts?
                 if (lens_forcuts[0] > 50 || lens_forcuts[1] > 100) { 
                     
-                    CCpass1 += (lens_forcuts[1] = 0);
-                    CCpass2 += (lens_forcuts[0] = 0);
+                    CCpass1 += 1*(lens_forcuts[0] > 0);
+                    CCpass2 += 1*(lens_forcuts[1] > 0);
                     
                     pass_cut[part_ind] += 1;
                 
@@ -206,8 +206,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
                 // Pass cuts?
                 if (lens_forcuts[0] > 50 || lens_forcuts[1] > 100) { 
                     
-                    NCpass1 += (lens_forcuts[1] = 0);
-                    NCpass2 += (lens_forcuts[0] = 0);
+                    NCpass1 += 1*(lens_forcuts[0] > 0);
+                    NCpass2 += 1*(lens_forcuts[1] > 0);
                     
                     pass_cut[part_ind] += 1;
                 
@@ -231,9 +231,9 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
         if (CCpass1 + CCpass2 + NCpass1 + NCpass2 == 1) {
             
             if (CCpass1 == 1) { fNu_CC_pass1++; }
-            if (CCpass1 == 2) { fNu_CC_pass2++; }
+            if (CCpass2 == 1) { fNu_CC_pass2++; }
             if (NCpass1 == 1) { fNu_NC_pass1++; }
-            if (NCpass1 == 2) { fNu_NC_pass2++; }
+            if (NCpass2 == 1) { fNu_NC_pass2++; }
             
             
         }
@@ -244,7 +244,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
             reco.push_back(interaction);
         }
         
-    }
+    } // End loop over MCTruths
 
     bool selected = !reco.empty();
 
@@ -262,7 +262,7 @@ void NumuSelection::Finalize() {
     << "  Of the ones with CC muons, " << fNu_CCesc << " had muons that escaped (" << (double)fNu_CCesc/fNu_CCmu << ")" << std::endl
     << "                             " << fNu_CC_pass1 << " had muons that passed cut 1 (>50cm) (" << (double)fNu_CC_pass1/fNu_CCmu << ")" << std::endl
     << "                             " << fNu_CC_pass2 << " had muons that passed cut 2 (>1m) (" << (double)fNu_CC_pass2/fNu_CCmu << ")" << std::endl
-    << "  Of the ones with NC pions, " << fNu_NCesc << " had muons that escaped (" << (double)fNu_NCesc/fNu_NCpi << ")" << std::endl
+    << "  Of the ones with NC pions, " << fNu_NCesc << " had pions that escaped (" << (double)fNu_NCesc/fNu_NCpi << ")" << std::endl
     << "                             " << fNu_NC_pass1 << " had pions that passed cut 1 (>50cm) (" << (double)fNu_NC_pass1/fNu_NCpi << ")" << std::endl
     << "                             " << fNu_NC_pass2 << " had pions that passed cut 2 (>1m) (" << (double)fNu_NC_pass2/fNu_NCpi << ")" << std::endl
     << "In all, we selected " << fNuCount << " neutrinos (a proportion " << (double)fNuCount/(fNu_CCmu + fNu_NCpi) << " of those with CC muons or NC pions)." << std::endl
@@ -275,11 +275,11 @@ void NumuSelection::Finalize() {
     std::cout << "textbf{" << fDet << "} & " << fNuAll << " & " 
               << fNuinFid << " (" << (double)fNuinFid/fNuAll << ") & "
               << fNu_CCmu+fNu_NCpi << " (" << (double)(fNu_CCmu+fNu_NCpi)/fNuinFid << ") &"
-              << fNuCount << " (" << (double)fNuCount/(fNu_CCmu+fNu_NCpi) << ") "
-              << fNu_CC_pass1+fNu_NC_pass1 << " (" << (double)(fNu_CC_pass1+fNu_NC_pass1)/(fNu_CCmu+fNu_NCpi) << ") "
-              << fNu_CC_pass2+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") "
-              << fNu_CC_pass1+fNu_CC_pass2 << " (" << (double)(fNu_CC_pass1+fNu_CC_pass1)/(fNu_CCmu+fNu_NCpi) << ") "
-              << fNu_NC_pass1+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") "
+              << fNuCount << " (" << (double)fNuCount/(fNu_CCmu+fNu_NCpi) << ") &"
+              << fNu_CC_pass1+fNu_NC_pass1 << " (" << (double)(fNu_CC_pass1+fNu_NC_pass1)/(fNu_CCmu+fNu_NCpi) << ") &"
+              << fNu_CC_pass2+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") &"
+              << fNu_CC_pass1+fNu_CC_pass2 << " (" << (double)(fNu_CC_pass1+fNu_CC_pass1)/(fNu_CCmu+fNu_NCpi) << ") &"
+              << fNu_NC_pass1+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") &"
               << std::endl << std::endl;
     
 }
