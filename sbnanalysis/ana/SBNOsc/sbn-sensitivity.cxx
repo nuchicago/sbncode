@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
     gr_bestfit->SetMarkerSize(1.6);
     gr_bestfit->SetMarkerColor(40);
     
-    contour_graphs[0]->SetTitle("SBN Sensitivity; sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
+    contour_graphs[0]->SetTitle("SBN Sensitivity (True Energy); sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
     
     TLegend *legend = new TLegend();
     legend->AddEntry(contour_graphs[0], "90% CL", "l");
@@ -162,14 +162,15 @@ int main(int argc, char* argv[]) {
     contour_canvas->SetLogy();
     contour_canvas->SetLogx();
     
-    contour_graphs[0]->Draw("AP");
-    contour_graphs[0]->GetXaxis()->SetRangeUser(0.001, 1);
-    contour_graphs[0]->GetYaxis()->SetRangeUser(0.01, 100);
+    range->Draw("AP");
+    range->GetXaxis()->SetRangeUser(0.001, 1);
+    range->GetYaxis()->SetRangeUser(0.01, 100);
     
+    contour_graphs[0]->Draw("P same");
     contour_graphs[1]->Draw("P same");
     contour_graphs[2]->Draw("P same");
+    
     legend->Draw();
-    range->Draw("P same");
     gr_bestfit->Draw("P same");
     
     contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
