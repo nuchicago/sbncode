@@ -186,7 +186,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::In
                 
             }
             
-            if (/*(mcpart->PdgCode()*mcpart->PdgCode() == 13*13 && nu.CCNC() == simb::kCC) */|| 
+            if (/*(mcpart->PdgCode()*mcpart->PdgCode() == 13*13 && nu.CCNC() == simb::kCC) ||*/ 
                 (mcpart->PdgCode()*mcpart->PdgCode() == 211*211 && nu.CCNC() == simb::kNC)) {
                 
                 NC = 1;
@@ -265,7 +265,7 @@ void NumuSelection::Finalize() {
     << "  Of the ones with NC pions, " << fNu_NCesc << " had muons that escaped (" << (double)fNu_NCesc/fNu_NCpi << ")" << std::endl
     << "                             " << fNu_NC_pass1 << " had pions that passed cut 1 (>50cm) (" << (double)fNu_NC_pass1/fNu_NCpi << ")" << std::endl
     << "                             " << fNu_NC_pass2 << " had pions that passed cut 2 (>1m) (" << (double)fNu_NC_pass2/fNu_NCpi << ")" << std::endl
-    << "In all, we selected " << fNuCount << " neutrinos (a proportion " << (double)fNuCount/(fNu_CCmu + fNu_NCpi) << " of those with CC muons or NC pions)." << std:endl
+    << "In all, we selected " << fNuCount << " neutrinos (a proportion " << (double)fNuCount/(fNu_CCmu + fNu_NCpi) << " of those with CC muons or NC pions)." << std::endl
     << "  Of these, " << fNu_CC_pass1+fNu_NC_pass1 << " passing cut 1 (a proportion" << (double)(fNu_CC_pass1+fNu_NC_pass1)/fNuCount << " of those that passed cuts at all) and" << std::endl
     << "            " << fNu_CC_pass2+fNu_NC_pass2 << " passing cut 2 (a proportion" << (double)(fNu_CC_pass2+fNu_NC_pass2)/fNuCount << " of those that passed cuts at all)" << std::endl
     << "            " << fNu_CC_pass1+fNu_CC_pass2 << " were CC muons (a proportion" << (double)(fNu_CC_pass1+fNu_CC_pass2)/fNuCount << " of those that passed cuts at all)" << std::endl
@@ -274,7 +274,7 @@ void NumuSelection::Finalize() {
     
     std::cout << "textbf{" << fDet << "} & " << fNuAll << " & " 
               << fNuinFid << " (" << (double)fNuinFid/fNuAll << ") & "
-              << fNu_CCmu+fNu_NCpi << " (" << (double)(fNu_CCmu+fNu_NCpi)/fNuinFid) << ") &"
+              << fNu_CCmu+fNu_NCpi << " (" << (double)(fNu_CCmu+fNu_NCpi)/fNuinFid << ") &"
               << fNuCount << " (" << (double)fNuCount/(fNu_CCmu+fNu_NCpi) << ") "
               << fNu_CC_pass1+fNu_NC_pass1 << " (" << (double)(fNu_CC_pass1+fNu_NC_pass1)/(fNu_CCmu+fNu_NCpi) << ") "
               << fNu_CC_pass2+fNu_NC_pass2 << " (" << (double)(fNu_CC_pass2+fNu_NC_pass2)/(fNu_CCmu+fNu_NCpi) << ") "
