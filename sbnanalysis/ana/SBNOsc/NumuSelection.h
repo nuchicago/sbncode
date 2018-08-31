@@ -96,9 +96,9 @@ protected:
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable [GeV]
     TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy) [GeV]
     TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy [GeV] 
-    TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated track is contained in FV 
+    TH1D *h_numu_t_is_contained; //!< histogram w/ whether associated track is contained in FV 
     TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of track in CC event [cm]
-    TH1D *h_numu_l_length; //!< histogram w/ total length of associated track [cm]
+    TH1D *h_numu_t_length; //!< histogram w/ total length of associated track [cm]
     TH2D *h_numu_Vxy; //!< 2D x-y vertex histogram [cm]
     TH2D *h_numu_Vxz; //!< 2D x-z vertex histogram [cm]
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram [cm]

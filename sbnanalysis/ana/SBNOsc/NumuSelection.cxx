@@ -85,9 +85,9 @@ void NumuSelection::Initialize(Json::Value* config) {
     _root_histos[i].h_numu_trueE = new TH1D(("numu_trueE_" + cut_names[i]).c_str(), "numu_trueE", 100, 0 , 10);
     _root_histos[i].h_numu_visibleE = new TH1D(("numu_visibleE_" + cut_names[i]).c_str(), "numu_visibleE", 100, 0, 10);
     _root_histos[i].h_numu_true_v_visibleE = new TH1D(("numu_true_v_visibleE_" + cut_names[i]).c_str(), "numu_true_v_visibleE", 100, -10, 10);
-    _root_histos[i].h_numu_l_length = new TH1D(("numu_l_length_" + cut_names[i]).c_str(), "numu_l_length", 101, -10, 1000);
+    _root_histos[i].h_numu_t_length = new TH1D(("numu_t_length_" + cut_names[i]).c_str(), "numu_t_length", 101, -10, 1000);
     _root_histos[i].h_numu_contained_L = new TH1D(("numu_contained_L_" + cut_names[i]).c_str(), "numu_contained_L", 101, -10 , 1000);
-    _root_histos[i].h_numu_l_is_contained = new TH1D(("l_is_contained_" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
+    _root_histos[i].h_numu_t_is_contained = new TH1D(("l_is_contained_" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
     _root_histos[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
       20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
       20, _config.active_volume.Min()[1], _config.active_volume.Max()[1]);
@@ -117,9 +117,9 @@ void NumuSelection::Finalize() {
     _root_histos[i].h_numu_trueE->Write();
     _root_histos[i].h_numu_visibleE->Write();
     _root_histos[i].h_numu_true_v_visibleE->Write();
-    _root_histos[i].h_numu_l_length->Write();
+    _root_histos[i].h_numu_t_length->Write();
     _root_histos[i].h_numu_contained_L->Write();
-    _root_histos[i].h_numu_l_is_contained->Write();
+    _root_histos[i].h_numu_t_is_contained->Write();
     _root_histos[i].h_numu_Vxy->Write();
     _root_histos[i].h_numu_Vxz->Write();
     _root_histos[i].h_numu_Vyz->Write();
@@ -191,9 +191,9 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
         _root_histos[select_i].h_numu_visibleE->Fill(visible_energy);
         _root_histos[select_i].h_numu_true_v_visibleE->Fill(visible_energy - interaction.neutrino.energy);
-        _root_histos[select_i].h_numu_l_length->Fill(intInfo.t_length);
+        _root_histos[select_i].h_numu_t_length->Fill(intInfo.t_length);
         _root_histos[select_i].h_numu_contained_L->Fill(intInfo.t_contained_length);
-        _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.t_is_contained);
+        _root_histos[select_i].h_numu_t_is_contained->Fill(intInfo.t_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
