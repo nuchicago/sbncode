@@ -274,7 +274,7 @@ Covariance::Covariance(std::vector<EventSample> samples) {
             bins = numu_bins; nbins = num_numu_bins;
         }
         
-        std::string title = sample.fDet+"; Energy (GeV); Counts";
+        std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
         std::vector <TH1D*> temp_count_hists = {new TH1D("tempbase", title.c_str(), nbins, bins)};
         
         for (int u = 0; u < n_alt_unis; u++) {

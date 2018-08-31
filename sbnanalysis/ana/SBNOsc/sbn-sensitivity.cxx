@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
     gr_bestfit->SetMarkerSize(1.6);
     gr_bestfit->SetMarkerColor(40);
     
-    contour_graphs[0]->SetTitle("SBN Sensitivity (True Energy); sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
+    contour_graphs[0]->SetTitle("SBN Sensitivity (Reconstructed Energy); sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
     
     TLegend *legend = new TLegend();
     legend->AddEntry(contour_graphs[0], "90% CL", "l");
