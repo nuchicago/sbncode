@@ -271,7 +271,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   if (track_ind == -1) {
     double track_contained_length = -1;
     for (int i = 0; i < mctrack_list.size(); i++) {
-      if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 211 && mctrack_list[i].Process() == "primary") {
+      if (isFromNuVertex(mctruth, mctrack_list[i]) && abs(mctrack_list[i].PdgCode()) == 211 && mctrack_list[i].Process() == "primary") {
         double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 
         if (track_contained_length < 0 || this_contained_length > track_contained_length) {
           track_ind = i;
