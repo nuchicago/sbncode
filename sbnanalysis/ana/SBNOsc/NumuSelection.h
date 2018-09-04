@@ -82,7 +82,7 @@ protected:
   struct Config {
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
-    geoalgo::AABox active_volume; //!< Active volume
+    std::vector<geoalgo::AABox> active_volumes; //!< List of active volumes
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
     double minLengthContainedTrack; //!< Minimum length [cm] of contained tracks. Will not apply cut if value is negative.
