@@ -85,10 +85,17 @@ int main(int argc, char* argv[]) {
     
     assert(!samples.empty());
     
+    //// Get configuration file
+    //// ~~~~~~~~~~~~~~~~~~~~~~
+    
+    // TODO: configure this from command line
+    char *configFileName = "/sbnd/app/users/gavarela/sbncode-v06_80_00/srcs/sbncode/sbnanalysis/ana/SBNOsc/config/CovarianceConfig.json";
+    
+    
     //// Get covariances and write outputs to ROOT file(s)
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    ana::SBNOsc::Covariance cov(samples);
+    ana::SBNOsc::Covariance cov(samples, configFileName);
     
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
     TFile* newfile = TFile::Open((directory + "cov_output.root").c_str(), "recreate");

@@ -5,6 +5,9 @@
  * \file Covariance.h
  */
 
+#include "json/json.h"
+#include "core/Loader.hh"
+
 #include <string>
 #include <vector>
 #include <map>
@@ -50,6 +53,15 @@ class Covariance {
         std::vector <double> energies;          // Bin centre (energy) for CV hist (and cov, fcov, corr).
         std::vector <std::string> sample_order; // Description of samples used, in order they were plotted.
         std::vector <int> sample_bins;          // Bin limits of samples.
+    
+    private:
+    
+        std::string fWeightKey;
+        int fNumAltUnis;
+        std::string fEnergyType;
+        std::map <std::string, std::vector <double> > fBins;
+        std::map <std::string, float> fScaleTargets;
+        
     
 };
 

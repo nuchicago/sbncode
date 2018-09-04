@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     
     std::vector <std::string> DETLIST = {"SBND", "MicroBooNE", "ICARUS"},
                               detlist = {"sbnd", "uboone", "icarus"},
-                             desclist = {"numu", "numu", "numu"};
+                             desclist = {"#nu_{#mu}", "#nu_{#mu}", "#nu_{#mu}"};
     
     //std::string prelist = "/sbnd/data/users/gavarela/selection/", postlist = "/spatel_output/spatel.list";
     //std::vector <float> scalelist = {getPOTs(prelist+"sbnd"+postlist), getPOTs(prelist+"uboone"+postlist), getPOTs(prelist+"icarus"+postlist)};
@@ -89,11 +89,17 @@ int main(int argc, char* argv[]) {
     
     assert(!samples.empty());
     
+    //// Get configuration file
+    //// ~~~~~~~~~~~~~~~~~~~~~~
+    
+    // TODO: configure this from command line
+    char *configFileName = "/sbnd/app/users/gavarela/sbncode-v06_80_00/srcs/sbncode/sbnanalysis/ana/SBNOsc/config/CovarianceConfig.json";
+    
     
     //// Get covariances
     //// ~~~~~~~~~~~~~~~
     
-    ana::SBNOsc::Covariance cov(samples);
+    ana::SBNOsc::Covariance cov(samples, configFileName);
     
     // Write to file
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
