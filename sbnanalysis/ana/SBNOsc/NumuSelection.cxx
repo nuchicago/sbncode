@@ -32,39 +32,21 @@ NumuSelection::NumuSelection() :
   _nu_count(0), 
   _interactionInfo(new std::vector<NuMuInteraction>) {}
 
+double aaBoxesMin(const std::vector<geoalgo::AABox> &boxes, unsigned dim) {
+  return std::min_element(boxes.begin(), boxes.end(), [dim](auto &lhs, auto &rhs) { return lhs.Min()[dim] < rhs.Min()[dim]; })->Min()[dim];
+}
+
+double aaBoxesMax(const std::vector<geoalgo::AABox> &boxes, unsigned dim) {
+  return std::max_element(boxes.begin(), boxes.end(), [dim](auto &lhs, auto &rhs) { return lhs.Max()[dim] < rhs.Max()[dim]; })->Max()[dim];
+}
 
 void NumuSelection::Initialize(Json::Value* config) {
   if (config) {
-    // setup active volume bounding box
-    {
-      double xmin, xmax, ymin, ymax, zmin, zmax;
-      xmin = xmax = ymin = ymax = zmin = zmax = 0;
-      if ((*config)["NumuSelection"].isMember("active_volume")) {
-        xmin = (*config)["NumuSelection"]["active_volume"]["xmin"].asDouble();
-        xmax = (*config)["NumuSelection"]["active_volume"]["xmax"].asDouble();
-        ymin = (*config)["NumuSelection"]["active_volume"]["ymin"].asDouble();
-        ymax = (*config)["NumuSelection"]["active_volume"]["ymax"].asDouble();
-        zmin = (*config)["NumuSelection"]["active_volume"]["zmin"].asDouble();
-        zmax = (*config)["NumuSelection"]["active_volume"]["zmax"].asDouble();
-      }
-      else if ((*config)["NumuSelection"].isMember("fiducial_volumes")) {
-        xmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Min()[0] < rhs.Min()[0];})->Min()[0];
-        xmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Max()[0] < rhs.Max()[0];})->Max()[0];
-        ymin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Min()[1] < rhs.Min()[1];})->Min()[1];
-        ymax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Max()[1] < rhs.Max()[1];})->Max()[1];
-        zmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Min()[2] < rhs.Min()[2];})->Min()[2];
-        zmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Max()[2] < rhs.Max()[2];})->Max()[2];
-      }
-      _config.active_volume = geoalgo::AABox(xmin, ymin, zmin, xmax, ymax, zmax);
+    // setup active volume bounding boxes
+    auto AVs = (*config)["NumuSelection"]["active_volumes"];
+    for (auto AV: AVs) {
+      _config.active_volumes.emplace_back(AV["xmin"].asDouble(), AV["ymin"].asDouble(), AV["zmin"].asDouble(), AV["xmax"].asDouble(), AV["ymax"].asDouble(), AV["zmax"].asDouble());
     }
-
-    // allow multiple fiducial volumes (accomodate for uboone data channels and icarus 2 TPC's)
     auto FVs = (*config)["NumuSelection"]["fiducial_volumes"];
     for (auto FV: FVs) {
       _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
@@ -90,14 +72,14 @@ void NumuSelection::Initialize(Json::Value* config) {
     _root_histos[i].h_numu_t_is_contained = new TH1D(("t_is_contained_" + cut_names[i]).c_str(), "t_is_contained", 3, -1.5, 1.5); 
     _root_histos[i].h_numu_t_is_muon = new TH1D(("t_is_muon_" + cut_names[i]).c_str(), "t_is_muon", 3, -1.5, 1.5);
     _root_histos[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
-      20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
-      20, _config.active_volume.Min()[1], _config.active_volume.Max()[1]);
+      20, aaBoxesMin(_config.active_volumes, 0), aaBoxesMax(_config.active_volumes, 0),
+      20, aaBoxesMin(_config.active_volumes, 1), aaBoxesMax(_config.active_volumes, 1));
     _root_histos[i].h_numu_Vxz = new TH2D(("numu_Vxz_" + cut_names[i]).c_str(), "numu_Vxz", 
-      20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
-      20, _config.active_volume.Min()[2], _config.active_volume.Min()[2]); 
+      20, aaBoxesMin(_config.active_volumes, 0), aaBoxesMax(_config.active_volumes, 0),
+      20, aaBoxesMin(_config.active_volumes, 2), aaBoxesMax(_config.active_volumes, 2));
     _root_histos[i].h_numu_Vyz = new TH2D(("numu_Vyz_" + cut_names[i]).c_str(), "numu_Vyz", 
-      20, _config.active_volume.Min()[1], _config.active_volume.Max()[1], 
-      20, _config.active_volume.Min()[2], _config.active_volume.Min()[2]);
+      20, aaBoxesMin(_config.active_volumes, 1), aaBoxesMax(_config.active_volumes, 1),
+      20, aaBoxesMin(_config.active_volumes, 2), aaBoxesMax(_config.active_volumes, 2));
   }
 
   // set up TGraph keeping track of cut counts
