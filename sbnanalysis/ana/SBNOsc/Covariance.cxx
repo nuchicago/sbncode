@@ -249,7 +249,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         for (std::string desc : descs) {
             
             fBins.insert({desc, {}});
-            auto binlist (*config)["Covariance"]["BinDefs"].get(desc, default_bins);
+            auto binlist = (*config)["Covariance"]["BinDefs"].get(desc, default_bins);
             for (auto& binlim : binlist) {
                 fBins[desc].push_back(binlim.asDouble());
             }
@@ -288,7 +288,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         offset.push_back(num_bins);
         
         std::string binkey = plot_order[o].substr(plot_order[o].find("_"), plot_order[o].length());
-        num_bins += fBins[binkey];
+        num_bins += fBins[binkey].size() - 1;
         
     }
     offset.push_back(num_bins); // for later when setting labels to cov plots
@@ -322,12 +322,12 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         // Initialise temp hists to store counts
         std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
-        std::vector <TH1D*> temp_count_hists = {new TH1D("tempbase", title.c_str(), fBins[sample.fDesc], &fBins[sample.fDesc][0])};
+        std::vector <TH1D*> temp_count_hists = {new TH1D("tempbase", title.c_str(), fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0])};
         
         for (int u = 0; u < fNumAltUnis; u++) {
             
             std::string name = "tempalt" + std::to_string(u+1);
-            temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), fBins[sample.fDesc], &fBins[sample.fDesc][0]));
+            temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]));
             
         }
         
