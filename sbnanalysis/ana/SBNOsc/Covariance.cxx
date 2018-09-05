@@ -210,7 +210,7 @@ std::vector <std::string> get_dets_inorder(std::vector<EventSample> samples) {
     
 }
 
-Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
+Covariance::Covariance(std::vector<EventSample> samples, const char *configFileName) {
     
     //// Preliminary stuff (parameters)
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

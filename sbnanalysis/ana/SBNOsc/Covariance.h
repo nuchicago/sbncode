@@ -45,7 +45,7 @@ class EventSample {
 class Covariance {
     
     public:
-        Covariance(std::vector<EventSample> samples, char *configFileName);
+        Covariance(std::vector<EventSample> samples, const char *configFileName);
         //SavePNGs(std::string directory);
         
         TH2D *covmat, *fcovmat, *corrmat;       // Covariance, fractional covariance and correlation matrices.
