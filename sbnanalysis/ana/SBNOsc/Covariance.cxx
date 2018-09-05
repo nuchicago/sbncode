@@ -284,9 +284,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Get plotting order of samples
     std::vector <std::string> plot_order = get_plot_order(samples);
     
-    
-    std::cout << std::endl << "Will start getting bins" << std::endl << std::endl;
-    
         // Number of bins needed in big histogram (for covariance)
     int num_bins = 0;
     std::vector <int> offset;
@@ -295,29 +292,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         offset.push_back(num_bins);
         
         std::string binkey = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
-        std::cout << "Getting binkey " << binkey << " from plot " << plot_order[o] << " with size " << fBins[binkey].size() - 1 << std::endl;
         num_bins += fBins[binkey].size() - 1;
         
     }
     offset.push_back(num_bins); // for later when setting labels to cov plots
-    
-    
-    std::cout << std::endl << "Got bins. num_bins = " << num_bins << std::endl << std::endl;
-    
-    std::cout << std::endl << "fBins is as such:" << std::endl;
-    for (auto it : fBins) {
-        std::cout << it.first << ": ";
-        for (auto it2 : it.second) {
-            std::cout << it2 << ", ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    std::cout << std::endl << "offset is as such:";
-    for (auto it : offset) {
-        std::cout << it << ", ";
-    }
-    std::cout << std::endl;
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
