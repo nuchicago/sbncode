@@ -250,7 +250,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             fBins.insert({desc, {}});
             
-            if ((*config)["Covariance"]["BinDefs"].find(desc) == (*config)["Covariance"]["BinDefs"].end()) {
+            if ((*config)["Covariance"]["BinDefs"].isMember(desc)) {
                 for (auto binlim : (*config)["Covariance"]["BinDefs"][desc]) {
                     fBins[desc].push_back(binlim.asDouble());
                 }
