@@ -99,7 +99,7 @@ int main(int argc, char* argv[]) {
     //// Get covariances
     //// ~~~~~~~~~~~~~~~
     
-    ana::SBNOsc::Covariance cov(samples, configFileName.c_str());
+    ana::SBNOsc::Covariance cov(samples, configFileName->c_str());
     
     // Write to file
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
