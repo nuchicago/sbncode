@@ -89,13 +89,13 @@ int main(int argc, char* argv[]) {
     //// ~~~~~~~~~~~~~~~~~~~~~~
     
     // TODO: configure this from command line
-    char *configFileName = ((std::string)"/sbnd/app/users/gavarela/sbncode-v06_80_00/srcs/sbncode/sbnanalysis/ana/SBNOsc/config/CovarianceConfig.json").c_str();
+    std::string *configFileName = "/sbnd/app/users/gavarela/sbncode-v06_80_00/srcs/sbncode/sbnanalysis/ana/SBNOsc/config/CovarianceConfig.json";
     
     
     //// Get covariances and write outputs to ROOT file(s)
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    ana::SBNOsc::Covariance cov(samples, configFileName);
+    ana::SBNOsc::Covariance cov(samples, configFileName.c_str());
     
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
     TFile* newfile = TFile::Open((directory + "cov_output.root").c_str(), "recreate");
