@@ -31,7 +31,7 @@ class EventSample {
         EventSample();
         EventSample(TTree* _tree, float scaleFactor) : tree(_tree), fScaleFactor(scaleFactor) {}
         EventSample(std::vector<std::string> filenames, float fScaleFactor);
-        EventSample(TFile* _file, TTree* _tree, float ScaleFactor, std::string Det, std::string Desc);
+        EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc);
         
         TFile* file;            //!< File containing the tree
         TTree* tree;            //!< Event tree
