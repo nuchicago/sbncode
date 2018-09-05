@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     char *configFileName = argv[1];
     
     Json::Value* config = core::LoadConfig(configFileName);
-    assert(config);
+    //assert(config);
     
     std::vector <ana::SBNOsc::EventSample> samples;
     
