@@ -63,7 +63,7 @@ int main(int argc, char* argv[]) {
     
     std::vector <std::string> DETLIST = {"SBND", "MicroBooNE", "ICARUS"},
                               detlist = {"sbnd", "uboone", "icarus"},
-                             desclist = {"numu", "numu", "numu"};
+                             desclist = {"#nu_{#mu}", "#nu_{#mu}", "#nu_{#mu}"};
     
     //std::string prelist = "/sbnd/data/users/gavarela/selection/", postlist = "/spatel_output/spatel.list";
     //std::vector <float> scalelist = {getPOTs(prelist+"sbnd"+postlist), getPOTs(prelist+"uboone"+postlist), getPOTs(prelist+"icarus"+postlist)};
