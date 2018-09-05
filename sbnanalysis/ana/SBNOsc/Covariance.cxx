@@ -245,18 +245,32 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         fEnergyType = (*config)["Covariance"].get("EnergyType", "").asString();
         
         // Histogram bins
+        
+        
+        std::cout << std::endl << "Building fBins now..." << std::endl;
+        
         std::vector <double> default_bins = { 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.25, 1.5, 2, 2.5, 3 };
         for (std::string desc : descs) {
+            
+            std::cout << "  Doing desc " << desc << std::endl;
             
             fBins.insert({desc, {}});
             
             if ((*config)["Covariance"]["BinDefs"].isMember(desc)) {
+                std::cout << "    Filled in by config" << std::endl;
                 for (auto binlim : (*config)["Covariance"]["BinDefs"][desc]) {
                     fBins[desc].push_back(binlim.asDouble());
                 }
             } else {
+                std::cout << "   Filled in by default" << std::endl;
                 fBins[desc] = default_bins;
             }
+            
+            std::cout << "    Got under key " << desc << ":";
+            for (auto it : fBins[desc]) {
+                std::cout << it << ", ";
+            }
+            std::cout << std::endl;
             
             //auto binlist = (*config)["Covariance"]["BinDefs"][desc, default_bins);
             //for (auto& binlim : binlist) {
@@ -312,7 +326,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "fBins is as such:" << std::endl;
     for (auto it : fBins) {
-        std::cout << it.first << ": " << std::endl;
+        std::cout << it.first << ": ";
         for (auto it2 : it.second) {
             std::cout << it2 << ", ";
         }
