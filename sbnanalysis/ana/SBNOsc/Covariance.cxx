@@ -212,8 +212,8 @@ std::vector <std::string> get_dets_inorder(std::vector<EventSample> samples) {
 
 Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
-    //// Preliminary stuff (parameters)
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// Getting parameters from config file
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // What's in our samples?
     std::vector <std::string> descs;
@@ -233,7 +233,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
         if (fWeightKey == "GetWeights") {
             fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
-            std::cout << std::endl << fNumAltUnis << std::endl << std::endl;
         } else {
             Event *tempev = new Event;
             samples[0].tree->SetBranchAddress("events", &tempev);
@@ -279,7 +278,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     //// Get counts on each (base and alternative) universe
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        
+    
+    std::cout << std::endl << "Ended params" << std::endl << std::endl;
+    
     // Some stuff related to binning and plotting
         // If nue appearance, set binning for all numus to same as nues
     int nue_appearance = (fBins.find("#nu_{e}") != fBins.end());
@@ -289,6 +290,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
         // Get plotting order of samples
     std::vector <std::string> plot_order = get_plot_order(samples);
+    
+    
+    std::cout << std::endl << "Will start getting bins" << std::endl << std::endl;
     
         // Number of bins needed in big histogram (for covariance)
     int num_bins = 0;
@@ -302,6 +306,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
     }
     offset.push_back(num_bins); // for later when setting labels to cov plots
+    
+    
+    std::cout << std::endl << "Got bins. num_bins = " << num_bins << std::endl << std::endl;
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
@@ -317,6 +324,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         count_hists[u]->GetXaxis()->LabelsOption("h");
     
     }
+    
+    
+    std::cout << std::endl << "Created hists" << std::endl << std::endl;
     
     // Canvases for nice histograms
     TCanvas *numu_canvas = new TCanvas("numu_canvas", "#nu_{#mu} Distribution", 950, 345),
