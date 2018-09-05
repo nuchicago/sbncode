@@ -112,7 +112,7 @@ protected:
   * \return Whether to apply FV cut on neutrino 
   *
   * */
-  bool passFV(const TVector3 &v) { return containedInFV(v); }
+  bool passFV(const TVector3 &v) { return !_config.doFVCut ||containedInFV(v); }
 
   /** Applies reco-truth vertex matching cut 
  * \param truth_v Truth vertex vector
