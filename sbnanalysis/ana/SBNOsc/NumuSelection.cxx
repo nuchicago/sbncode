@@ -177,7 +177,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
         _root_histos[select_i].h_numu_true_v_visibleE->Fill(visible_energy - interaction.neutrino.energy);
         _root_histos[select_i].h_numu_t_length->Fill(intInfo.t_length);
         _root_histos[select_i].h_numu_contained_L->Fill(intInfo.t_contained_length);
-        _root_histos[select_i].h_numu_t_is_muon->Fill(intInfo.t_pdgid == 13);
+        _root_histos[select_i].h_numu_t_is_muon->Fill(abs(intInfo.t_pdgid) == 13);
         _root_histos[select_i].h_numu_t_is_contained->Fill(intInfo.t_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
@@ -261,7 +261,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // get lepton track
   int track_ind = -1;
   for (int i = 0; i < mctrack_list.size(); i++) {
-    if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 13 && mctrack_list[i].Process() == "primary") {
+    if (isFromNuVertex(mctruth, mctrack_list[i]) && abs(mctrack_list[i].PdgCode()) == 13 && mctrack_list[i].Process() == "primary") {
       track_ind = i;
       break;
     }
