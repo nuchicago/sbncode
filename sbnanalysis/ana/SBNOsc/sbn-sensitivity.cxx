@@ -32,10 +32,10 @@ int main(int argc, char* argv[]) {
     
     for (auto sample : (*config)["EventSamples"]) {
         
-        std::string filename = sample["path"].asString(),
-                         det = sample["det"].asString(),
-                        desc = sample["desc"].asString();
+        TFile *file = new TFile((sample["path"].asString()).c_str());
         float scalefactor = sample["scalefactor"].asFloat();
+        std::string det = sample["det"].asString(),
+                        desc = sample["desc"].asString();
         
         samples.push_back(ana::SBNOsc::EventSample(filename, scalefactor, det, desc));
         
