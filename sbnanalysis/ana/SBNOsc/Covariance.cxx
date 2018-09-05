@@ -310,6 +310,16 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "Got bins. num_bins = " << num_bins << std::endl << std::endl;
     
+    std::cout << std::endl << "fBins is as such:" << std::endl;
+    for (auto it : fBins) {
+        std::cout << it.first << ": " << std::endl;
+        for (auto it2 : it.second) {
+            std::cout << it2 << ", ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
     count_hists[0]->GetXaxis()->LabelsOption("h");
