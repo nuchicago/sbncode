@@ -30,6 +30,7 @@ target_link_libraries(${LARSIM_BASE_DICT})
 # Build executables
 add_executable(sbn-cov sbn-cov.cxx)
 target_link_libraries(
+  jsoncpp
   sbn-cov
   sbnanalysis_SBNOsc_Covariance
   sbnanalysis_Event
@@ -38,6 +39,7 @@ target_link_libraries(
 
 add_executable(sbn-sensitivity sbn-sensitivity.cxx)
 target_link_libraries(
+  jsoncpp
   sbn-sensitivity
   sbnanalysis_SBNOsc_Chi2Sensitivity
   sbnanalysis_SBNOsc_Covariance
