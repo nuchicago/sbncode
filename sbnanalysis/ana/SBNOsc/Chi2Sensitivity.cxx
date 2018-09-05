@@ -14,9 +14,9 @@
 namespace ana {
   namespace SBNOsc {
 
-Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples) {
+Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName) {
     
-    Covariance cov(samples);
+    Covariance cov(samples, configFileName);
     
     // ...
     
