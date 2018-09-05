@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
     char *configFileName = argv[1];
     
     Json::Value* config = core::LoadConfig(configFileName);
-    //assert(config);
+    assert(config);
     
     std::vector <ana::SBNOsc::EventSample> samples;
     
@@ -37,6 +37,8 @@ int main(int argc, char* argv[]) {
         std::string det = sample["det"].asString(),
                         desc = sample["desc"].asString();
         
+        std::cout << desc << " " << det << std::endl;
+        
         samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc));
         
     }
@@ -46,6 +48,8 @@ int main(int argc, char* argv[]) {
     
     //// Get covariances
     //// ~~~~~~~~~~~~~~~
+    
+    std::cout << std::endl << "Starting covariance procedure..." << std::endl << std::endl;
     
     ana::SBNOsc::Covariance cov(samples, configFileName);
     
@@ -68,6 +72,8 @@ int main(int argc, char* argv[]) {
     
     //// Get sensitivity contours
     //// ~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    std::cout << std::endl << "Starting chisq/sensitivity procedure..." << std::endl << std::endl;
     
     ana::SBNOsc::Chi2Sensitivity chi2(cov);
     

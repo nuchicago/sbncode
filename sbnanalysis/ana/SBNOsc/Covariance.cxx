@@ -275,6 +275,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     }
     
+    std::cout << std::endl << "Got all parameters from the config file." << std::endl;
+    
     
     //// Get counts on each (base and alternative) universe
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
