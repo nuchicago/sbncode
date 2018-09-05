@@ -294,7 +294,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         offset.push_back(num_bins);
         
-        std::string binkey = plot_order[o].substr(plot_order[o].find("_"), plot_order[o].length());
+        std::string binkey = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
         std::cout << "Getting binkey " << binkey << " from plot " << plot_order[o] << " with size " << fBins[binkey].size() - 1 << std::endl;
         num_bins += fBins[binkey].size() - 1;
         
