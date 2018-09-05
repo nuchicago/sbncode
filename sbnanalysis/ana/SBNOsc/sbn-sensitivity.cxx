@@ -93,13 +93,13 @@ int main(int argc, char* argv[]) {
     //// ~~~~~~~~~~~~~~~~~~~~~~
     
     // TODO: configure this from command line
-    std::string *configFileName = "/sbnd/app/users/gavarela/sbncode-v06_80_00/srcs/sbncode/sbnanalysis/ana/SBNOsc/config/CovarianceConfig.json";
+    std::string configFileName = "/sbnd/app/users/gavarela/sbncode-v06_80_00/srcs/sbncode/sbnanalysis/ana/SBNOsc/config/CovarianceConfig.json";
     
     
     //// Get covariances
     //// ~~~~~~~~~~~~~~~
     
-    ana::SBNOsc::Covariance cov(samples, configFileName->c_str());
+    ana::SBNOsc::Covariance cov(samples, configFileName.c_str());
     
     // Write to file
     std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
