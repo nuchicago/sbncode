@@ -232,8 +232,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Weight and universe stuff
         fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
         if (fWeightKey == "GetWeights") {
-            std::cout << std::endl << "OISHAKSAGKGSC" << std::endl;
             fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
+            std::cout << std::endl << fNumAltUnis << std::endl << std::endl;
         } else {
             Event *tempev = new Event;
             samples[0].tree->SetBranchAddress("events", &tempev);
