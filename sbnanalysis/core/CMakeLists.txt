@@ -44,12 +44,14 @@ add_library(sbnanalysis_Processor SHARED ProcessorBase.cxx SelectionBase.cxx Pro
 target_link_libraries(
   sbnanalysis_Processor
   sbnanalysis_Event
+  sbnanalysis_util_Interaction
   canvas
   cetlib
   gallery
   nusimdata_SimulationBase
   larcoreobj_SummaryData
   lardataobj_RecoBase
+  lardataobj_MCBase
   ${LARSIM_BASE_LIBRARY}
   ${LARSIM_BASE_DICT}
   ${ROOT_LIBRARIES}
