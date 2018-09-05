@@ -39,8 +39,12 @@ EventSample::EventSample(std::vector<std::string> filenames, float scaleFactor) 
 };
     
 // My own constructor that deals with the extra public members I added.
-EventSample::EventSample(TFile* _file, TTree* _tree, float ScaleFactor, std::string Det, std::string Desc) : file(_file), tree(_tree), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc) {
+EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc) {
 
+    // Tree
+    tree = (TTree*) file->Get("sbnana");
+    
+    /*
     // Detector
     std::map <std::string, std::string> det_to_DET = {{"sbnd", "SBND"}, {"uboone", "MicroBooNE"}, {"icarus", "ICARUS"}};
 
@@ -50,6 +54,7 @@ EventSample::EventSample(TFile* _file, TTree* _tree, float ScaleFactor, std::str
         std::cout << std::endl << "ERROR: " << Det << " not valid detector." << std::endl << std::endl;
         assert(false);
     }
+    */
 
 };
 
@@ -356,7 +361,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 // Add energy to base universe histogram
                 double nuE;
                 if (fEnergyType == "CCQE") {
-                    nuE = event->reco[n].neutrino.energy;
+                    nuE = event->reco[n].truth.neutrino.eccqe;
                 } else if (fEnergyType == "True") {
                     nuE = event->truth[n].neutrino.energy;
                 }
