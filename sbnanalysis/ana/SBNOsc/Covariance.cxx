@@ -249,10 +249,19 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         for (std::string desc : descs) {
             
             fBins.insert({desc, {}});
-            auto binlist = (*config)["Covariance"]["BinDefs"].get(desc, default_bins);
-            for (auto& binlim : binlist) {
-                fBins[desc].push_back(binlim.asDouble());
+            
+            if ((*config)["Covariance"]["BinDefs"].find(desc) == (*config)["Covariance"]["BinDefs"].end()) {
+                for (auto binlim : (*config)["Covariance"]["BinDefs"][desc]) {
+                    fBins[desc].push_back(binlim.asDouble());
+                }
+            } else {
+                fBins[desc] = default_bins;
             }
+            
+            //auto binlist = (*config)["Covariance"]["BinDefs"][desc, default_bins);
+            //for (auto& binlim : binlist) {
+            //    fBins[desc].push_back(binlim.asDouble());
+            //}
             
         }
         
