@@ -245,37 +245,18 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         fEnergyType = (*config)["Covariance"].get("EnergyType", "").asString();
         
         // Histogram bins
-        
-        
-        std::cout << std::endl << "Building fBins now..." << std::endl;
-        
         std::vector <double> default_bins = { 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.25, 1.5, 2, 2.5, 3 };
         for (std::string desc : descs) {
-            
-            std::cout << "  Doing desc " << desc << std::endl;
             
             fBins.insert({desc, {}});
             
             if ((*config)["Covariance"]["BinDefs"].isMember(desc)) {
-                std::cout << "    Filled in by config" << std::endl;
                 for (auto binlim : (*config)["Covariance"]["BinDefs"][desc]) {
                     fBins[desc].push_back(binlim.asDouble());
                 }
             } else {
-                std::cout << "   Filled in by default" << std::endl;
                 fBins[desc] = default_bins;
             }
-            
-            std::cout << "    Got under key " << desc << ":";
-            for (auto it : fBins[desc]) {
-                std::cout << it << ", ";
-            }
-            std::cout << std::endl;
-            
-            //auto binlist = (*config)["Covariance"]["BinDefs"][desc, default_bins);
-            //for (auto& binlim : binlist) {
-            //    fBins[desc].push_back(binlim.asDouble());
-            //}
             
         }
         
@@ -293,35 +274,12 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     //// Get counts on each (base and alternative) universe
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    std::cout << std::endl << "Ended params" << std::endl << std::endl;
-    
-    std::cout << std::endl << "fBins is as such:" << std::endl;
-    for (auto it : fBins) {
-        std::cout << it.first << ": ";
-        for (auto it2 : it.second) {
-            std::cout << it2 << ", ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    
     // Some stuff related to binning and plotting
         // If nue appearance, set binning for all numus to same as nues
     int nue_appearance = (fBins.find("#nu_{e}") != fBins.end());
     if (nue_appearance == 1) {
         fBins["#nu_{#mu}"] = fBins["#nu_{e}"];
     }
-    
-    std::cout << std::endl << "Did nue appearance stuff." << std::endl
-              << "fBins is as such:" << std::endl;
-    for (auto it : fBins) {
-        std::cout << it.first << ": ";
-        for (auto it2 : it.second) {
-            std::cout << it2 << ", ";
-        }
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
     
         // Get plotting order of samples
     std::vector <std::string> plot_order = get_plot_order(samples);
@@ -337,6 +295,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         offset.push_back(num_bins);
         
         std::string binkey = plot_order[o].substr(plot_order[o].find("_"), plot_order[o].length());
+        std::cout << "Getting binkey " << binkey << " from plot " << plot_order[o] << " with size " << fBins[binkey].size() - 1 << std::endl;
         num_bins += fBins[binkey].size() - 1;
         
     }
@@ -354,6 +313,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         std::cout << std::endl;
     }
     std::cout << std::endl;
+    std::cout << std::endl << "offset is as such:";
+    for (auto it : offset) {
+        std::cout << it << ", ";
+    }
+    std::cout << std::endl;
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
@@ -369,9 +333,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         count_hists[u]->GetXaxis()->LabelsOption("h");
     
     }
-    
-    
-    std::cout << std::endl << "Created hists" << std::endl << std::endl;
     
     // Canvases for nice histograms
     TCanvas *numu_canvas = new TCanvas("numu_canvas", "#nu_{#mu} Distribution", 950, 345),
