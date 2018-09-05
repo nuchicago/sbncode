@@ -295,12 +295,33 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "Ended params" << std::endl << std::endl;
     
+    std::cout << std::endl << "fBins is as such:" << std::endl;
+    for (auto it : fBins) {
+        std::cout << it.first << ": ";
+        for (auto it2 : it.second) {
+            std::cout << it2 << ", ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+    
     // Some stuff related to binning and plotting
         // If nue appearance, set binning for all numus to same as nues
     int nue_appearance = (fBins.find("#nu_{e}") != fBins.end());
     if (nue_appearance == 1) {
         fBins["#nu_{#mu}"] = fBins["#nu_{e}"];
     }
+    
+    std::cout << std::endl << "Did nue appearance stuff." << std::endl
+              << "fBins is as such:" << std::endl;
+    for (auto it : fBins) {
+        std::cout << it.first << ": ";
+        for (auto it2 : it.second) {
+            std::cout << it2 << ", ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
     
         // Get plotting order of samples
     std::vector <std::string> plot_order = get_plot_order(samples);
