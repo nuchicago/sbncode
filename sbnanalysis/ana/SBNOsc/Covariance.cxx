@@ -308,7 +308,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
-    count_hists[0]->GetXaxis()->LabelsOption("h");
+    // count_hists[0]->GetXaxis()->LabelsOption("h");
     
     for (int u = 0; u < fNumAltUnis; u++) {
         
@@ -317,7 +317,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         count_hists.push_back(new TH1D(name.c_str(), title.c_str(), num_bins, 0, num_bins));
         
-        count_hists[u]->GetXaxis()->LabelsOption("h");
+        // count_hists[u]->GetXaxis()->LabelsOption("h");
     
     }
     
