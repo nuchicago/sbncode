@@ -203,16 +203,25 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
   int pdgid = track.PdgCode(); 
 
   // Get the length and determine if any point leaves the fiducial volume
-  TLorentzVector pos = track.Start().Position();
-  for (int i = 1; i < track.size(); i++) {
-    // update if track is contained
-    if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
+  if (track.size() != 0) {
+    TLorentzVector pos = track.Start().Position();
+    for (int i = 1; i < track.size(); i++) {
+      // update if track is contained
+      if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
       
-    // update length
-    contained_length += containedLength(track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
-    length += (track[i].Position().Vect() - pos.Vect()).Mag();
+      // update length
+      contained_length += containedLength(track[i].Position().Vect(), pos.Vect(), _config.fiducial_volumes);
+      length += (track[i].Position().Vect() - pos.Vect()).Mag();
       
-    pos = track[i].Position();
+      pos = track[i].Position();
+    }
+  }
+  // TODO: FIX TEMPORARY HACK
+  else {
+    //std::cerr << "WARNING: TRACK WITH NO POINTS" << std::endl;
+    contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.fiducial_volumes);
+    length = (track.Start().Position().Vect() - track.End().Position().Vect()).Mag();
+    contained_in_FV = containedInFV(track.Start().Position().Vect()) && containedInFV(track.End().Position().Vect());
   }
   
   return NumuSelection::NuMuInteraction({contained_in_FV, contained_length, length, pdgid});
