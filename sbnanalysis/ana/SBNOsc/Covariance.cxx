@@ -304,8 +304,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     offset.push_back(num_bins); // for later when setting labels to cov plots
     
-    std::cout << "KJHGADKHSKJDHC" << std::endl;
-    
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
     // count_hists[0]->GetXaxis()->LabelsOption("h");
@@ -320,8 +318,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // count_hists[u]->GetXaxis()->LabelsOption("h");
     
     }
-    
-    std::cout << "AKJDHKJDSHKJSHD" << std::endl;
     
     // Canvases for nice histograms
     TCanvas *numu_canvas = new TCanvas("numu_canvas", "#nu_{#mu} Distribution", 950, 345),
@@ -375,10 +371,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
                 // Get weights for each alternative universe and fill
                 std::vector <double> uweights;
+                unsigned truth_ind = event->reco[n].truth_index;
                 if (fWeightKey == "GetWeights") {
-                    uweights = get_uni_weights(event->truth[n].weights, fNumAltUnis);
+                    uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
                 } else {
-                    uweights = event->truth[n].weights[fWeightKey];
+                    uweights = event->truth[truth_ind].weights[fWeightKey];
                 }
                 
                 for (int u = 0; u < uweights.size(); u++) {
