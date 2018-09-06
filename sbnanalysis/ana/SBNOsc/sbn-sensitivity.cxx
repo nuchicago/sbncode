@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     ana::SBNOsc::Covariance cov(samples, configFileName);
     
     // Write to file
-    std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
+    std::string directory = (*config).get("OutputDirectory", "./").asString();
     
     TFile* covfile = TFile::Open((directory + "cov.root").c_str(), "recreate");
     assert(covfile && covfile->IsOpen());
@@ -75,7 +75,7 @@ int main(int argc, char* argv[]) {
     
     std::cout << std::endl << "Starting chisq/sensitivity procedure..." << std::endl << std::endl;
     
-    ana::SBNOsc::Chi2Sensitivity chi2(cov);
+    ana::SBNOsc::Chi2Sensitivity chi2(cov, directory);
     
     // Wite to file
     TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
