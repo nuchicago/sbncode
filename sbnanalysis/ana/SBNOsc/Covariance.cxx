@@ -353,8 +353,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             sample.tree->GetEntry(e);
             
-            if (event->reco.size() != event->truth.size()) continue;
-            
             for (int n = 0; n < event->reco.size(); n++) {
                 
                 nucount++;
@@ -362,7 +360,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 // Add energy to base universe histogram
                 double nuE;
                 if (fEnergyType == "CCQE") {
-                    nuE = event->reco[n].neutrino.energy; //truth.neutrino.energy;
+                    nuE = event->reco[n].truth.neutrino.eccqe;
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
                 }
@@ -370,7 +368,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
                 // Get weights for each alternative universe and fill
                 std::vector <double> uweights;
-                unsigned truth_ind = n; // event->reco[n].truth_index;
+                unsigned truth_ind = event->reco[n].truth_index;
                 if (fWeightKey == "GetWeights") {
                     uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
                 } else {
