@@ -391,7 +391,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
                 double binwidth = temp_count_hists[u]->GetBinWidth(b+1), 
                      bincontent = temp_count_hists[u]->GetBinContent(b+1);
-                temp_count_hists[u]->SetBinContent(b+1, bincontent / binwidth * fScaleTargets[sample.fDet] / sample.fScaleFactor);
+                temp_count_hists[u]->SetBinContent(b+1, bincontent /* / binwidth */ * fScaleTargets[sample.fDet] / sample.fScaleFactor);
                 
             }
             
