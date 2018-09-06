@@ -446,7 +446,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     // Bins for cov, fcov and corr
     std::vector <double> covbins = {};
-    for (int o = 0;  < plot_order.size(); o++) {
+    for (int o = 0; o < plot_order.size(); o++) {
         std::string desc = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
         for (int i = 0; i < fBins[desc].size(); i++) {
             if (o == 0 && i == 0) {
@@ -457,6 +457,12 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
     }
     covbins.pop_back();
+    
+    if (num_bins == covbins.size() - 1) {
+        std::cout << std::endl << "NOT SAME SIZE COVBINS!!!" << std::endl; 
+    } else {
+        std::cout << std::endl << "covbins same size :)" << std::endl;
+    }
     
     // Covariance and fractional covariance
     TH2D *cov = new TH2D("cov", "Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]),
