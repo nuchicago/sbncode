@@ -107,12 +107,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
         
     }
     
-    for (int i = 0; i < cov.CV_counts->GetNbinsX(); i++) {
-        std::cout << "For bin " << i << ",   counts = " << cov.CV_counts->GetBinContent(i+1) << std::endl 
-                                     << "  distance = " << distance[i] << std::endl 
-                                     << "    energy = " << cov.energies[i] << std::endl;
-    }
-    
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
     std::vector <int> oscillate(cov.CV_counts->GetNbinsX(), 0);
     for (int i = 0; i < cov.sample_order.size(); i++) {
@@ -127,6 +121,14 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
             }
         }
         
+    }
+    
+    for (int i = 0; i < cov.CV_counts->GetNbinsX(); i++) {
+        std::cout << "For bin " << i << ":" << std::endl
+                  << "  counts = " << cov.CV_counts->GetBinContent(i+1) << std::endl 
+                  << "  distance = " << distance[i] << std::endl 
+                  << "    energy = " << cov.energies[i] << std::endl
+                  << " oscillate = " << oscillate[i] << std::endl;
     }
     
     // Phase space
