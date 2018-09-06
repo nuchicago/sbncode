@@ -48,7 +48,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     for (int i = 0; i < cov.covmat->GetNbinsX(); i++) {
         for (int j = 0; j < cov.covmat->GetNbinsY(); j++) {
             
-            E_mat[i][j] = cov.covmat->GetBinContent(i+1, j+1);
+            E_mat[i][j] = 0; // cov.covmat->GetBinContent(i+1, j+1);
             if (i == j) { E_mat[i][i] += cov.CV_counts->GetBinContent(i+1); }
             
         }
