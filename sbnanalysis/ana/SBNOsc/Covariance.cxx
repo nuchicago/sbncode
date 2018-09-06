@@ -337,7 +337,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         for (int u = 0; u < fNumAltUnis; u++) {
             
-            std::string name = "tempalt" + std::to_string(u+1);
+            std::string name = sample.fDet + "tempalt" + std::to_string(u+1);
             temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]));
             
         }
@@ -352,10 +352,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             sample.tree->GetEntry(e);
             
-            if (fEnergyType != "True") {
-                if (event->reco.size() != event->truth.size()) { continue; }
-            }
-            
             for (int n = 0; n < event->reco.size(); n++) {
                 
                 nucount++;
@@ -365,8 +361,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 if (fEnergyType == "CCQE") {
                     nuE = event->reco[n].truth.neutrino.eccqe;
                 } else if (fEnergyType == "True") {
-                    nuE = event->truth[n].neutrino.energy;
+                    nuE = event->reco[n].truth.neutrino.energy;
                 }
+                std::cout << "Neutrino " << n << " has " << fEnergyType << " energy " << nuE << std::endl;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each alternative universe and fill
