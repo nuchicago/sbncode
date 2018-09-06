@@ -1,5 +1,6 @@
 {
     "OutputDirectory": "/sbnd/data/users/gavarela/selection/new/cov_output/",
+    "SavePDFs": 1,
     
     "EventSamples": [
         
