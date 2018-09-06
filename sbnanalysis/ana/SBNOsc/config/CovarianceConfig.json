@@ -38,7 +38,7 @@
         "NumAltUnis": 100,
         "WeightKey": "GetWeights",
         
-        "EnergyType": "Visible",
+        "EnergyType": "Reco",
         
         "BinDefs": {
         
