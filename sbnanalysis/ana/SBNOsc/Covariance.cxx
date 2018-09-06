@@ -359,11 +359,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 // Add energy to base universe histogram
                 double nuE;
                 if (fEnergyType == "CCQE") {
-                    nuE = event->reco[n].truth.neutrino.eccqe;
+                    nuE = event->reco[n].truth.neutrino.energy;
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
                 }
-                std::cout << "Neutrino " << n << " has " << fEnergyType << " energy " << nuE << std::endl;
+                std::cout << "Neutrino " << nucount << " has " << fEnergyType << " energy " << nuE << std::endl;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each alternative universe and fill
