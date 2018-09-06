@@ -1,4 +1,5 @@
 {
+    "OutputDirectory": "cov_out/",
     
     "EventSamples": [
         

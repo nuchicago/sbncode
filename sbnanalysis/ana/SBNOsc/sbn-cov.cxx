@@ -46,7 +46,8 @@ int main(int argc, char* argv[]) {
     
     ana::SBNOsc::Covariance cov(samples, configFileName);
     
-    std::string directory = "/sbnd/data/users/gavarela/selection/new/cov_output/";
+    std::string directory = (*config).get("OutputDirectory", "./").asString();
+
     TFile* newfile = TFile::Open((directory + "cov_output.root").c_str(), "recreate");
     assert(newfile && newfile->IsOpen());
     

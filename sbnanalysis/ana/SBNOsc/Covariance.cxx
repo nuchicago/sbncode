@@ -233,7 +233,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     Json::Value* config = core::LoadConfig(configFileName);
     
     if (config != NULL) {
-        
+        // output directory
+        fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
         // Weight and universe stuff
         fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
         if (fWeightKey == "GetWeights") {
@@ -435,13 +436,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     TCanvas *tempcanvas = new TCanvas();
     count_hists[0]->Draw(); count_hists[0]->SetStats(kFALSE);
-    tempcanvas->SaveAs("/sbnd/data/users/gavarela/selection/new/cov_output/base.pdf");
+    tempcanvas->SaveAs((fOutputDirectory + "base.pdf").c_str());
     count_hists[5]->Draw(); count_hists[5]->SetStats(kFALSE);
-    tempcanvas->SaveAs("/sbnd/data/users/gavarela/selection/new/cov_output/alt5.pdf");
+    tempcanvas->SaveAs((fOutputDirectory + "alt5.pdf").c_str());
     
-    numu_canvas->SaveAs("/sbnd/data/users/gavarela/selection/new/cov_output/numu_cts.pdf");
+    numu_canvas->SaveAs((fOutputDirectory + "numu_cuts.pdf").c_str());
     if (nue_appearance == 1) {
-        nue_canvas->SaveAs("/sbnd/data/users/gavarela/selection/new/cov_output/nue_cts.pdf");
+        nue_canvas->SaveAs((fOutputDirectory + "nue_cuts.pdf").c_str());
     }
     
     
