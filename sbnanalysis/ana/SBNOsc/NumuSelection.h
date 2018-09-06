@@ -24,8 +24,8 @@
 #include "lardataobj/MCBase/MCTrack.h"
 
 // take the geobox stuff from uboonecode
-#include "uboone/LLBasicTool/GeoAlgo/GeoAABox.h"
-#include "uboone/LLBasicTool/GeoAlgo/GeoAlgo.h"
+#include "ubcore/LLBasicTool/GeoAlgo/GeoAABox.h"
+#include "ubcore/LLBasicTool/GeoAlgo/GeoAlgo.h"
 
 class TH2D;
 
@@ -112,7 +112,7 @@ protected:
   * \return Whether to apply FV cut on neutrino 
   *
   * */
-  bool passFV(const TVector3 &v) { return containedInFV(v); }
+  bool passFV(const TVector3 &v) { return !_config.doFVCut ||containedInFV(v); }
 
   /** Applies reco-truth vertex matching cut 
  * \param truth_v Truth vertex vector

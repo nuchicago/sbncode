@@ -336,8 +336,6 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
-  if (!_config.doFVCut) return true;
-
   geoalgo::Point_t p(v); 
   for (auto const& FV: _config.fiducial_volumes) {
     if (FV.Contain(p)) return true;
