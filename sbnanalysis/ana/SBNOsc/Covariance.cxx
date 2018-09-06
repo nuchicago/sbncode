@@ -363,6 +363,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                     nuE = event->reco[n].truth.neutrino.eccqe;
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
+                } else if (fEnergyType == "Reco") {
+                    nuE = event->reco[n].reco_energy;
                 }
                 temp_count_hists[0]->Fill(nuE);
                 
