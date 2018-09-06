@@ -48,7 +48,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     for (int i = 0; i < cov.covmat->GetNbinsX(); i++) {
         for (int j = 0; j < cov.covmat->GetNbinsY(); j++) {
             
-            E_mat[i][j] = 0; // cov.covmat->GetBinContent(i+1, j+1);
+            E_mat[i][j] = cov.covmat->GetBinContent(i+1, j+1);
             if (i == j) { E_mat[i][i] += cov.CV_counts->GetBinContent(i+1); }
             
         }
@@ -125,7 +125,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     
     for (int i = 0; i < cov.CV_counts->GetNbinsX(); i++) {
         std::cout << "For bin " << i << ":" << std::endl
-                  << "  counts = " << cov.CV_counts->GetBinContent(i+1) << std::endl 
+                  << "    counts = " << cov.CV_counts->GetBinContent(i+1) << std::endl 
                   << "  distance = " << distance[i] << std::endl 
                   << "    energy = " << cov.energies[i] << std::endl
                   << " oscillate = " << oscillate[i] << std::endl;
@@ -156,7 +156,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
                 for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
                     
-                    if ((E_inv[k][l] != 0) && (oscillate[k] == 1 && oscillate[l] == 1)) {
+                    if (oscillate[k] == 1 && oscillate[l] == 1) {
                         
                         chisq[i][j] += (cov.CV_counts->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/cov.energies[k])));
                         
@@ -182,6 +182,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
     double timechi = tickschi / (double) CLOCKS_PER_SEC;     // make into secs
     
     std::cout << "   Done in " << timechi << "s. " << std::endl;
+    std::cout << "   Min chisq = " << minchisq << std::endl;
     
     
     // Plot
