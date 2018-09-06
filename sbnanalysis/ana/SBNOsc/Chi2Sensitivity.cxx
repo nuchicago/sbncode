@@ -158,11 +158,15 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
                     
                     if (oscillate[k] == 1 && oscillate[l] == 1) {
                         
-                        chisq[i][j] += (cov.CV_counts->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/cov.energies[k])));
+                        double dchisqij = 0
                         
-                        chisq[i][j] *= E_inv[k][l];
+                        dchisqij += (cov.CV_counts->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/cov.energies[k])));
+                        
+                        dchisqij *= E_inv[k][l];
                             
-                        chisq[i][j] *= (cov.CV_counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/cov.energies[l])));
+                        dchisqij *= (cov.CV_counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/cov.energies[l])));
+                        
+                        chisq[i][j] += dchisqij
                         
                     }
                     

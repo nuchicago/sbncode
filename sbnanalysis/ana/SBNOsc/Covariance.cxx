@@ -292,6 +292,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     std::vector <std::string> plot_order = get_plot_order(samples);
     
         // Number of bins needed in big histogram (for covariance)
+        // And bin 'boundaries' between each separate sample
     int num_bins = 0;
     std::vector <int> offset;
     for (int o = 0; o < plot_order.size(); o++) {
@@ -386,14 +387,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         // Rescale to desired POT
         for (int u = 0; u < temp_count_hists.size(); u++) {
-            
             for (int b = 0; b < temp_count_hists[u]->GetNbinsX(); b++) {
                 
                 double bincontent = temp_count_hists[u]->GetBinContent(b+1);
-                temp_count_hists[u]->SetBinContent(b+1, bincontent /* / binwidth */ * fScaleTargets[sample.fDet] / sample.fScaleFactor);
+                temp_count_hists[u]->SetBinContent(b+1, bincontent * fScaleTargets[sample.fDet] 
+                                                            / sample.fScaleFactor);
                 
             }
-            
         }
         
         // Pass onto the big histograms and get energies
@@ -401,13 +401,14 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             for (int bin = 0; bin < temp_count_hists[h]->GetNbinsX(); bin++) {
                 
-                if (h == 0) { energies.push_back(temp_count_hists[h]->GetBinCenter(bin+1)); }
-                count_hists[h]->SetBinContent(1+offset[o]+bin, temp_count_hists[h]->GetBinContent(bin+1));
+                if (h == 0) energies.push_back(temp_count_hists[h]->GetBinCenter(bin+1));
+                
+                count_hists[h]->SetBinContent(1+offset[o]+bin, temp_count_hists[h]->GetBinContent(1+bin));
                 
             }
             
             std::string label = sample.fDet + " " + sample.fDesc;
-            count_hists[h]->GetXaxis()->SetBinLabel(offset[o]+temp_count_hists[h]->GetNbinsX()/2, label.c_str());
+            count_hists[h]->GetXaxis()->SetBinLabel((offset[o]+offset[o+1])/2, label.c_str());
             
         }
         
