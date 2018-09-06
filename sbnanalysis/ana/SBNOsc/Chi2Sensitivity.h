@@ -16,7 +16,7 @@ class Chi2Sensitivity {
     
     public:
         Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName);
-        Chi2Sensitivity(Covariance cov);
+        Chi2Sensitivity(Covariance cov, std::string OutputDir);
         
         TGraph *contour_90pct, *contour_3sigma, *contour_5sigma;
     

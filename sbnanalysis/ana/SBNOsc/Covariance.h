@@ -61,6 +61,7 @@ class Covariance {
         std::string fEnergyType;
         std::map <std::string, std::vector <double> > fBins;
         std::map <std::string, float> fScaleTargets;
+        std::string fOutputDirectory;
         
     
 };

@@ -45,7 +45,7 @@ Event::Interaction TruthReco(const simb::MCTruth& mctruth);
  * */
 double NuMuOscillation(double numu_energy, double numu_dis, double osc_dm2, double osc_angle);
 
-/* Finds length of line segment contained inside AABox. Make sure that AABox and TVector's use the same units.
+/** Finds length of line segment contained inside AABox. Make sure that AABox and TVector's use the same units.
  *
  * \param v0 the first point of the line segment
  * \param v1 the second point of the line segment
@@ -101,7 +101,7 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
  * */
 double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distortion=0., double angle_distortion=0.);
 
-/* Get the "visible" energy from a neutrino interaction. Is equal to sum of non-neutral hadronic kinetic energies and lepton total energies. 
+/** Get the "visible" energy from a neutrino interaction. Is equal to sum of non-neutral hadronic kinetic energies and lepton total energies. 
  *
  * \param ev The gallery event.
  * \param mctruth The MCTruth object corresponding to the interaction.
@@ -109,8 +109,9 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  * \param mcshower_list Vector of MCShower objects in the gallery event.
  * \param track_threshold Energy threshold of track energy counted in calculation [GeV].
  * \param shower_treshold Energy threshold of shower energy counted in calculation [GeV].
+ *
  * \return Visble energy in GeV.
- */
+ * */
 double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list, 
     double track_threshold=0., double shower_threshold=0.);
   }  // namespace SBNOsc
