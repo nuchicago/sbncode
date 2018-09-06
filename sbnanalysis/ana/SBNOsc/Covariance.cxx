@@ -389,8 +389,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             for (int b = 0; b < temp_count_hists[u]->GetNbinsX(); b++) {
                 
-                double binwidth = temp_count_hists[u]->GetBinWidth(b+1), 
-                     bincontent = temp_count_hists[u]->GetBinContent(b+1);
+                double bincontent = temp_count_hists[u]->GetBinContent(b+1);
                 temp_count_hists[u]->SetBinContent(b+1, bincontent /* / binwidth */ * fScaleTargets[sample.fDet] / sample.fScaleFactor);
                 
             }
@@ -418,8 +417,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             if (sample.fDet == dets_inorder[d] && (sample.fDesc == "#nu_{#mu}" || sample.fDesc == "#nu_{e}")) {
                 
                 for (int b = 0; b < temp_count_hists[0]->GetNbinsX(); b++) {
-                    double binwidth = temp_count_hists[u]->GetBinWidth(b+1), 
-                         bincontent = temp_count_hists[u]->GetBinContent(b+1);
+                    double binwidth = temp_count_hists[0]->GetBinWidth(b+1), 
+                         bincontent = temp_count_hists[0]->GetBinContent(b+1);
                     temp_count_hists[0]->SetBinContent(b+1, bincontent/binwidth)
                 }
                 
