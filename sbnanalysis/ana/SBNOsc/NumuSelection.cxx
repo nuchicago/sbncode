@@ -218,7 +218,7 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
   }
   // TODO: FIX TEMPORARY HACK
   else {
-    //std::cerr << "WARNING: TRACK WITH NO POINTS" << std::endl;
+    std::cerr << "WARNING: TRACK WITH NO POINTS" << std::endl;
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.fiducial_volumes);
     length = (track.Start().Position().Vect() - track.End().Position().Vect()).Mag();
     contained_in_FV = containedInFV(track.Start().Position().Vect()) && containedInFV(track.End().Position().Vect());
