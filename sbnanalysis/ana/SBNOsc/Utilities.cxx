@@ -130,16 +130,16 @@ double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector
 }
 
 double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list, 
-    double track_threshold, double shower_threshold) {
+    const VisibleEnergyCalculator &calculator) {
   double visible_E = 0;
 
   // total up visible energy from tracks...
   for (auto const &mct: mctrack_list) {
     // ignore neutral particles
     if (isFromNuVertex(mctruth, mct) && abs(PDGCharge(mct.PdgCode())) > 1e-4) {
-      double mass = (mct.PdgCode() == 13 || mct.PdgCode() == 11) ? 0:PDGMass(mct.PdgCode());
+      double mass = PDGMass(mct.PdgCode());
       double this_visible_energy = mct.Start().E() - mass;
-      if (this_visible_energy > track_threshold) {
+      if (this_visible_energy > calculator.track_threshold) {
         visible_E += this_visible_energy;
       }
     }
@@ -148,13 +148,15 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
   // ...and showers
   for (auto const &mcs: mcshower_list) {
     if (isFromNuVertex(mctruth, mcs) && abs(PDGCharge(mcs.PdgCode())) > 1e-4) {
-      double mass = (mcs.PdgCode() == 13 || mcs.PdgCode() == 11) ? 0:PDGMass(mcs.PdgCode());
+      double mass = PDGMass(mcs.PdgCode());
       double this_visible_energy = mcs.Start().E() - mass;
-      if (this_visible_energy > shower_threshold) {
+      if (this_visible_energy > calculator.shower_threshold) {
         visible_E += this_visible_energy;
       }
     }
   }
+  // if lepton pdgid is set, add its mass back into the visible energy
+  if (calculator.lepton_pdgid != 0) visible_E += PDGMass(calculator.lepton_pdgid);
 
   return visible_E;
 }

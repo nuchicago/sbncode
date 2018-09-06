@@ -101,19 +101,41 @@ bool isFromNuVertex(const simb::MCTruth& mc, const sim::MCTrack& track,
  * */
 double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distortion=0., double angle_distortion=0.);
 
+/** 
+ * \class Struct containing information used in calculation of visible Energy
+ *
+ */
+struct VisibleEnergyCalculator {
+  int lepton_pdgid; //!< PDGID of lepton in the interaction. Used to add 
+    // in energy corresponding to lepton mass for CC events (and confused NC
+    // events). If you don't want to add in a lepton mass to the energy
+    // accounting, set it to 0. 
+  double track_threshold; //!< Energy threshold of track energy counted in calculation [GeV].
+  double shower_threshold; //!< Energy threshold of shower energy counted in calculation [GeV].
+  double track_energy_distortion; //!< Distortion of energies of tracks (%).
+  double shower_energy_distortion; //!< Distortion of energies of showers (%).
+
+  VisibleEnergyCalculator(): 
+    lepton_pdgid(0),
+    track_threshold(0),
+    shower_threshold(0),
+    track_energy_distortion(0),
+    shower_energy_distortion(0)
+  {}
+};
+
 /** Get the "visible" energy from a neutrino interaction. Is equal to sum of non-neutral hadronic kinetic energies and lepton total energies. 
  *
  * \param ev The gallery event.
  * \param mctruth The MCTruth object corresponding to the interaction.
  * \param mctrack_list Vector of MCTrack objects in the gallery event.
  * \param mcshower_list Vector of MCShower objects in the gallery event.
- * \param track_threshold Energy threshold of track energy counted in calculation [GeV].
- * \param shower_treshold Energy threshold of shower energy counted in calculation [GeV].
+ * \param calculator Struct containing values to be used in energy calculation
  *
  * \return Visble energy in GeV.
  * */
-double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list, 
-    double track_threshold=0., double shower_threshold=0.);
+double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list,  
+    const VisibleEnergyCalculator &calculator=VisibleEnergyCalculator());
   }  // namespace SBNOsc
 }  // namespace ana
 

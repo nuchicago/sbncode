@@ -144,7 +144,13 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
 
     // build the interaction
     Event::Interaction interaction = TruthReco(mctruth);
-    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, _config.trackVisibleEnergyThreshold * 1000 /*convert GeV -> MeV*/) / 1000 /*convert MeV -> GeV*/;
+
+    // setup visible energy
+    VisibleEnergyCalculator calculator;
+    calculator.lepton_pdgid = 13;
+    calculator.track_threshold =  _config.trackVisibleEnergyThreshold * 1000 /*convert GeV -> MeV*/;
+    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator);
+
     Event::RecoInteraction reco_interaction(interaction, i);
     reco_interaction.reco_energy = visible_energy;
 
