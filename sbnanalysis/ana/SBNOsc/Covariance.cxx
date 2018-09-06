@@ -363,7 +363,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
                 }
-                std::cout << "Neutrino " << nucount << " has " << fEnergyType << " energy " << nuE << std::endl;
+                std::cout << "Neutrino " << nucount << " in " << sample.fDet << " has " << fEnergyType << " energy " << nuE << std::endl;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each alternative universe and fill
