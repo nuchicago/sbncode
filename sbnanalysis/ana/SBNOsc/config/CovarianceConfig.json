@@ -4,7 +4,7 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/sbnd_optimize_length/output_SBNOsc_NumuSelection_L50.root",
+            "path": "/sbnd/data/users/gavarela/selection/new/output_SBND_new.root" // "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/sbnd_optimize_length/output_SBNOsc_NumuSelection_L50.root",
             "desc": "#nu_{#mu}",
             "det": "SBND",
             "scalefactor": 3.0958e18
@@ -13,21 +13,21 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/uboone_optimize_length/output_SBNOsc_NumuSelection_L50.root",
+            "path": "/sbnd/data/users/gavarela/selection/new/output_MicroBooNE_new.root" // "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/uboone_optimize_length/output_SBNOsc_NumuSelection_L50.root",
             "desc": "#nu_{#mu}",
             "det": "MicroBooNE",
             "scalefactor": 8.87435e19
             
-        }//,
+        },
         
-//        {
-//            
-//            "path": "/sbnd/data/users/gavarela/selection/new/output_ICARUS_new.root",
-//            "desc": "#nu_{#mu}",
-//            "det": "ICARUS",
-//            "scalefactor": 6.59165e18
-//            
-//        }
+        {
+            
+            "path": "/sbnd/data/users/gavarela/selection/new/output_ICARUS_new.root",
+            "desc": "#nu_{#mu}",
+            "det": "ICARUS",
+            "scalefactor": 6.59165e18
+            
+        }
         
     ],
     
