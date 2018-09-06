@@ -64,10 +64,13 @@ int main(int argc, char* argv[]) {
     cov.corrmat->Write();
     
     // Save plots
-    TCanvas *canvas = new TCanvas();
-    cov.covmat->Draw("colz"); cov.covmat->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
-    cov.fcovmat->Draw("colz"); cov.fcovmat->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
-    cov.corrmat->Draw("colz"); cov.corrmat->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
+    int savePDFs = (*config).get("SavePDFs", 0).asInt();
+    if (savePDFs == 1) {
+        TCanvas *canvas = new TCanvas();
+        cov.covmat->Draw("colz"); cov.covmat->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
+        cov.fcovmat->Draw("colz"); cov.fcovmat->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
+        cov.corrmat->Draw("colz"); cov.corrmat->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
+    }
     
     
     //// Get sensitivity contours
@@ -133,9 +136,21 @@ int main(int argc, char* argv[]) {
     legend->Draw();
     gr_bestfit->Draw("P same");
     
-    contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
+        // as .root
+    TFile* contourfile = TFile::Open((directory + "contours.root").c_str(), "recreate");
+    assert(contourfile && contourfile->IsOpen());
     
-
+    TGraph contour_90pct = contour_graphs[0], 
+          contour_3sigma = contour_graphs[1],
+          contour_5sigma = contour_graphs[2];
+    contour_90pct->Write();
+    contour_3sigma[1]->Write();
+    contour_5sigma[2]->Write();
+    
+        // as .pdf
+    if (savePDFs == 1) contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
+    
+    
     return 0;
 
 }
