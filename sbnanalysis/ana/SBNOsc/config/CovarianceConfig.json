@@ -1,5 +1,5 @@
 {
-    "OutputDirectory": "cov_out/",
+    "OutputDirectory": "/sbnd/data/users/gavarela/selection/new/cov_output/",
     
     "EventSamples": [
         
