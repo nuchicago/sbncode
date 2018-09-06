@@ -52,6 +52,11 @@ void ProcessorBase::Setup(Json::Value* config) {
   fTruthTag = { "generator" };
   fWeightTag = { "eventweight" };
 
+  fMCTrackTag = {"mcreco"};
+  fMCShowerTag = {"mcreco"};
+  fMCParticleTag = {"largeant"};
+  fOutputFilename = "output.root";
+
   if (config) {
     fTruthTag = { config->get("MCTruthTag", "generator").asString() };
     fWeightTag = { config->get("MCWeightTag", "eventweight").asString() };
