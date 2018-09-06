@@ -5,6 +5,10 @@ project(SBNOsc)
 # parent CMakeLists.txt, one directory up).
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories($ENV{LARSIM_INC})
+
+find_library(LARSIM_BASE_LIBRARY larsim_EventWeight_Base HINTS $ENV{LARSIM_LIB})
+find_library(LARSIM_BASE_DICT larsim_EventWeight_Base_dict HINTS $ENV{LARSIM_LIB})
 
 # Declare libraries to build
 # Note that the library names (the first argument) should follow the convention
@@ -31,11 +35,15 @@ target_link_libraries(sbnanalysis_SBNOsc_NumuSelection
   ubana_BasicTool_GeoAlgo
 )
 target_link_libraries(sbnanalysis_SBNOsc_Chi2Sensitivity sbnanalysis_SBNOsc_Covariance)
+target_link_libraries(${LARSIM_BASE_LIBRARY})
+target_link_libraries(${LARSIM_BASE_DICT})
 
 # Build executables
 add_executable(sbn-cov sbn-cov.cxx)
 target_link_libraries(
   sbn-cov
+  sbnanalysis_Processor
+  jsoncpp
   sbnanalysis_SBNOsc_Covariance
   sbnanalysis_Event
   ${ROOT_LIBRARIES}
@@ -44,7 +52,9 @@ target_link_libraries(
 add_executable(sbn-sensitivity sbn-sensitivity.cxx)
 target_link_libraries(
   sbn-sensitivity
+  jsoncpp
   sbnanalysis_SBNOsc_Chi2Sensitivity
+  sbnanalysis_Processor
   sbnanalysis_SBNOsc_Covariance
   sbnanalysis_Event
   ${ROOT_LIBRARIES}
