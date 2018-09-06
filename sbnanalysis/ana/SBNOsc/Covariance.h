@@ -58,10 +58,17 @@ class Covariance {
     
         std::string fWeightKey;
         int fNumAltUnis;
+        
         std::string fEnergyType;
+        
+        double fSelectionEfficiency, fRejectionEfficiency;
+        
         std::map <std::string, std::vector <double> > fBins;
+        
         std::map <std::string, float> fScaleTargets;
+        
         std::string fOutputDirectory;
+        
         
     
 };

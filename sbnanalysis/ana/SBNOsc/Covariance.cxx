@@ -250,6 +250,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Type of energy
         fEnergyType = (*config)["Covariance"].get("EnergyType", "").asString();
         
+        // Further selection and rejection 'efficiencies'
+        fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", -1e99).asDouble();
+        fRejectionEfficiency = (*config)["Covariance"].get("RejectionEfficiency", -1e99).asDouble();
+        
         // Histogram bins
         std::vector <double> default_bins = { 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.25, 1.5, 2, 2.5, 3 };
         for (std::string desc : descs) {
@@ -358,20 +362,25 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
                 nucount++;
                 
-                // Add energy to base universe histogram
+                unsigned truth_ind = event->reco[n].truth_index;
+                
+                // Get energy
                 double nuE;
                 if (fEnergyType == "CCQE") {
-                    nuE = event->reco[n].truth.neutrino.eccqe;
+                    nuE = event->truth[truth_ind].neutrino.eccqe;
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
                 }
-                temp_count_hists[0]->Fill(nuE);
+                
+                // Add to base universe histogram
+                int isCC = event->truth[truth_ind].neutrino.iscc;
+                double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
+                temp_count_hists[0]->Fill(nuE, wgt);
                 
                 // Get weights for each alternative universe and fill
                 std::vector <double> uweights;
-                unsigned truth_ind = event->reco[n].truth_index;
                 if (fWeightKey == "GetWeights") {
                     uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
                 } else {
@@ -379,7 +388,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 }
                 
                 for (int u = 0; u < uweights.size(); u++) {
-                    temp_count_hists[u+1]->Fill(nuE, uweights[u]);
+                    temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
                 }
                 
             }
