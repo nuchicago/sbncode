@@ -243,7 +243,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             samples[0].tree->SetBranchAddress("events", &tempev);
             samples[0].tree->GetEntry(0);
             fNumAltUnis = tempev->truth[0].weights[fWeightKey].size();
-                // Relies on all 'weights' branches being the same for all samples
+                // Relies on all 'weights' branches being the same for all samples – should be true
         }
         
         // Type of energy
@@ -363,7 +363,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
                 }
-                std::cout << "Neutrino " << nucount << " has " << fEnergyType << " energy " << nuE << std::endl;
+                std::cout << "Neutrino " << nucount << " in " << sample.fDet << " has " << fEnergyType << " energy " << nuE << std::endl;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each alternative universe and fill
@@ -444,9 +444,29 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "Getting covs..." << std::endl;
     
+    // Bins for cov, fcov and corr
+    std::vector <double> covbins = {};
+    for (int o = 0; o < plot_order.size(); o++) {
+        std::string desc = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
+        for (int i = 0; i < fBins[desc].size(); i++) {
+            if (o == 0 && i == 0) {
+                covbins.push_back(fBins[desc][i]);
+            } else {
+                covbins.push_back(fBins[desc][i] - fBins[desc][i-1]);
+            }
+        }
+    }
+    covbins.pop_back();
+    
+    if (num_bins == covbins.size() - 1) {
+        std::cout << std::endl << "NOT SAME SIZE COVBINS!!!" << std::endl; 
+    } else {
+        std::cout << std::endl << "covbins same size :)" << std::endl;
+    }
+    
     // Covariance and fractional covariance
-    TH2D *cov = new TH2D("cov", "Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins),
-         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    TH2D *cov = new TH2D("cov", "Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]),
+         *fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -466,7 +486,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Pearson Correlation Coefficients
-    TH2D *corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    TH2D *corr = new TH2D("corr", "Correlation Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
             

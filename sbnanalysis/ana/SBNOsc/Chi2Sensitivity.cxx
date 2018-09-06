@@ -123,6 +123,14 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
         
     }
     
+    for (int i = 0; i < cov.CV_counts->GetNbinsX(); i++) {
+        std::cout << "For bin " << i << ":" << std::endl
+                  << "  counts = " << cov.CV_counts->GetBinContent(i+1) << std::endl 
+                  << "  distance = " << distance[i] << std::endl 
+                  << "    energy = " << cov.energies[i] << std::endl
+                  << " oscillate = " << oscillate[i] << std::endl;
+    }
+    
     // Phase space
     int np = 500;
     std::vector <double> dm2(np), sin2theta(np);
@@ -157,8 +165,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
                         chisq[i][j] *= (cov.CV_counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/cov.energies[l])));
                         
                     }
+                    
                 }
-                
             }
             
             // Check if min chisq
