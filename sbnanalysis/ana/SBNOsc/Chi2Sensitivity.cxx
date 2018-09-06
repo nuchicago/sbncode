@@ -166,7 +166,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov) {
                             
                         dchisqij *= (cov.CV_counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/cov.energies[l])));
                         
-                        chisq[i][j] += dchisqij
+                        chisq[i][j] += dchisqij;
                         
                     }
                     
