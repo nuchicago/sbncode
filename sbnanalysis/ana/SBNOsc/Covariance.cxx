@@ -384,7 +384,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         std::cout << std::endl << "For sample: " << sample.fDet << ", " << sample.fDesc << ", there were " << nucount << " neutrinos." << std::endl;
         
-        // Rescale each bin's counts to /GeV and to desired POT
+        // Rescale to desired POT
         for (int u = 0; u < temp_count_hists.size(); u++) {
             
             for (int b = 0; b < temp_count_hists[u]->GetNbinsX(); b++) {
@@ -396,17 +396,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             }
             
         }
-        
-        // Add numu and nue hists to a canvases
-        std::vector <std::string> dets_inorder = get_dets_inorder(samples);
-        for (int d = 0; d < dets_inorder.size(); d++) {
-            if (sample.fDet == dets_inorder[d]) {
-                if (sample.fDesc == "#nu_{#mu}") { numu_canvas->cd(d+1); }
-                if (sample.fDesc == "#nu_{e}") { nue_canvas->cd(d+1); }
-            }
-        }
-        temp_count_hists[0]->SetStats(kFALSE);
-        temp_count_hists[0]->Draw("hist");
         
         // Pass onto the big histograms and get energies
         for (int h = 0; h < temp_count_hists.size(); h++) {
@@ -421,9 +410,18 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             std::string label = sample.fDet + " " + sample.fDesc;
             count_hists[h]->GetXaxis()->SetBinLabel(offset[o]+temp_count_hists[h]->GetNbinsX()/2, label.c_str());
             
-            //if (h != 0) { temp_count_hists[h]->Delete(); }
-            
         }
+        
+        // Add numu and nue hists to canvases
+        std::vector <std::string> dets_inorder = get_dets_inorder(samples);
+        for (int d = 0; d < dets_inorder.size(); d++) {
+            if (sample.fDet == dets_inorder[d]) {
+                if (sample.fDesc == "#nu_{#mu}") { numu_canvas->cd(d+1); }
+                if (sample.fDesc == "#nu_{e}") { nue_canvas->cd(d+1); }
+            }
+        }
+        temp_count_hists[0]->SetStats(kFALSE);
+        temp_count_hists[0]->Draw("hist");
         
     }
     
@@ -481,8 +479,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             double covij = 0;
             for (int u = 0; u < fNumAltUnis; u++) {
-                covij += (count_hists[0]->GetBinContent(i+1) - count_hists[u]->GetBinContent(i+1)) * 
-                         (count_hists[0]->GetBinContent(j+1) - count_hists[u]->GetBinContent(j+1));
+                covij += (count_hists[0]->GetBinContent(i+1) - count_hists[u+1]->GetBinContent(i+1)) * 
+                         (count_hists[0]->GetBinContent(j+1) - count_hists[u+1]->GetBinContent(j+1));
             }
             covij /= fNumAltUnis;
             cov->SetBinContent(i+1, j+1, covij);
