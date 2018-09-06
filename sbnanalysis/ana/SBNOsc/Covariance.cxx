@@ -353,6 +353,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             sample.tree->GetEntry(e);
             
+            if (event->reco.size() != event->truth.size()) continue;
+            
             for (int n = 0; n < event->reco.size(); n++) {
                 
                 nucount++;
@@ -360,16 +362,15 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 // Add energy to base universe histogram
                 double nuE;
                 if (fEnergyType == "CCQE") {
-                    nuE = event->reco[n].truth.neutrino.energy;
+                    nuE = event->reco[n].neutrino.energy; //truth.neutrino.energy;
                 } else if (fEnergyType == "True") {
                     nuE = event->reco[n].truth.neutrino.energy;
                 }
-                std::cout << "Neutrino " << nucount << " in " << sample.fDet << " has " << fEnergyType << " energy " << nuE << std::endl;
                 temp_count_hists[0]->Fill(nuE);
                 
                 // Get weights for each alternative universe and fill
                 std::vector <double> uweights;
-                unsigned truth_ind = event->reco[n].truth_index;
+                unsigned truth_ind = n; // event->reco[n].truth_index;
                 if (fWeightKey == "GetWeights") {
                     uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
                 } else {
@@ -452,26 +453,30 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     std::cout << std::endl << "Getting covs..." << std::endl;
     
     // Bins for cov, fcov and corr
+    int do_varied_bins = 0;
+    
     std::vector <double> covbins = {};
-    for (int o = 0; o < plot_order.size(); o++) {
-        std::string desc = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
-        for (int i = 0; i < fBins[desc].size(); i++) {
-            if (o == 0 && i == 0) {
-                covbins.push_back(fBins[desc][i]);
-            } else if (i > 0) {
-                covbins.push_back(covbins[covbins.size()-1] + fBins[desc][i] - fBins[desc][i-1]);
+    if (do_varied_bins == 1) {
+        
+        for (int o = 0; o < plot_order.size(); o++) {
+            std::string desc = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
+            for (int i = 0; i < fBins[desc].size(); i++) {
+                if (o == 0 && i == 0) {
+                    covbins.push_back(fBins[desc][i]);
+                } else if (i > 0) {
+                    covbins.push_back(covbins[covbins.size()-1] + fBins[desc][i] - fBins[desc][i-1]);
+                }
             }
         }
-    }
-    covbins.pop_back();
+        covbins.pop_back();
+
+        if (num_bins == covbins.size() - 1) {
+            std::cout << std::endl << "NOT SAME SIZE COVBINS!!!" << std::endl; 
+        } else {
+            std::cout << std::endl << "covbins same size :)" << std::endl;
+        }
     
-    if (num_bins == covbins.size() - 1) {
-        std::cout << std::endl << "NOT SAME SIZE COVBINS!!!" << std::endl; 
-    } else {
-        std::cout << std::endl << "covbins same size :)" << std::endl;
     }
-    
-    int do_varied_bins = 0;
     
     // Covariance and fractional covariance
     TH2D *cov, *fcov;
