@@ -451,8 +451,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         for (int i = 0; i < fBins[desc].size(); i++) {
             if (o == 0 && i == 0) {
                 covbins.push_back(fBins[desc][i]);
-            } else {
-                covbins.push_back(fBins[desc][i] - fBins[desc][i-1]);
+            } else if (i > 0) {
+                covbins.push_back(covbins[covbins.size()-1] + fBins[desc][i] - fBins[desc][i-1]);
             }
         }
     }
