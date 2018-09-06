@@ -19,16 +19,16 @@
             "det": "MicroBooNE",
             "scalefactor": 8.87435e19
             
-        }//,
+        },
         
-//        {
-//            
-//            "path": "/sbnd/data/users/gavarela/selection/new/output_ICARUS_new.root",
-//            "desc": "#nu_{#mu}",
-//            "det": "ICARUS",
-//            "scalefactor": 6.59165e18
-//            
-//        }
+        {
+            
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/icarus/output_SBNOsc_NumuSelection_proposal.root",
+            "desc": "#nu_{#mu}",
+            "det": "ICARUS",
+            "scalefactor": 6.59165e18
+            
+        }
         
     ],
     
