@@ -81,6 +81,8 @@ int main(int argc, char* argv[]) {
     c->SaveAs((directory + "testcounts.png").c_str());
     cov.CV_counts->Draw();
     c->SaveAs((directory+"basecounts.png").c_str());
+    cov.nu_counts->Draw("colz");
+    c->SaveAs((directory+"nu_counts.png").c_str());
     
     
     //// Get sensitivity contours

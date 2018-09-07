@@ -54,7 +54,7 @@ class Covariance {
         TH2D *nu_counts;                        // Counts of geniune neutrino events. For oscillation
         
         TH1D *CV_counts;                        // CV universe counts.
-        std::vector <double> true_energies;     // Bin centres for bins in all hists
+        std::vector <double> energies;          // Bin centres for bins in all hists
         
         std::vector <std::string> sample_order; // Description of samples, in order they were plotted.
         std::vector <int> sample_bins;          // Bin limits of samples.
