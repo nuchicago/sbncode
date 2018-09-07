@@ -79,6 +79,8 @@ int main(int argc, char* argv[]) {
     TCanvas *c = new TCanvas();
     counts->Draw();
     c->SaveAs((directory + "testcounts.png").c_str());
+    cov.CV_counts->Draw();
+    c->SaveAs((directory+"basecounts.png").c_str());
     
     
     //// Get sensitivity contours
