@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "TDatabasePDG.h"
+#include "TRandom.h"
 
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "nusimdata/SimulationBase/MCNeutrino.h"
@@ -133,12 +134,18 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
     const VisibleEnergyCalculator &calculator) {
   double visible_E = 0;
 
+  // set up distortion if need be
+  TRandom rand;
+
   // total up visible energy from tracks...
   for (auto const &mct: mctrack_list) {
     // ignore neutral particles
     if (isFromNuVertex(mctruth, mct) && abs(PDGCharge(mct.PdgCode())) > 1e-4) {
       double mass = PDGMass(mct.PdgCode());
       double this_visible_energy = mct.Start().E() - mass;
+      if (calculator.track_energy_distortion > 1e-4) {
+        this_visible_energy += rand.Gaus(0, calculator.track_energy_distortion) * this_visible_energy;
+      }
       if (this_visible_energy > calculator.track_threshold) {
         visible_E += this_visible_energy;
       }
@@ -150,6 +157,9 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
     if (isFromNuVertex(mctruth, mcs) && abs(PDGCharge(mcs.PdgCode())) > 1e-4) {
       double mass = PDGMass(mcs.PdgCode());
       double this_visible_energy = mcs.Start().E() - mass;
+      if (calculator.shower_energy_distortion > 1e-4) {
+        this_visible_energy += rand.Gaus(0, calculator.shower_energy_distortion) * this_visible_energy;
+      }
       if (this_visible_energy > calculator.shower_threshold) {
         visible_E += this_visible_energy;
       }

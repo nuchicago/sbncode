@@ -56,6 +56,8 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.minLengthContainedTrack = (*config)["NumuSelection"].get("minLengthContainedTrack", -1).asDouble();
     _config.minLengthExitingTrack = (*config)["NumuSelection"].get("minLengthExitingTrack", -1).asDouble();
     _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble();
+    _config.showerEnergyDistortion = (*config)["NumuSelection"].get("showerEnergyDistortion", 0.).asDouble();
+    _config.trackEnergyDistortion = (*config)["NumuSelection"].get("trackEnergyDistortion", 0.).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
 
@@ -149,6 +151,8 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     VisibleEnergyCalculator calculator;
     calculator.lepton_pdgid = 13;
     calculator.track_threshold =  _config.trackVisibleEnergyThreshold * 1000 /*convert GeV -> MeV*/;
+    calculator.shower_energy_distortion = _config.showerEnergyDistortion;
+    calculator.track_energy_distortion = _config.trackEnergyDistortion;
     double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator);
 
     Event::RecoInteraction reco_interaction(interaction, i);

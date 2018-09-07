@@ -88,6 +88,8 @@ protected:
     double minLengthContainedTrack; //!< Minimum length [cm] of contained tracks. Will not apply cut if value is negative.
     double minLengthExitingTrack; //!< Minimum length [cm] of exiting tracks.  Will not apply cut if value is negative.
     double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [GeV].
+    double showerEnergyDistortion; //!< Energy distortion of showers for visible energy calculation (%).
+    double trackEnergyDistortion; //!< Energy distortion of tracks for visible energy calculation (%).
   };
 
   /** Histograms made for output */
