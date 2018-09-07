@@ -159,36 +159,33 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
-                for (int b2 = cov.sample_bins[o]; b2 < cov.sample_bins[o+1]; b2++) {
+                for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
                     
-                    double dosc_counts = 0;
-                    for (int b1 = cov.sample_bins[o]; b1 < cov.sample_bins[o+1]; b1++) {
+                    double dosc_counts_rb = 0;
+                    for (int tb = cov.sample_bins[o]; tb < cov.sample_bins[o+1]; tb++) {
                         
-                       	if (oscillate[b2] != oscillate[b1]) assert(false);
+                       	if (oscillate[rb] != oscillate[tb]) assert(false);
  
                         // Numus
-                        if (oscillate[b2] == 1) {
-                            dosc_counts += cov.nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b1]);
+                        if (oscillate[tb] == 1) {
+                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[tb]/cov.energies[tb]);
                         // Nues
-                        } else if (oscillate[b2] == 2) {
+                        } else if (oscillate[tb] == 2) {
                             // For the future...
                         }
                         
                     }
                     
-                    osc_counts->SetBinContent(1+b2, osc_counts->GetBinContent(1+b2) + dosc_counts);
+                    osc_counts->SetBinContent(1+rb, osc_counts->GetBinContent(1+rb) + dosc_counts_rb);
                     
                 }
                 
             }
-            
-            if (j%70 == 0) std::cout << " Finished calculating oscillated counts.";
 	    
-            // Find null and oscillation fluxes and detections and calculate chisq
+            // Calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
                 for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
                     
-                    // Calculate chisq
                     double dchisqij = 0;
 
                     dchisqij += (cov.CV_counts->GetBinContent(k+1) - osc_counts->GetBinContent(k+1));
@@ -199,8 +196,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
 
                 }
             }
-     	    
-	    if (j%70 == 0) std::cout << "  Finished calculating chi squareds." << std::endl;
        
             // Check if min chisq
             if (chisq[i][j] < minchisq) {

@@ -409,6 +409,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
                 // Fill chisq histograms
                 bool isnu = (sample.fDesc.find("#nu") != std::string::npos);
+                std::cout << "isnu = " << isnu;
                 if (isnu && isCC) {
                     temp_nu_counts->Fill(true_nuE, nuE, wgt);
                 } else {
