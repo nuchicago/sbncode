@@ -149,7 +149,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
         for (int j = 0; j < np; j++) {
        
 
-	    if (j%70 == 0) std::cout << "Doing i = " << i << ", j = " << j << ". ";
+	    if (j%75 == 0) std::cout << "Doing i = " << i << ", j = " << j << ". ";
  
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
@@ -164,14 +164,11 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     double dosc_counts = 0;
                     for (int b1 = cov.sample_bins[o]; b1 < cov.sample_bins[o+1]; b1++) {
                         
-                       	if (oscillate[b2] != oscillate[b1]) {
-                            std::cout << "b1 = " << b1 << " with osc[b1] = " << oscillate[b1] << " and b2 = " << b2 << " with osc[b2] = " << oscillate[b2] << std::endl;
-                            assert(false);
-                        }
+                       	if (oscillate[b2] != oscillate[b1]) assert(false);
  
                         // Numus
                         if (oscillate[b2] == 1) {
-                            dosc_counts += cov.nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b2]);
+                            dosc_counts += cov.nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b1]);
                         // Nues
                         } else if (oscillate[b2] == 2) {
                             // For the future...
