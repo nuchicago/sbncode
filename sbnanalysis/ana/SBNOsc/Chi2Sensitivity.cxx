@@ -127,13 +127,17 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     }
     
     // Phase space
-    int np = 500;
+    int np = 250;
     std::vector <double> dm2(np), sin2theta(np);
     for (int i = 0; i < np; i++) {
-        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(np-1));
+        dm2[i] = TMath::Power(10, -2.6 + i*4.0/(np-1));
         sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
     }
     
+    std::cout << "Oscillate: ";
+    for (int i = 0; i < oscillate.size(); i++) std::cout << oscillate[i] << ", ";
+    std::cout << std::endl;
+
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
@@ -143,22 +147,28 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     std::vector <std::vector <double> > chisq(np, npzeros);
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
-        
+       
+
+	    if (j%70 == 0) std::cout << "Doing i = " << i << ", j = " << j << ". ";
+ 
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
             // Create and fill hist to hold oscillated counts
             TH1D *osc_counts = (TH1D*) cov.bkg_counts->Clone();
             
-            for (int o = 0; o < cov.sample_bins.size(); o++) { // For limits on bin loops inside:
+            for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
                 for (int b2 = cov.sample_bins[o]; b2 < cov.sample_bins[o+1]; b2++) {
                     
                     double dosc_counts = 0;
                     for (int b1 = cov.sample_bins[o]; b1 < cov.sample_bins[o+1]; b1++) {
                         
-                        if (oscillate[b2] != oscillate[b1]) assert(false);
-                        
+                       	if (oscillate[b2] != oscillate[b1]) {
+                            std::cout << "b1 = " << b1 << " with osc[b1] = " << oscillate[b1] << " and b2 = " << b2 << " with osc[b2] = " << oscillate[b2] << std::endl;
+                            assert(false);
+                        }
+ 
                         // Numus
                         if (oscillate[b2] == 1) {
                             dosc_counts += cov.nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b2]);
@@ -175,7 +185,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                 
             }
             
-            
+            if (j%70 == 0) std::cout << " Finished calculating oscillated counts.";
+	    
             // Find null and oscillation fluxes and detections and calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
                 for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
@@ -191,7 +202,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
 
                 }
             }
-            
+     	    
+	    if (j%70 == 0) std::cout << "  Finished calculating chi squareds." << std::endl;
+       
             // Check if min chisq
             if (chisq[i][j] < minchisq) {
                 minchisq = chisq[i][j];
