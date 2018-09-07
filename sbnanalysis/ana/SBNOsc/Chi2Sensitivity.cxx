@@ -35,9 +35,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             - CV_counts   , a TH1D* containing the CV counts;
             - energies    , a vector <double> with the energies corresponding 
                             to the bin centers in the three count hists above;
-            - sample_order, the order of samples plotted in the count hists above;
-            - sample_bins , the bins in the count hists above that separate the samples 
-                            described in sample_order;
+            - sample_order, a vector <string> with the samples plotted in the count hists above;
+            - sample_bins , a vector <int> with the bins in the count hists above that separate the
+                            samples described in sample_order;
     */
     
     //// Invert Error Matrix
@@ -148,20 +148,20 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
             // Create and fill hist to hold oscillated counts
-            TH1D *osc_counts = (TH1D*) bkg_counts->Clone();
+            TH1D *osc_counts = (TH1D*) cov.bkg_counts->Clone();
             
-            for (int o = 0; o < plot_order.size(); o++) { // For limits on bin loops inside:
+            for (int o = 0; o < cov.sample_bins.size(); o++) { // For limits on bin loops inside:
                 
-                for (int b2 = plot_order[o]; b2 < plot_order[o+1]; b2++) {
+                for (int b2 = cov.sample_bins[o]; b2 < cov.sample_bins[o+1]; b2++) {
                     
-                    double dosc_counts = 0
-                    for (int b1 = plot_order[o]; b1 < plot_order[o+1]; b1++) {
+                    double dosc_counts = 0;
+                    for (int b1 = cov.sample_bins[o]; b1 < cov.sample_bins[o+1]; b1++) {
                         
                         if (oscillate[b2] != oscillate[b1]) assert(false);
                         
                         // Numus
                         if (oscillate[b2] == 1) {
-                            dosc_counts += nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b2])
+                            dosc_counts += cov.nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b2]);
                         // Nues
                         } else if (oscillate[b2] == 2) {
                             // For the future...

@@ -436,7 +436,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             // bkg_counts
             double bkgcontent = temp_bkg_counts->GetBinContent(b1+1);
-            temp_bkg_counts->SetBinContent(b+1, bkgcontent * fScaleTargets[sample.fDet] 
+            temp_bkg_counts->SetBinContent(b1+1, bkgcontent * fScaleTargets[sample.fDet] 
                                                     / sample.fScaleFactor);
             
             // nu_counts
