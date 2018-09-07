@@ -72,6 +72,27 @@ int main(int argc, char* argv[]) {
         cov.corrmat->Draw("colz"); cov.corrmat->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
     }
     
+    // Test bkg_ and nu_ counts
+    TH1D *counts = new TH1D("", "bkg_ + nu_counts; Reconstructed Energy Bins; Counts", cov.CV_counts->GetNbinsX(), 0, cov.CV_counts->GetNbinsX());
+    
+    for (int b = 0; b < cov.nu_counts->GetNbinsX(); b++) {
+        
+        double cts = cov.bkg_counts->GetBinContent(b+1);
+        
+        for (int b2 = 0; b2 < cov.nu_counts->GetNbinsY(); b2++) {
+            
+            cts += cov.nu_counts->GetBinContent(b2+1, b+1);
+            
+        }
+        
+        counts->SetBinContent(b+1, cts);
+        
+    }
+    
+    TCanvas *c = new TCanvas();
+    counts->Draw();
+    c->SaveAs((directory + "testcounts.png").c_str());
+    
     
     //// Get sensitivity contours
     //// ~~~~~~~~~~~~~~~~~~~~~~~~
