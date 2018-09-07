@@ -325,6 +325,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     }
     
+    // Large (meaningless x-axis) histograms (one 2d) for oscillation calculations later on
+    bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
+    nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    
     // Canvases for nice histograms
     TCanvas *nue_canvas = new TCanvas("nue_canvas", "#nu_{e} Distribution", 950/3*dets.size(), 345),
            *numu_canvas = new TCanvas("numu_canvas", "#nu_{#mu} Distribution", 950/3*dets.size(), 345);
@@ -337,10 +341,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Get relevant sample
         EventSample sample = samples[o];
         
+        
         // Initialise temp hists to store counts
+            // Base
         std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
         std::vector <TH1D*> temp_count_hists = {new TH1D("tempbase", title.c_str(), fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0])};
         
+            // Alt unis
         for (int u = 0; u < fNumAltUnis; u++) {
             
             std::string name = sample.fDet + "tempalt" + std::to_string(u+1);
@@ -348,11 +355,17 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
         }
         
-        // Tree stuff
+            // Bkg
+        TH1D *temp_bkg_counts = new TH1D("tempbkg", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        
+            // Neutrinos
+        TH2D *temp_nu_counts = new TH2D("tempnu", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        
+        
+        // Loop over neutrinos (events in tree)
         Event *event = new Event;
         sample.tree->SetBranchAddress("events", &event);
         
-        // Loop over neutrinos (events)
         int nucount = 0;
         for (int e = 0; e < sample.tree->GetEntries(); e++) {
             
@@ -365,21 +378,23 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 unsigned truth_ind = event->reco[n].truth_index;
                 
                 // Get energy
-                double nuE;
+                double nuE, true_nuE = event->reco[n].truth.neutrino.energy;
                 if (fEnergyType == "CCQE") {
                     nuE = event->truth[truth_ind].neutrino.eccqe;
                 } else if (fEnergyType == "True") {
-                    nuE = event->reco[n].truth.neutrino.energy;
+                    nuE = true_nuE;
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
                 }
                 
-                // Add to base universe histogram
+                // Apply selection (or rejection) efficiencies
                 int isCC = event->truth[truth_ind].neutrino.iscc;
                 double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
+                
+                // Add to base count histogram
                 temp_count_hists[0]->Fill(nuE, wgt);
                 
-                // Get weights for each alternative universe and fill
+                // Get weights for each alternative universe
                 std::vector <double> uweights;
                 if (fWeightKey == "GetWeights") {
                     uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
@@ -387,8 +402,17 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                     uweights = event->truth[truth_ind].weights[fWeightKey];
                 }
                 
+                // Fill other histograms
                 for (int u = 0; u < uweights.size(); u++) {
                     temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
+                }
+                
+                // Fill chisq histograms
+                bool isnu = (sample.fDesc.find("#nu") != std::string::npos);
+                if (isnu && isCC) {
+                    temp_nu_counts->Fill(true_nuE, nuE, wgt);
+                } else {
+                    temp_bkg_counts->Fill(nuE, wgt);
                 }
                 
             }
@@ -397,6 +421,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         std::cout << std::endl << "For sample: " << sample.fDet << ", " << sample.fDesc << ", there were " << nucount << " neutrinos." << std::endl;
         
         // Rescale to desired POT
+            // base and alt uni counts
         for (int u = 0; u < temp_count_hists.size(); u++) {
             for (int b = 0; b < temp_count_hists[u]->GetNbinsX(); b++) {
                 
@@ -407,7 +432,27 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             }
         }
         
+        for (int b1 = 0; b1 < temp_nu_counts->GetNbinsX(); b1++) {
+            
+            // bkg_counts
+            double bkgcontent = temp_bkg_counts->GetBinContent(b+1);
+            temp_bkg_counts->SetBinContent(b+1, bkgcontent * fScaleTargets[sample.fDet] 
+                                                    / sample.fScaleFactor);
+            
+            // nu_counts
+            for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
+                
+                double nucontent = temp_nu_counts->GetBinContent(b1+1, b2+1);
+                temp_nu_counts->SetBinContent(b1+1, b2+1, nucontent * fScaleTargets[sample.fDet] 
+                                                                / sample.fScaleFactor);
+                
+            }
+            
+        }
+        
+        
         // Pass onto the big histograms and get energies
+            // base and alt uni counts
         for (int h = 0; h < temp_count_hists.size(); h++) {
             
             for (int bin = 0; bin < temp_count_hists[h]->GetNbinsX(); bin++) {
@@ -422,6 +467,20 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             count_hists[h]->GetXaxis()->SetBinLabel((offset[o]+offset[o+1])/2, label.c_str());
             
         }
+        
+        for (int b1 = 0; b1 < temp_nu_counts->GetNbinsX(); b1++) {
+            
+            // bkg_counts
+            bkg_counts->SetBinContent(1+offset[o]+b1, temp_bkg_counts->GetBinContent(1+b1));
+            
+            // nu_counts
+            for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
+                nu_counts->SetBinContent(1+offset[o]+b1, 1+offset[o]+b2,
+                                         temp_nnu_counts->GetBinContent(1+b1, 1+b2));
+            }
+            
+        }
+        
         
         // Add numu and nue hists to canvases
         std::vector <std::string> dets_inorder = get_dets_inorder(samples);

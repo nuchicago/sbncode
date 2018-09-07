@@ -29,11 +29,14 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
         Inputs: 
         From the (Covariance::Covariance) cov, we'll use the following arributes:
             - cov         , the covariance matrix as a TH2D*;
+            - bkg_counts  , a TH1D* containing the CV counts of non-oscillating particles
+            - nu_counts   , a TH2D* containing the CV counts of oscillating particles, with
+                            true E bins on the x-axis and reconstructed E bins on the y-axis
             - CV_counts   , a TH1D* containing the CV counts;
             - energies    , a vector <double> with the energies corresponding 
-                            to the bin centers in both hists above;
-            - sample_order, the order of samples plotted in the two hists above;
-            - sample_bins , the bins in the hists above that separate the samples 
+                            to the bin centers in the three count hists above;
+            - sample_order, the order of samples plotted in the count hists above;
+            - sample_bins , the bins in the count hists above that separate the samples 
                             described in sample_order;
     */
     
@@ -144,24 +147,48 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
+            // Create and fill hist to hold oscillated counts
+            TH1D *osc_counts = (TH1D*) bkg_counts->Clone();
+            
+            for (int o = 0; o < plot_order.size(); o++) { // For limits on bin loops inside:
+                
+                for (int b2 = plot_order[o]; b2 < plot_order[o+1]; b2++) {
+                    
+                    double dosc_counts = 0
+                    for (int b1 = plot_order[o]; b1 < plot_order[o+1]; b1++) {
+                        
+                        if (oscillate[b2] != oscillate[b1]) assert(false);
+                        
+                        // Numus
+                        if (oscillate[b2] == 1) {
+                            dosc_counts += nu_counts->GetBinContent(1+b1, 1+b2) * numu_to_numu(distance[b1]/cov.energies[b2])
+                        // Nues
+                        } else if (oscillate[b2] == 2) {
+                            // For the future...
+                        }
+                        
+                    }
+                    
+                    osc_counts->SetBinContent(1+b2, osc_counts->GetBinContent(1+b2) + dosc_counts);
+                    
+                }
+                
+            }
+            
+            
             // Find null and oscillation fluxes and detections and calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
                 for (int l = 0; l < cov.CV_counts->GetNbinsX(); l++) {
                     
-                    if (oscillate[k] == 1 && oscillate[l] == 1) {
-                        
-                        double dchisqij = 0;
-                        
-                        dchisqij += (cov.CV_counts->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/cov.energies[k])));
-                        
-                        dchisqij *= E_inv[k][l];
-                            
-                        dchisqij *= (cov.CV_counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/cov.energies[l])));
-                        
-                        chisq[i][j] += dchisqij;
-                        
-                    }
-                    
+                    // Calculate chisq
+                    double dchisqij = 0;
+
+                    dchisqij += (cov.CV_counts->GetBinContent(k+1) - osc_counts->GetBinContent(k+1));
+                    dchisqij *= E_inv[k][l];
+                    dchisqij *= (cov.CV_counts->GetBinContent(l+1) - osc_counts->GetBinContent(l+1));
+
+                    chisq[i][j] += dchisqij;
+
                 }
             }
             
