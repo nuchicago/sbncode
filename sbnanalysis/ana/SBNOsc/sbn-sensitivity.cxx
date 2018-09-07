@@ -140,12 +140,12 @@ int main(int argc, char* argv[]) {
     TFile* contourfile = TFile::Open((directory + "contours.root").c_str(), "recreate");
     assert(contourfile && contourfile->IsOpen());
     
-    TGraph contour_90pct = contour_graphs[0], 
-          contour_3sigma = contour_graphs[1],
-          contour_5sigma = contour_graphs[2];
+    TGraph *contour_90pct = contour_graphs[0], 
+          *contour_3sigma = contour_graphs[1],
+          *contour_5sigma = contour_graphs[2];
     contour_90pct->Write();
-    contour_3sigma[1]->Write();
-    contour_5sigma[2]->Write();
+    contour_3sigma->Write();
+    contour_5sigma->Write();
     
         // as .pdf
     if (savePDFs == 1) contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
