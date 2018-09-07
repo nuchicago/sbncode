@@ -130,8 +130,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     int np = 250;
     std::vector <double> dm2(np), sin2theta(np);
     for (int i = 0; i < np; i++) {
-        dm2[i] = TMath::Power(10, -2.6 + i*4.0/(np-1));
-        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
+        dm2[i] = TMath::Power(10, -2 + i*4.0/(np-1));
+        sin2theta[i] = TMath::Power(10, -2.6 + i*3.0/(np-1));
     }
     
     std::cout << "Oscillate: ";
