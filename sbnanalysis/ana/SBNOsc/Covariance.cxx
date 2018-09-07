@@ -435,7 +435,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         for (int b1 = 0; b1 < temp_nu_counts->GetNbinsX(); b1++) {
             
             // bkg_counts
-            double bkgcontent = temp_bkg_counts->GetBinContent(b+1);
+            double bkgcontent = temp_bkg_counts->GetBinContent(b1+1);
             temp_bkg_counts->SetBinContent(b+1, bkgcontent * fScaleTargets[sample.fDet] 
                                                     / sample.fScaleFactor);
             
@@ -476,7 +476,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             // nu_counts
             for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
                 nu_counts->SetBinContent(1+offset[o]+b1, 1+offset[o]+b2,
-                                         temp_nnu_counts->GetBinContent(1+b1, 1+b2));
+                                         temp_nu_counts->GetBinContent(1+b1, 1+b2));
             }
             
         }
