@@ -507,8 +507,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     int savePDFs = (*config).get("SavePDFs", 0).asInt();
     if (savePDFs == 1) {
         
-        numu_canvas->SaveAs((fOutputDirectory + "numu_cuts.pdf").c_str());
-        if (nue_appearance == 1) nue_canvas->SaveAs((fOutputDirectory + "nue_cuts.pdf").c_str());
+        numu_canvas->SaveAs((fOutputDirectory + "numu_counts.pdf").c_str());
+        if (nue_appearance == 1) nue_canvas->SaveAs((fOutputDirectory + "nue_counts.pdf").c_str());
     
     }
     
