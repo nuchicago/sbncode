@@ -151,7 +151,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
             
-	        if (j%75 == 0) std::cout << "Doing i = " << i << ", j = " << j << std::endl;
+	    if (j%75 == 0) std::cout << "Doing i = " << i << ", j = " << j << std::endl;
             
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
@@ -201,7 +201,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
 
                 }
             }
-       
+            
+            osc_counts->Delete();
+            
             // Check if min chisq
             if (chisq[i][j] < minchisq) {
                 minchisq = chisq[i][j];
