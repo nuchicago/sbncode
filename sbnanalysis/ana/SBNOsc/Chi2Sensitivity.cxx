@@ -184,7 +184,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     }
                     
                     osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb)* numu_to_numu(distance[rb]/cov.energies[rb]) + dosc_counts_rb);
-                    nosc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dnosc_counts+rb);
+                    nosc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dnosc_counts_rb);
                     
                 }
                 
