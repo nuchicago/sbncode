@@ -184,6 +184,21 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                 
             }
             
+            if (i == 200 && j == 70) {
+                
+                std::cout << "Comparing osc counts and normal CV counts:" << std::endl
+                          << "CV*(1 - f1) ?= osc ... Yes/No" << std::endl << std::endl;
+                for (int y = 0; y < osc_counts.GetNbinsX(); y++) {
+                    std::cout << cov.CV_counts->GetBinContent(y+1) * (1 - numu_to_numu(distance[y]/cov.energies[y])) << " ?= " << osc_counts->GetBinContent(y+1) << " ... ";
+                    if (cov.CV_counts->GetBinContent(y+1) * (1 - numu_to_numu(distance[y]/cov.energies[y])) == osc_counts->GetBinContent(y+1)) {
+                        std::cout << "yea" << std::endl;
+                    } else {
+                        std::cout << "NO!!!" << std::endl;
+                    }
+                }
+                
+            }
+            
             // Account for size of distribution (want shape, not shape+size chisq)
             
 	    
