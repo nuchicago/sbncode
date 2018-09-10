@@ -1,11 +1,11 @@
 add_subdirectory(DataTypes)
 add_subdirectory(fcl)
 
+include_directories($ENV{UBCORE_LIB})
+
 art_make(
           MODULE_LIBRARIES 
-			   uboonecode_uboone_BasicTool_GeoAlgo
-
-
+			   ubana_BasicTool_GeoAlgo
 			   larcorealg_Geometry
                            larcore_Geometry_Geometry_service
                            larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
