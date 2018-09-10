@@ -158,6 +158,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             
             // Create and fill hist to hold oscillated counts
             TH1D *osc_counts = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); // (TH1D*) cov.bkg_counts->Clone();
+            TH1D *nosc_counts = new TH1D("tempn", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); // (TH1D*) cov.bkg_counts->Clone();
             
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
@@ -166,6 +167,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     if (i == 200 && j == 70) std::cout << rb << "      "  << distance[rb] << "      "  << cov.energies[rb] << std::endl;
                     
                     double dosc_counts_rb = 0;
+                    double dnosc_counts_rb = 0;
                     for (int tb = cov.sample_bins[o]; tb < cov.sample_bins[o+1]; tb++) {
                         
                        	if (oscillate[rb] != oscillate[tb]) assert(false);
@@ -173,6 +175,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                         // Numus
                         if (oscillate[tb] == 1) {
                             dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.energies[rb]);
+                            dnosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb);
                         // Nues
                         } else if (oscillate[tb] == 2) {
                             // For the future...
@@ -181,6 +184,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     }
                     
                     osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb)* numu_to_numu(distance[rb]/cov.energies[rb]) + dosc_counts_rb);
+                    nosc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dnosc_counts+rb);
                     
                 }
                 
@@ -189,13 +193,20 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             if (i == 200 && j == 70) {
                 
                 std::cout << "Comparing osc counts and normal CV counts:" << std::endl
-                          << "CV*(1 - f1) ?= osc ... Yes/No" << std::endl << std::endl;
+                          << "CV*(1 - f1) ?= osc        CV ?= nosc   " << std::endl << std::endl;
                 for (int y = 0; y < osc_counts->GetNbinsX(); y++) {
-                    std::cout << cov.CV_counts->GetBinContent(y+1) * numu_to_numu(distance[y]/cov.energies[y]) << " ?= " << osc_counts->GetBinContent(y+1) << " ... ";
-                    if (cov.CV_counts->GetBinContent(y+1) * (1 - numu_to_numu(distance[y]/cov.energies[y])) == osc_counts->GetBinContent(y+1)) {
-                        std::cout << "yea" << std::endl;
+                    std::cout << cov.CV_counts->GetBinContent(y+1) * numu_to_numu(distance[y]/cov.energies[y]) << " ?= " << osc_counts->GetBinContent(y+1) << std::endl;
+                    if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) * (1 - numu_to_numu(distance[y]/cov.energies[y])) - osc_counts->GetBinContent(y+1)) < 1) {
+                        std::cout << "yea          ";
                     } else {
-                        std::cout << "NO!!!" << std::endl;
+                        std::cout << "NO!!!        ";
+                    }
+                    
+                    std::cout << cov.CV_counts->GetBinContent(y+1) << " ?= " << nosc_counts->GetBinContent(y+1) << std::endl;
+                    if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) - nosc_counts->GetBinContent(y+1)) < 1) {
+                        std::cout << "yea          ";
+                    } else {
+                        std::cout << "NO!!!        ";
                     }
                 }
                 
