@@ -7,6 +7,7 @@
         {
             
             "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/spatel_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
+            // Old: "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/sbnd_optimize_length/output_SBNOsc_NumuSelection_L50.root"
             "desc": "#nu_{#mu}",
             "det": "SBND",
             "scalefactor": 3.0958e18
@@ -16,6 +17,7 @@
         {
             
             "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/spatel_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
+            // Old: "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/uboone_optimize_length/output_SBNOsc_NumuSelection_L50.root"
             "desc": "#nu_{#mu}",
             "det": "MicroBooNE",
             "scalefactor": 8.87435e19
