@@ -139,7 +139,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     std::cout << std::endl;
     
     // Transfer matrices b/w near and far detectors
-    TMatrixD
+    // TMatrixD
     
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
