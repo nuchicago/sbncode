@@ -128,7 +128,7 @@ protected:
   TTree* fTree;  //!< The output ROOT tree
   Event* fEvent;  //!< The standard output event data structure
   art::InputTag fTruthTag;  //!< art tag for MCTruth information
-  art::InputTag fWeightTag;  //!< art tag for MCEventWeight information
+  std::vector<art::InputTag> fWeightTags;  //!< art tag(s) for MCEventWeight information
   art::InputTag fMCTrackTag; //!< art tag for MCTrack
   art::InputTag fMCShowerTag; //!< art tag for MCShower
   art::InputTag fMCParticleTag; //!< art tag for MCParticle
