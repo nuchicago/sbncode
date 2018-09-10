@@ -137,7 +137,10 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     std::cout << "Oscillate: ";
     for (int i = 0; i < oscillate.size(); i++) std::cout << oscillate[i] << ", ";
     std::cout << std::endl;
-
+    
+    // Transfer matrices b/w near and far detectors
+    TMatrixD
+    
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
@@ -147,15 +150,14 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     std::vector <std::vector <double> > chisq(np, npzeros);
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
-       
-
-	    if (j%75 == 0) std::cout << "Doing i = " << i << ", j = " << j << std::endl;
- 
+            
+	        if (j%75 == 0) std::cout << "Doing i = " << i << ", j = " << j << std::endl;
+            
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
             // Create and fill hist to hold oscillated counts
-            TH1D *osc_counts = (TH1D*) cov.bkg_counts->Clone();
+            TH1D *osc_counts = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); // (TH1D*) cov.bkg_counts->Clone();
             
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
@@ -176,11 +178,14 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                         
                     }
                     
-                    osc_counts->SetBinContent(1+rb, osc_counts->GetBinContent(1+rb) + dosc_counts_rb);
+                    osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
                     
                 }
                 
             }
+            
+            // Account for size of distribution (want shape, not shape+size chisq)
+            
 	    
             // Calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
