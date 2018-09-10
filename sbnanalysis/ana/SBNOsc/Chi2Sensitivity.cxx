@@ -170,7 +170,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
  
                         // Numus
                         if (oscillate[tb] == 1) {
-                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[tb]/cov.energies[tb]);
+                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.energies[rb]);
                         // Nues
                         } else if (oscillate[tb] == 2) {
                             // For the future...
@@ -178,7 +178,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                         
                     }
                     
-                    osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
+                    osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb)* numu_to_numu(distance[rb]/cov.energies[rb]) + dosc_counts_rb);
                     
                 }
                 
