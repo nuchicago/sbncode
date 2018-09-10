@@ -195,18 +195,18 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                 std::cout << "Comparing osc counts and normal CV counts:" << std::endl
                           << "CV*(1 - f1) ?= osc        CV ?= nosc   " << std::endl << std::endl;
                 for (int y = 0; y < osc_counts->GetNbinsX(); y++) {
-                    std::cout << cov.CV_counts->GetBinContent(y+1) * numu_to_numu(distance[y]/cov.energies[y]) << " ?= " << osc_counts->GetBinContent(y+1) << std::endl;
+                    std::cout << cov.CV_counts->GetBinContent(y+1) * numu_to_numu(distance[y]/cov.energies[y]) << " ?= " << osc_counts->GetBinContent(y+1);
                     if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) * (1 - numu_to_numu(distance[y]/cov.energies[y])) - osc_counts->GetBinContent(y+1)) < 1) {
-                        std::cout << "yea          ";
+                        std::cout << " ... yea          ";
                     } else {
-                        std::cout << "NO!!!        ";
+                        std::cout << " ... NO!!!        ";
                     }
                     
-                    std::cout << cov.CV_counts->GetBinContent(y+1) << " ?= " << nosc_counts->GetBinContent(y+1) << std::endl;
+                    std::cout << cov.CV_counts->GetBinContent(y+1) << " ?= " << nosc_counts->GetBinContent(y+1);
                     if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) - nosc_counts->GetBinContent(y+1)) < 1) {
-                        std::cout << "yea          ";
+                        std::cout << " ... yea          ";
                     } else {
-                        std::cout << "NO!!!        ";
+                        std::cout << " ... NO!!!        ";
                     }
                 }
                 
