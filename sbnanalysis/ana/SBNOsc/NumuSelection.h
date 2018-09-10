@@ -82,11 +82,11 @@ protected:
   struct Config {
     bool doFVCut; //!< Whether to apply fiducial volume cut
     std::vector<geoalgo::AABox> fiducial_volumes; //!< List of FV containers -- set by "fiducial_volumes"
-    geoalgo::AABox active_volume; //!< Active volume
+    std::vector<geoalgo::AABox> active_volumes; //!< List of active volumes
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
-    double minLengthContainedLepton; //!< Minimum length [cm] of contained leptons. Will not apply cut if value is negative.
-    double minLengthExitingLepton; //!< Minimum length [cm] of exiting leptons.  Will not apply cut if value is negative.
+    double minLengthContainedTrack; //!< Minimum length [cm] of contained tracks. Will not apply cut if value is negative.
+    double minLengthExitingTrack; //!< Minimum length [cm] of exiting tracks.  Will not apply cut if value is negative.
     double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [GeV].
   };
 
@@ -96,9 +96,10 @@ protected:
     TH1D *h_numu_trueE; //!< histogram w/ truth energy variable [GeV]
     TH1D *h_numu_visibleE; //!< histogram w/ visible energy variable (total muon momentum + kinetic hadron energy) [GeV]
     TH1D *h_numu_true_v_visibleE; //!< histogram w/ difference of visible and truth energy [GeV] 
-    TH1D *h_numu_l_is_contained; //!< histogram w/ whether associated lepton is contained in FV 
-    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of lepton in CC event [cm]
-    TH1D *h_numu_l_length; //!< histogram w/ total length of associated lepton [cm]
+    TH1D *h_numu_t_is_contained; //!< histogram w/ whether associated track is contained in FV 
+    TH1D *h_numu_contained_L; //!< histogram w/ FV contained length of track in CC event [cm]
+    TH1D *h_numu_t_length; //!< histogram w/ total length of associated track [cm]
+    TH1D *h_numu_t_is_muon; //!< histogram of whether associated track is a muon
     TH2D *h_numu_Vxy; //!< 2D x-y vertex histogram [cm]
     TH2D *h_numu_Vxz; //!< 2D x-z vertex histogram [cm]
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram [cm]
@@ -111,7 +112,7 @@ protected:
   * \return Whether to apply FV cut on neutrino 
   *
   * */
-  bool passFV(const TVector3 &v) { return containedInFV(v); }
+  bool passFV(const TVector3 &v) { return !_config.doFVCut ||containedInFV(v); }
 
   /** Applies reco-truth vertex matching cut 
  * \param truth_v Truth vertex vector

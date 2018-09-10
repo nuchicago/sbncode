@@ -32,47 +32,29 @@ NumuSelection::NumuSelection() :
   _nu_count(0), 
   _interactionInfo(new std::vector<NuMuInteraction>) {}
 
+double aaBoxesMin(const std::vector<geoalgo::AABox> &boxes, unsigned dim) {
+  return std::min_element(boxes.begin(), boxes.end(), [dim](auto &lhs, auto &rhs) { return lhs.Min()[dim] < rhs.Min()[dim]; })->Min()[dim];
+}
+
+double aaBoxesMax(const std::vector<geoalgo::AABox> &boxes, unsigned dim) {
+  return std::max_element(boxes.begin(), boxes.end(), [dim](auto &lhs, auto &rhs) { return lhs.Max()[dim] < rhs.Max()[dim]; })->Max()[dim];
+}
 
 void NumuSelection::Initialize(Json::Value* config) {
   if (config) {
-    // setup active volume bounding box
-    {
-      double xmin, xmax, ymin, ymax, zmin, zmax;
-      xmin = xmax = ymin = ymax = zmin = zmax = 0;
-      if ((*config)["NumuSelection"].isMember("active_volume")) {
-        xmin = (*config)["NumuSelection"]["active_volume"]["xmin"].asDouble();
-        xmax = (*config)["NumuSelection"]["active_volume"]["xmax"].asDouble();
-        ymin = (*config)["NumuSelection"]["active_volume"]["ymin"].asDouble();
-        ymax = (*config)["NumuSelection"]["active_volume"]["ymax"].asDouble();
-        zmin = (*config)["NumuSelection"]["active_volume"]["zmin"].asDouble();
-        zmax = (*config)["NumuSelection"]["active_volume"]["zmax"].asDouble();
-      }
-      else if ((*config)["NumuSelection"].isMember("fiducial_volumes")) {
-        xmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Min()[0] < rhs.Min()[0];})->Min()[0];
-        xmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Max()[0] < rhs.Max()[0];})->Max()[0];
-        ymin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Min()[1] < rhs.Min()[1];})->Min()[1];
-        ymax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Max()[1] < rhs.Max()[1];})->Max()[1];
-        zmin = std::min_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Min()[2] < rhs.Min()[2];})->Min()[2];
-        zmax = std::max_element(_config.fiducial_volumes.begin(), _config.fiducial_volumes.end(), 
-          [](const auto& lhs, const auto &rhs) { return lhs.Max()[2] < rhs.Max()[2];})->Max()[2];
-      }
-      _config.active_volume = geoalgo::AABox(xmin, ymin, zmin, xmax, ymax, zmax);
+    // setup active volume bounding boxes
+    auto AVs = (*config)["NumuSelection"]["active_volumes"];
+    for (auto AV: AVs) {
+      _config.active_volumes.emplace_back(AV["xmin"].asDouble(), AV["ymin"].asDouble(), AV["zmin"].asDouble(), AV["xmax"].asDouble(), AV["ymax"].asDouble(), AV["zmax"].asDouble());
     }
-
-    // allow multiple fiducial volumes (accomodate for uboone data channels and icarus 2 TPC's)
     auto FVs = (*config)["NumuSelection"]["fiducial_volumes"];
     for (auto FV: FVs) {
       _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
-    _config.minLengthContainedLepton = (*config)["NumuSelection"].get("minLengthContainedLepton", -1).asDouble();
-    _config.minLengthExitingLepton = (*config)["NumuSelection"].get("minLengthExitingLepton", -1).asDouble();
+    _config.minLengthContainedTrack = (*config)["NumuSelection"].get("minLengthContainedTrack", -1).asDouble();
+    _config.minLengthExitingTrack = (*config)["NumuSelection"].get("minLengthExitingTrack", -1).asDouble();
     _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
@@ -85,18 +67,19 @@ void NumuSelection::Initialize(Json::Value* config) {
     _root_histos[i].h_numu_trueE = new TH1D(("numu_trueE_" + cut_names[i]).c_str(), "numu_trueE", 100, 0 , 10);
     _root_histos[i].h_numu_visibleE = new TH1D(("numu_visibleE_" + cut_names[i]).c_str(), "numu_visibleE", 100, 0, 10);
     _root_histos[i].h_numu_true_v_visibleE = new TH1D(("numu_true_v_visibleE_" + cut_names[i]).c_str(), "numu_true_v_visibleE", 100, -10, 10);
-    _root_histos[i].h_numu_l_length = new TH1D(("numu_l_length_" + cut_names[i]).c_str(), "numu_l_length", 101, -10, 1000);
+    _root_histos[i].h_numu_t_length = new TH1D(("numu_t_length_" + cut_names[i]).c_str(), "numu_t_length", 101, -10, 1000);
     _root_histos[i].h_numu_contained_L = new TH1D(("numu_contained_L_" + cut_names[i]).c_str(), "numu_contained_L", 101, -10 , 1000);
-    _root_histos[i].h_numu_l_is_contained = new TH1D(("l_is_contained_" + cut_names[i]).c_str(), "l_is_contained", 3, -1.5, 1.5); 
+    _root_histos[i].h_numu_t_is_contained = new TH1D(("t_is_contained_" + cut_names[i]).c_str(), "t_is_contained", 3, -1.5, 1.5); 
+    _root_histos[i].h_numu_t_is_muon = new TH1D(("t_is_muon_" + cut_names[i]).c_str(), "t_is_muon", 3, -1.5, 1.5);
     _root_histos[i].h_numu_Vxy = new TH2D(("numu_Vxy_" + cut_names[i]).c_str(), "numu_Vxy", 
-      20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
-      20, _config.active_volume.Min()[1], _config.active_volume.Max()[1]);
+      20, aaBoxesMin(_config.active_volumes, 0), aaBoxesMax(_config.active_volumes, 0),
+      20, aaBoxesMin(_config.active_volumes, 1), aaBoxesMax(_config.active_volumes, 1));
     _root_histos[i].h_numu_Vxz = new TH2D(("numu_Vxz_" + cut_names[i]).c_str(), "numu_Vxz", 
-      20, _config.active_volume.Min()[0], _config.active_volume.Max()[0], 
-      20, _config.active_volume.Min()[2], _config.active_volume.Min()[2]); 
+      20, aaBoxesMin(_config.active_volumes, 0), aaBoxesMax(_config.active_volumes, 0),
+      20, aaBoxesMin(_config.active_volumes, 2), aaBoxesMax(_config.active_volumes, 2));
     _root_histos[i].h_numu_Vyz = new TH2D(("numu_Vyz_" + cut_names[i]).c_str(), "numu_Vyz", 
-      20, _config.active_volume.Min()[1], _config.active_volume.Max()[1], 
-      20, _config.active_volume.Min()[2], _config.active_volume.Min()[2]);
+      20, aaBoxesMin(_config.active_volumes, 1), aaBoxesMax(_config.active_volumes, 1),
+      20, aaBoxesMin(_config.active_volumes, 2), aaBoxesMax(_config.active_volumes, 2));
   }
 
   // set up TGraph keeping track of cut counts
@@ -117,9 +100,10 @@ void NumuSelection::Finalize() {
     _root_histos[i].h_numu_trueE->Write();
     _root_histos[i].h_numu_visibleE->Write();
     _root_histos[i].h_numu_true_v_visibleE->Write();
-    _root_histos[i].h_numu_l_length->Write();
+    _root_histos[i].h_numu_t_length->Write();
+    _root_histos[i].h_numu_t_is_muon->Write();
     _root_histos[i].h_numu_contained_L->Write();
-    _root_histos[i].h_numu_l_is_contained->Write();
+    _root_histos[i].h_numu_t_is_contained->Write();
     _root_histos[i].h_numu_Vxy->Write();
     _root_histos[i].h_numu_Vxz->Write();
     _root_histos[i].h_numu_Vyz->Write();
@@ -191,9 +175,10 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, const std::vector<Eve
         _root_histos[select_i].h_numu_ccqe->Fill(ECCQE(interaction.lepton.momentum, interaction.lepton.energy));
         _root_histos[select_i].h_numu_visibleE->Fill(visible_energy);
         _root_histos[select_i].h_numu_true_v_visibleE->Fill(visible_energy - interaction.neutrino.energy);
-        _root_histos[select_i].h_numu_l_length->Fill(intInfo.t_length);
+        _root_histos[select_i].h_numu_t_length->Fill(intInfo.t_length);
         _root_histos[select_i].h_numu_contained_L->Fill(intInfo.t_contained_length);
-        _root_histos[select_i].h_numu_l_is_contained->Fill(intInfo.t_is_contained);
+        _root_histos[select_i].h_numu_t_is_muon->Fill(abs(intInfo.t_pdgid) == 13);
+        _root_histos[select_i].h_numu_t_is_contained->Fill(intInfo.t_is_contained);
         _root_histos[select_i].h_numu_Vxy->Fill(nu.Nu().Vx(), nu.Nu().Vy());
         _root_histos[select_i].h_numu_Vxz->Fill(nu.Nu().Vx(), nu.Nu().Vz());
         _root_histos[select_i].h_numu_Vyz->Fill(nu.Nu().Vy(), nu.Nu().Vz());
@@ -276,7 +261,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   // get lepton track
   int track_ind = -1;
   for (int i = 0; i < mctrack_list.size(); i++) {
-    if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 13 && mctrack_list[i].Process() == "primary") {
+    if (isFromNuVertex(mctruth, mctrack_list[i]) && abs(mctrack_list[i].PdgCode()) == 13 && mctrack_list[i].Process() == "primary") {
       track_ind = i;
       break;
     }
@@ -286,7 +271,7 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   if (track_ind == -1) {
     double track_contained_length = -1;
     for (int i = 0; i < mctrack_list.size(); i++) {
-      if (isFromNuVertex(mctruth, mctrack_list[i]) && mctrack_list[i].PdgCode() == 211 && mctrack_list[i].Process() == "primary") {
+      if (isFromNuVertex(mctruth, mctrack_list[i]) && abs(mctrack_list[i].PdgCode()) == 211 && mctrack_list[i].Process() == "primary") {
         double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 
         if (track_contained_length < 0 || this_contained_length > track_contained_length) {
           track_ind = i;
@@ -351,8 +336,6 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
-  if (!_config.doFVCut) return true;
-
   geoalgo::Point_t p(v); 
   for (auto const& FV: _config.fiducial_volumes) {
     if (FV.Contain(p)) return true;
@@ -368,9 +351,9 @@ bool NumuSelection::passRecoVertex(const TVector3 &truth_v, const TVector3 &reco
 
 bool NumuSelection::passMinLength(double length, bool stop_in_tpc) {
   if (!stop_in_tpc)
-    return _config.minLengthExitingLepton < 0 || length > _config.minLengthExitingLepton;
+    return _config.minLengthExitingTrack < 0 || length > _config.minLengthExitingTrack;
   else
-    return _config.minLengthContainedLepton < 0 || length > _config.minLengthContainedLepton;
+    return _config.minLengthContainedTrack < 0 || length > _config.minLengthContainedTrack;
 }
 
   }  // namespace SBNOsc
