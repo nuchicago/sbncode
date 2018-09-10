@@ -58,6 +58,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble();
     _config.showerEnergyDistortion = (*config)["NumuSelection"].get("showerEnergyDistortion", 0.).asDouble();
     _config.trackEnergyDistortion = (*config)["NumuSelection"].get("trackEnergyDistortion", 0.).asDouble();
+    _config.acceptShakyTracks = (*config)["NumuSelection"].get("acceptShakyTracks", false).asBool();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
 
@@ -153,7 +154,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     calculator.track_threshold =  _config.trackVisibleEnergyThreshold * 1000 /*convert GeV -> MeV*/;
     calculator.shower_energy_distortion = _config.showerEnergyDistortion;
     calculator.track_energy_distortion = _config.trackEnergyDistortion;
-    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator);
+    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator) / 1000.;
 
     Event::RecoInteraction reco_interaction(interaction, i);
     reco_interaction.reco_energy = visible_energy;
@@ -227,7 +228,7 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
     }
   }
   // TODO: FIX TEMPORARY HACK
-  else {
+  else if (_config.acceptShakyTracks) {
     std::cerr << "WARNING: TRACK WITH NO POINTS" << std::endl;
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.fiducial_volumes);
     length = (track.Start().Position().Vect() - track.End().Position().Vect()).Mag();

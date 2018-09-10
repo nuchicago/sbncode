@@ -85,6 +85,7 @@ protected:
     std::vector<geoalgo::AABox> active_volumes; //!< List of active volumes
     double vertexDistanceCut; //!< Value of max distance [cm] between truth and reconstructed vertex. Will not apply cut if value is negative.
     bool verbose; //!< Whether to print out info associated w/ selection.
+    bool acceptShakyTracks; //!< Whether to calculate length of tracks that don't have all points generated
     double minLengthContainedTrack; //!< Minimum length [cm] of contained tracks. Will not apply cut if value is negative.
     double minLengthExitingTrack; //!< Minimum length [cm] of exiting tracks.  Will not apply cut if value is negative.
     double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [GeV].
