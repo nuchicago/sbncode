@@ -163,6 +163,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                 
                 for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
                     
+                    if (i == 200 && j == 70) std::cout << rb << std::endl;
+                    
                     double dosc_counts_rb = 0;
                     for (int tb = cov.sample_bins[o]; tb < cov.sample_bins[o+1]; tb++) {
                         
