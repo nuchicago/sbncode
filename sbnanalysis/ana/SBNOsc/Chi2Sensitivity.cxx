@@ -212,6 +212,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                 
             }
             
+            nosc_counts->Delete();
+            
             // Account for size of distribution (want shape, not shape+size chisq)
             
 	    
