@@ -204,9 +204,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     
                     std::cout << cov.CV_counts->GetBinContent(y+1) << " ?= " << nosc_counts->GetBinContent(y+1);
                     if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) - nosc_counts->GetBinContent(y+1)) < 1) {
-                        std::cout << " ... yea          ";
+                        std::cout << " ... yea          " << std::endl;
                     } else {
-                        std::cout << " ... NO!!!        ";
+                        std::cout << " ... NO!!!        " << std::endl;
                     }
                 }
                 
