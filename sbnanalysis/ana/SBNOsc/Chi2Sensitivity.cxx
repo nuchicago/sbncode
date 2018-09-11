@@ -137,10 +137,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
         sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
     }
     
-    std::cout << "Oscillate: ";
-    for (int i = 0; i < oscillate.size(); i++) std::cout << oscillate[i] << ", ";
-    std::cout << std::endl;
-    
     
     
     //// TO-DO:
@@ -167,7 +163,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
             
-	    if (j%75 == 0) std::cout << "Doing i = " << i << ", j = " << j << std::endl;
+	    if (j == 0) std::cout << "Doing i = " << i << std::endl;
             
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
@@ -179,8 +175,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
                 for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
-                    
-                    if (i == 200 && j == 70) std::cout << rb << "      "  << distance[rb] << "      "  << cov.energies[rb] << std::endl << std::endl;
                     
                     double dosc_counts_rb = 0;
                     double dnosc_counts_rb = 0;
@@ -211,29 +205,33 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             if (i == 200 && j == 70) {
                 
                 std::cout << "Comparing osc counts and normal CV counts:" << std::endl
-                          << "CV*(1 - f1) ?= osc        CV ?= nosc   " << std::endl << std::endl;
+                          << "CV ?= nosc   " << std::endl << std::endl;
                 for (int y = 0; y < osc_counts->GetNbinsX(); y++) {
-                    std::cout << cov.CV_counts->GetBinContent(y+1) * numu_to_numu(distance[y]/cov.energies[y]) << " ?= " << osc_counts->GetBinContent(y+1);
-                    if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) * numu_to_numu(distance[y]/cov.energies[y]) - osc_counts->GetBinContent(y+1)) < 1) {
-                        std::cout << " ... yea          ";
-                    } else {
-                        std::cout << " ... NO!!!        ";
-                    }
                     
                     std::cout << cov.CV_counts->GetBinContent(y+1) << " ?= " << nosc_counts->GetBinContent(y+1);
+                    
                     if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) - nosc_counts->GetBinContent(y+1)) < 1) {
-                        std::cout << " ... yea          " << std::endl;
+                        std::cout << " ... yea :)" << std::endl;
                     } else {
-                        std::cout << " ... NO!!!        " << std::endl;
+                        std::cout << " ... NO!!!!" << std::endl;
                     }
+                    
                 }
                 
             }
             
             nosc_counts->Delete();
             
+            //// TODO
+            
             // Account for size of distribution (want shape, not shape+size chisq)
             
+            //
+            //
+            //
+            //
+            //
+            //
 	    
             // Calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
@@ -241,9 +239,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     
                     double dchisqij = 0;
 
-                    dchisqij += cov.CV_counts->GetBinContent(k+1) * (1 - numu_to_numu(distance[k]/cov.energies[k])); //(cov.CV_counts->GetBinContent(k+1) - osc_counts->GetBinContent(k+1));
+                    dchisqij += (cov.CV_counts->GetBinContent(k+1) - osc_counts->GetBinContent(k+1));
                     dchisqij *= E_inv[k][l];
-                    dchisqij *= cov.CV_counts->GetBinContent(l+1) * (1 - numu_to_numu(distance[l]/cov.energies[l])); //(cov.CV_counts->GetBinContent(l+1) - osc_counts->GetBinContent(l+1));
+                    dchisqij *= (cov.CV_counts->GetBinContent(l+1) - osc_counts->GetBinContent(l+1));
 
                     chisq[i][j] += dchisqij;
 
