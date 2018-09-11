@@ -281,7 +281,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     std::vector <double> trueE_lims = {0, 5};
-    double trueE_binwidth = 0.1;
+    int num_trueE_bins = 50;
     
     std::cout << std::endl << "Got all parameters from the config file." << std::endl;
     
@@ -331,8 +331,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     // Large (meaningless x-axis) histograms (one 2d) for oscillation calculations later on
     bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
     
-    int num_trueE_bins = (trueE_lims[1] - trueE_lims[0])/trueE_binwidth;
     nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", num_trueE_bins*sample_order.size(), 0, num_trueE_bins*sample_order.size(), num_bins, 0, num_bins);
+    
+    std::cout << "num_trueE_bins = " << num_trueE_bins << ", sample_order_size() = " << sample_order.size() << ", trueE_lims = {" << trueE_lims[0] << ", " << trueE_lims[1] << "}" << std::endl
+        << "nu_counts->GetNbinsX() = " << nu_counts->GetNbinsX() << std::endl
+        << "nu_counts->GetNbinsY() = " << nu_counts->GetNbinsY() << std::endl;
     
     // Canvases for nice histograms
     TCanvas *nue_canvas = new TCanvas("nue_canvas", "#nu_{e} Distribution", 950/3*dets.size(), 345),
@@ -366,6 +369,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             // Neutrinos
         TH2D *temp_nu_counts = new TH2D("tempnu", "", num_trueE_bins*sample_order.size(), trueE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
+        std::cout << "temp_nu_counts->GetNbinsX() = " << temp_nu_counts->GetNbinsX() << std::endl;
+        std::cout << "temp_nu_counts->GetNbinsY() = " << temp_nu_counts->GetNbinsY() << std::endl;
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -391,9 +396,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
                 }
-                if ((!(true_nuE > trueE_lims[1] || true_nuE < trueE_lims[0]) && (nuE < 0.2 || nuE > 3)) ||
-                    ((true_nuE > trueE_lims[1] || true_nuE < trueE_lims[0]) && !(nuE < 0.2 || nuE > 3))) {
-                    std::cout << std::endl << "ONE ENERGY IN RANGE, ONE NOT!!!" << std::endl;
+                if (nuE < 0.2 || nuE > 3) {
+                    continue;
+                } else if (true_nuE < trueE_lims[0] || true_nuE > trueE_lims[1]) {
+                    std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
                     continue;
                 }
                 
@@ -455,15 +461,15 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
         }
         
-        for (int b1 = 0; b1 < temp_nu_counts->GetNbinsX(); b1++) {
+        for (int rb = 0; rb < temp_nu_counts->GetNbinsY(); rb++) {
             
             // bkg_counts
-            bkg_counts->SetBinContent(1+sample_bins[o]+b1, temp_bkg_counts->GetBinContent(1+b1));
+            bkg_counts->SetBinContent(1+sample_bins[o]+rb, temp_bkg_counts->GetBinContent(1+rb));
             
             // nu_counts
-            for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
-                nu_counts->SetBinContent(1+o*num_trueE_bins+b1, 1+sample_bins[o]+b2,
-                                         temp_nu_counts->GetBinContent(1+b1, 1+b2));
+            for (int tb = 0; tb < temp_nu_counts->GetNbinsX(); tb++) {
+                nu_counts->SetBinContent(1 + o*num_trueE_bins + tb, 1 + sample_bins[o] + rb,
+                                         temp_nu_counts->GetBinContent(1+tb, 1+rb));
             }
             
         }

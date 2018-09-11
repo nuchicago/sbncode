@@ -146,6 +146,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     
     //
     //
+    //   generate transfer matrices
     //
     //
     
@@ -228,7 +229,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
             
             //
             //
-            //
+            //    do the weighting here...
             //
             //
             //
