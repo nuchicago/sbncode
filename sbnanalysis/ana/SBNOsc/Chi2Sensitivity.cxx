@@ -23,7 +23,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configF
 }
       
 // Personal preference (more explicit about what is used)...
-Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
+Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     
     /*
         Inputs: 

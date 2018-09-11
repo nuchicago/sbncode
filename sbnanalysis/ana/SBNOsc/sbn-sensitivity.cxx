@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
     
     std::cout << std::endl << "Starting chisq/sensitivity procedure..." << std::endl << std::endl;
     
-    ana::SBNOsc::Chi2Sensitivity chi2(cov, directory);
+    ana::SBNOsc::Chi2Sensitivity chi2(cov, configFileName);
     
     // Wite to file
     TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
