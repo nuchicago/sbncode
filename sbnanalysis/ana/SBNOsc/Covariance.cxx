@@ -349,6 +349,18 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Get relevant sample
         EventSample sample = samples[o];
         
+        //// TODO
+        
+        //
+        //
+        //  change the above (get relevant sample) to account for fact that maybe samples
+        //  in object 'samples' don't come in the order of plotting.
+        //  for now it's working ok.
+        //
+        //
+        
+        std::cout << "o = " << o << " and sample.fDet, sample.fDesc = " << sample.fDet << ", " << sample.fDesc << std::endl;
+        
         
         // Initialise temp hists to store counts
             // Base
@@ -470,6 +482,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             for (int tb = 0; tb < temp_nu_counts->GetNbinsX(); tb++) {
                 nu_counts->SetBinContent(1 + o*num_trueE_bins + tb, 1 + sample_bins[o] + rb,
                                          temp_nu_counts->GetBinContent(1+tb, 1+rb));
+                std::cout << "offset[o] = " << offset[o] << ", o = " << o << " and so o*num_trueE_bins = " << o*num_trueE_bins << std::endl; 
             }
             
         }
