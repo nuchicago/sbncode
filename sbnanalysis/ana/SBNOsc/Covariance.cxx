@@ -386,6 +386,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
                 }
+                if ((!(true_nuE > 3 || true_nuE < 0.2) && (nuE < 0.2 || nuE > 3)) ||
+                    ((true_nuE > 3 || true_nuE < 0.2) && !(nuE < 0.2 || nuE > 3))) {
+                    std::cout << std::endl << "ONE ENERGY IN RANGE, ONE NOT!!!" << std::endl;
+                    continue;
+                }
                 
                 // Apply selection (or rejection) efficiencies
                 int isCC = event->truth[truth_ind].neutrino.iscc;
