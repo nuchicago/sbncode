@@ -68,7 +68,7 @@
     
     "Sensitivity": {
         
-        "ScaleSample": "SBND_#nu_{#mu}",
+        "ScaleSample": "SBND #nu_{#mu}",
         
         "NP": 300
         

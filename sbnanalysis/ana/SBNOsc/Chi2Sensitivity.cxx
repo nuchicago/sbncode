@@ -59,7 +59,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         
         // Sample according to which we scale (for shape-only chi squared)
         fScaleSample = (*config)["Sensitivity"].get("ScaleSample", "").asString();
-        
+    
     }
     
     
@@ -175,7 +175,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     
     
     
-    
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
@@ -247,6 +246,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                         
                     }
                 }
+                
+                scale_histo.Delete();
                 
             }
 	    
