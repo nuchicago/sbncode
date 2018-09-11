@@ -331,7 +331,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     // Large (meaningless x-axis) histograms (one 2d) for oscillation calculations later on
     bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
     
-    int num_trueE_bins = (trueE_lims[1] - trueE_lims[0])/truE_binwidth;
+    int num_trueE_bins = (trueE_lims[1] - trueE_lims[0])/trueE_binwidth;
     nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", num_trueE_bins*sample_order.size(), 0, num_trueE_bins*sample_order.size(), num_bins, 0, num_bins);
     
     // Canvases for nice histograms
@@ -364,7 +364,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         TH1D *temp_bkg_counts = new TH1D("tempbkg", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
             // Neutrinos
-        TH2D *temp_nu_counts = new TH2D("tempnu", "", num_truE_bins*sample_order.size(), truE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        TH2D *temp_nu_counts = new TH2D("tempnu", "", num_trueE_bins*sample_order.size(), trueE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
         
         // Loop over neutrinos (events in tree)
@@ -606,7 +606,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     trueEs = {};
     for (int o = 0; o < sample_order.size(); o++) {
         for (int i = 0; i < num_trueE_bins; i++) {
-            trueEs.push_back(trueE_lims[0] + (i+0.5)*truE_binwidth);
+            trueEs.push_back(trueE_lims[0] + (i+0.5)*trueE_binwidth);
         }
     }
     
