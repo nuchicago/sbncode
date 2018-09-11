@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
     
     cov.cov->Write();
     cov.fcov->Write();
-    cov.corr>Write();
+    cov.corr->Write();
     
     int savePDFs = (*config).get("SavePDFs", 0).asInt();
     if (savePDFs == 1) {
