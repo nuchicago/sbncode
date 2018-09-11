@@ -379,7 +379,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         TH1D *temp_bkg_counts = new TH1D("tempbkg", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
             // Neutrinos
-        TH2D *temp_nu_counts = new TH2D("tempnu", "", num_trueE_bins*sample_order.size(), trueE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        TH2D *temp_nu_counts = new TH2D("tempnu", "", num_trueE_bins, trueE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
         std::cout << "temp_nu_counts->GetNbinsX() = " << temp_nu_counts->GetNbinsX() << std::endl;
         std::cout << "temp_nu_counts->GetNbinsY() = " << temp_nu_counts->GetNbinsY() << std::endl;
