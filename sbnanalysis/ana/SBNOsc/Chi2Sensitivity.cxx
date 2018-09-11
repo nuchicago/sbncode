@@ -57,6 +57,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         // Size of phase space
         fNP = (*config)["Sensitivity"].get("NP", -1).asInt();
         
+        // Sample according to which we scale (for shape-only chi squared)
+        fScaleSample = (*config)["Sensitivity"].get("ScaleSample", "").asString();
+        
     }
     
     
@@ -220,16 +223,32 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 
             }
             
-            //// TODO
-            
-            // Account for size of distribution (want shape, not shape+size chisq)
-            
-            //
-            //
-            //    do the weighting here...
-            //
-            //
-            //
+            // If configured to, scale bins based on distribution in given detector for "shape-only" chi2
+            if (fScaleSample.size() != 0) /* checks if configured */ {
+                
+                int fit_sample_index = std::find(cov.sample_order.begin(), cov.sample_order.end(), fScaleSample) - cov.sample_order.begin(); 
+                assert(fit_sample_index != cov.sample_order.size());
+                
+                // Histogram of scale factors (only part with scaled sample will be used)
+                TH1D scale_histo("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
+                scale_histo.Divide(cov.CV_counts, osc_counts);
+                
+                // Update each value in osc_counts histogram
+                for (int o = 0; o < cov.sample_order.size(); o++) {
+                    for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
+                        
+                        // Get corresponding bin in the scaled sample histogram
+                        int scale_bin = (rb - cov.sample_bins[o]) + cov.sample_bins[fit_sample_index];
+                        
+                        // Scale accordingly
+                        double this_count = osc_counts->GetBinContent(1+rb);
+                        double scaled_this_count = scale_histo.GetBinContent(scale_bin) * this_count;
+                        osc_counts->SetBinContent(1+rb, scaled_this_count);
+                        
+                    }
+                }
+                
+            }
 	    
             // Calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
