@@ -368,7 +368,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
         
             // Bkg
-        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg"_.c_str(), "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
             // Neutrinos
         TH2D *temp_nu_counts = new TH2D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, fTrueELims[0], fTrueELims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
