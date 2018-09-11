@@ -150,11 +150,10 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
     int num_trueE_bins = cov.trueEs.size()/cov.sample_order.size();
     
     // Phase space
-    int np = 250;
-    std::vector <double> dm2(np), sin2theta(np);
-    for (int i = 0; i < np; i++) {
-        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(np-1));
-        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(np-1));
+    std::vector <double> dm2(fNP), sin2theta(fNP);
+    for (int i = 0; i < fNP; i++) {
+        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(fNP-1));
+        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(fNP-1));
     }
     
     
@@ -179,17 +178,17 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
     
     double minchisq = 1e99;
-    std::vector <double> npzeros(np, 0);
-    std::vector <std::vector <double> > chisq(np, npzeros);
-    for (int i = 0; i < np; i++){
-        for (int j = 0; j < np; j++) {
+    std::vector <double> npzeros(fNP, 0);
+    std::vector <std::vector <double> > chisq(fNP, npzeros);
+    for (int i = 0; i < fNP; i++){
+        for (int j = 0; j < fNP; j++) {
         
             if (j == 0) {
                 if (i == 0) std::cout << "Doing i = ";
                 int tempi = i;
                 while (tempi > 0) { tempi /= 10; std::cout << "\r"; }
                 std::cout << i;
-                if (i == np-1) std::cout << std::endl;
+                if (i == fNP-1) std::cout << std::endl;
             }
             
             // Set function parameters
@@ -220,8 +219,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
                 }
                 
             }
-            
-            nosc_counts->Delete();
             
             //// TODO
             
@@ -271,9 +268,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
     TCanvas *chisqcanvas = new TCanvas();
     
     TGraph2D *logchisqplot = new TGraph2D();
-    for (int i = 0; i < np; i++) {
-        for (int j = 0; j < np; j++) {
-            logchisqplot->SetPoint(i*np + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
+    for (int i = 0; i < fNP; i++) {
+        for (int j = 0; j < fNP; j++) {
+            logchisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
         }
     }
     
@@ -284,7 +281,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
     
     
     // Get differences
-    std::vector <std::vector <double> > chisq_diffs(np, npzeros);
+    std::vector <std::vector <double> > chisq_diffs(fNP, npzeros);
     for (int i = 0; i < chisq.size(); i++) {
         for (int j = 0; j < chisq[0].size(); j++) {
             chisq_diffs[i][j] = chisq[i][j] - minchisq;
@@ -307,22 +304,22 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
     // Get contours
     double target;
     std::vector <double> target_dchisq = {1.64, 7.75, 23.40}, corners(4, 0), twozeros(2, 0);
-    std::vector <std::vector <double> > contour, sin_contour(target_dchisq.size()), dm2_contour(target_dchisq.size()), vecof2vecs(np, twozeros);
-    std::vector <std::vector <std::vector <double> > > box_minmax(np, vecof2vecs);
+    std::vector <std::vector <double> > contour, sin_contour(target_dchisq.size()), dm2_contour(target_dchisq.size()), vecof2vecs(fNP, twozeros);
+    std::vector <std::vector <std::vector <double> > > box_minmax(fNP, vecof2vecs);
     for  (int k = 0; k < target_dchisq.size(); k++){
         
         target = target_dchisq[k];
         
         // Initialise box_minmax
-        for (int i = 0; i < np-1; i++) {
-            for (int j = 0; j < np-1; j++) {
+        for (int i = 0; i < fNP-1; i++) {
+            for (int j = 0; j < fNP-1; j++) {
                 box_minmax[i][j] = {0, 0};
             }
         }
         
         // Fill box_minmax out
-        for (int i = 0; i < np-1; i++) {
-            for (int j = 0; j < np-1; j++) {
+        for (int i = 0; i < fNP-1; i++) {
+            for (int j = 0; j < fNP-1; j++) {
                 
                 corners = {chisq_diffs[i][j], chisq_diffs[i+1][j], chisq_diffs[i][j+1], chisq_diffs[i+1][j+1]};
                 box_minmax[i][j] = {corners[0], corners[0]};
@@ -339,8 +336,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
         
         // Get the contour
         contour.clear();
-        for (int i = 0; i < np-1; i++) {
-            for (int j = 0; j < np-1; j++) {
+        for (int i = 0; i < fNP-1; i++) {
+            for (int j = 0; j < fNP-1; j++) {
                 
                 if ((target >= box_minmax[i][j][0]) && (target <= box_minmax[i][j][1])) {
                     contour.push_back({(sin2theta[i] + sin2theta[i+1])/2, (dm2[j] + dm2[j+1])/2});

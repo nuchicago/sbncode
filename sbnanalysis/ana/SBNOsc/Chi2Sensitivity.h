@@ -21,6 +21,9 @@ class Chi2Sensitivity {
         TGraph *contour_90pct, *contour_3sigma, *contour_5sigma;
     
     private:
+    
+        int fNP;
+    
         std::string fOutputDirectory;
         int fSavePDFs;
     
