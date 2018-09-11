@@ -72,18 +72,6 @@ int main(int argc, char* argv[]) {
         cov.corr->Draw("colz"); cov.corr->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
     }
     
-    // Test bkg_ and nu_ counts
-    TH1D *counts = (TH1D*) cov.bkg_counts->Clone();
-    counts->Add(cov.nu_counts->ProjectionY());
-    
-    TCanvas *c = new TCanvas();
-    counts->Draw();
-    c->SaveAs((directory + "testcounts.png").c_str());
-    cov.CV_counts->Draw();
-    c->SaveAs((directory+"basecounts.png").c_str());
-    cov.nu_counts->Draw("colz");
-    c->SaveAs((directory+"nu_counts.png").c_str());
-    
     
     //// Get sensitivity contours
     //// ~~~~~~~~~~~~~~~~~~~~~~~~

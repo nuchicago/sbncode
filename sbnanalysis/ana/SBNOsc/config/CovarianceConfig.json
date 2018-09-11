@@ -53,6 +53,9 @@
         
         },
         
+        "TrueELims": [ 0.0, 5.0 ],
+        "NumTrueEBins": 50,
+        
         "ScaleTargets": {
             
             "SBND": 6.6e20,

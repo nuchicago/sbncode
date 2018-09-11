@@ -72,9 +72,13 @@ class Covariance {
         
         std::map <std::string, std::vector <double> > fBins;
         
+        std::vector <double> fTrueELims;
+        int fNumTrueEBins;
+        
         std::map <std::string, float> fScaleTargets;
         
         std::string fOutputDirectory;
+        int fSavePDFs;
         
         
     

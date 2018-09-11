@@ -17,8 +17,8 @@ int main(int argc, char* argv[]) {
     
     std::cout << std::endl << "Hello!" << std::endl << std::endl;
     
-    //// Build sample (temporary)
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~
+    //// Build sample
+    //// ~~~~~~~~~~~~
     
     char *configFileName = argv[1];
     

@@ -23,7 +23,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configF
 }
       
 // Personal preference (more explicit about what is used)...
-Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
+Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string configFileName) {
     
     /*
         Inputs: 
@@ -37,8 +37,28 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                             to the bin centers in the three count hists above;
             - sample_order, a vector <string> with the samples plotted in the count hists above;
             - sample_bins , a vector <int> with the bins in the count hists above that separate the
-                            samples described in sample_order;
+                            samples described in sample_order.
+                            
+        From the config file:
+            - fNP         , number of points in each dimension of the (dm2, sin2(2theta)) phase space.
     */
+    
+    //// Get parameters from config file
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    
+    Json::Value* config = core::LoadConfig(configFileName);
+    
+    if (config != NULL) {
+        
+        // Output directory
+        fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
+        fSavePDFs = (*config).get("SavePDFs", 0).asInt();
+        
+        // Size of phase space
+        fNP = (*config)["Sensitivity"].get("NP", -1).asInt();
+        
+    }
+    
     
     //// Invert Error Matrix
     //// ~~~~~~~~~~~~~~~~~~~
@@ -163,55 +183,39 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     std::vector <std::vector <double> > chisq(np, npzeros);
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
-            
-	    if (i%5 == 0 && j == 0) std::cout << "Doing i = " << i << std::endl;
+        
+            if (j == 0) {
+                if (i == 0) std::cout << "Doing i = ";
+                int tempi = i;
+                while (tempi > 0) { tempi /= 10; std::cout << "\r"; }
+                std::cout << i;
+                if (i == np-1) std::cout << std::endl;
+            }
             
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
             // Create and fill hist to hold oscillated counts
-            TH1D *osc_counts = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); // (TH1D*) cov.bkg_counts->Clone();
-            TH1D *nosc_counts = new TH1D("tempn", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); // (TH1D*) cov.bkg_counts->Clone();
+            TH1D *osc_counts = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
             
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
                 for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
                     
                     double dosc_counts_rb = 0;
-                    double dnosc_counts_rb = 0;
                     for (int tb = o*num_trueE_bins; tb < (o+1)*num_trueE_bins; tb++) {
 
                         // Numus
                         if (oscillate[rb] == 1) {
                             dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.trueEs[tb]);
-                            dnosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb);
                         // Nues
-                        } else if (oscillate[tb] == 2) {
+                        } else if (oscillate[rb] == 2) {
                             // For the future...
                         }
                         
                     }
                     
                     osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
-                    nosc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dnosc_counts_rb);
-                    
-                }
-                
-            }
-            
-            if (i == 200 && j == 0) {
-                
-                std::cout << "Comparing osc counts and normal CV counts:" << std::endl
-                          << "CV ?= nosc   " << std::endl << std::endl;
-                for (int y = 0; y < osc_counts->GetNbinsX(); y++) {
-                    
-                    std::cout << cov.CV_counts->GetBinContent(y+1) << " ?= " << nosc_counts->GetBinContent(y+1);
-                    
-                    if (TMath::Abs(cov.CV_counts->GetBinContent(y+1) - nosc_counts->GetBinContent(y+1)) < 1) {
-                        std::cout << " ... yea :)" << std::endl;
-                    } else {
-                        std::cout << " ... NO!!!!" << std::endl;
-                    }
                     
                 }
                 
@@ -276,7 +280,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
     //gStyle->SetPalette(1);
     logchisqplot->Draw("surf1");
-    chisqcanvas->SaveAs((Outputdir + "chisq.pdf").c_str());
+    if (fSavePDFs == 1) chisqcanvas->SaveAs((fOutputDirectory + "chisq.pdf").c_str());
     
     
     // Get differences
@@ -292,11 +296,13 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     //// ~~~~~~~~~~~~
     
     /*
-       Note: I'm just copying my own code I'd written to get contours. I've heard that there is some function on TH2Ds that does it automatically. This one is pretty fast though so I'm leaving it in. I could try both options/methods... 
+       Note: I'm just copying my own code I'd written to get contours. I've heard that there is some 
+       function on TH2Ds that does it automatically but haven't used it. This one is pretty fast so 
+       I'm leaving it in, at least for now.
     */
     
     clock_t startcont = clock();
-    std::cout << std::endl << "Getting contours." << std::endl;
+    std::cout << std::endl << "Getting contours..." << std::endl;
     
     // Get contours
     double target;
