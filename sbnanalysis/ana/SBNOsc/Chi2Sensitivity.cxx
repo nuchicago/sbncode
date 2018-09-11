@@ -233,6 +233,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
               scale_histo.Divide(cov.CV_counts, osc_counts);
 
               // update each value in osc_counts histogram
+              //
+              // NOTE: This assumes a diagonal transfer matrix -- we may want to change this later to do something more sophisticated
               for (int o = 0; o < cov.sample_order.size(); o++) {
                  for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
                    // get the according bin in the scaled sample histogram
