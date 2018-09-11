@@ -181,10 +181,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     double dnosc_counts_rb = 0;
                     for (int tb = o*num_trueE_bins; tb < (o+1)*num_trueE_bins; tb++) {
 
-                        if (i == 200 && j == 70) {
-                            std::cout << "Doing rb = " << rb << " and tb = " << tb << std::endl; 
-                        } 
-
                         // Numus
                         if (oscillate[rb] == 1) {
                             dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.trueEs[tb]);

@@ -333,10 +333,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", num_trueE_bins*sample_order.size(), 0, num_trueE_bins*sample_order.size(), num_bins, 0, num_bins);
     
-    std::cout << "num_trueE_bins = " << num_trueE_bins << ", sample_order_size() = " << sample_order.size() << ", trueE_lims = {" << trueE_lims[0] << ", " << trueE_lims[1] << "}" << std::endl
-        << "nu_counts->GetNbinsX() = " << nu_counts->GetNbinsX() << std::endl
-        << "nu_counts->GetNbinsY() = " << nu_counts->GetNbinsY() << std::endl;
-    
     // Canvases for nice histograms
     TCanvas *nue_canvas = new TCanvas("nue_canvas", "#nu_{e} Distribution", 950/3*dets.size(), 345),
            *numu_canvas = new TCanvas("numu_canvas", "#nu_{#mu} Distribution", 950/3*dets.size(), 345);
@@ -359,8 +355,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         //
         //
         
-        std::cout << "o = " << o << " and sample.fDet, sample.fDesc = " << sample.fDet << ", " << sample.fDesc << std::endl;
-        
         
         // Initialise temp hists to store counts
             // Base
@@ -380,9 +374,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
             // Neutrinos
         TH2D *temp_nu_counts = new TH2D("tempnu", "", num_trueE_bins, trueE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
-        
-        std::cout << "temp_nu_counts->GetNbinsX() = " << temp_nu_counts->GetNbinsX() << std::endl;
-        std::cout << "temp_nu_counts->GetNbinsY() = " << temp_nu_counts->GetNbinsY() << std::endl;
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -482,7 +473,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             for (int tb = 0; tb < temp_nu_counts->GetNbinsX(); tb++) {
                 nu_counts->SetBinContent(1 + o*num_trueE_bins + tb, 1 + sample_bins[o] + rb,
                                          temp_nu_counts->GetBinContent(1+tb, 1+rb));
-                std::cout << "offset[o] = " << offset[o] << ", o = " << o << " and so o*num_trueE_bins = " << o*num_trueE_bins << std::endl; 
             }
             
         }
