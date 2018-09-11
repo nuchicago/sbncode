@@ -46,12 +46,12 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     std::cout << std::endl << "Inverting full error matrix, E_{ij}..." << std::endl;
     
     // Create error (statistical and systematic) matrix
-    TMatrixDSym E_mat(cov.covmat->GetNbinsX());
+    TMatrixDSym E_mat(cov.cov->GetNbinsX());
     
-    for (int i = 0; i < cov.covmat->GetNbinsX(); i++) {
-        for (int j = 0; j < cov.covmat->GetNbinsY(); j++) {
+    for (int i = 0; i < cov.cov->GetNbinsX(); i++) {
+        for (int j = 0; j < cov.cov->GetNbinsY(); j++) {
             
-            E_mat[i][j] = cov.covmat->GetBinContent(i+1, j+1);
+            E_mat[i][j] = cov.cov->GetBinContent(i+1, j+1);
             if (i == j) { E_mat[i][i] += cov.CV_counts->GetBinContent(i+1); }
             
         }
@@ -126,6 +126,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
         
     }
     
+    // Num true energy bins in each sample
+    int num_trueE_bins = cov.trueEs.size()/cov.sample_order.size();
+    
     // Phase space
     int np = 250;
     std::vector <double> dm2(np), sin2theta(np);
@@ -138,8 +141,21 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     for (int i = 0; i < oscillate.size(); i++) std::cout << oscillate[i] << ", ";
     std::cout << std::endl;
     
+    
+    
+    //// TO-DO:
+    
     // Transfer matrices b/w near and far detectors
-    // TMatrixD
+    // TMatrixD ... 
+    
+    //
+    //
+    //
+    //
+    
+    
+    
+    
     
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
@@ -168,13 +184,11 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                     
                     double dosc_counts_rb = 0;
                     double dnosc_counts_rb = 0;
-                    for (int tb = cov.sample_bins[o]; tb < cov.sample_bins[o+1]; tb++) {
-                        
-                       	if (oscillate[rb] != oscillate[tb]) assert(false);
+                    for (int tb = o*num_trueE_bins; tb < (o+1)*num_trueE_bins; tb++) {
  
                         // Numus
-                        if (oscillate[tb] == 1) {
-                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.energies[rb]);
+                        if (oscillate[rb] == 1) {
+                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.trueEs[tb]);
                             dnosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb);
                         // Nues
                         } else if (oscillate[tb] == 2) {
@@ -183,7 +197,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                         
                     }
                     
-                    osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb)* numu_to_numu(distance[rb]/cov.energies[rb]) + dosc_counts_rb);
+                    osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
                     nosc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dnosc_counts_rb);
                     
                 }

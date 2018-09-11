@@ -48,13 +48,15 @@ class Covariance {
         Covariance(std::vector<EventSample> samples, char *configFileName);
         //SavePNGs(std::string directory);
         
-        TH2D *covmat, *fcovmat, *corrmat;       // Covariance, fractional covariance and correlation matrices.
+        TH2D *cov, *fcov, *corr;                // Covariance, fractional covariance and correlation
+                                                // matrices.
         
-        TH1D *bkg_counts;                       // Counts of non-neutrino events. Won't be oscillated
-        TH2D *nu_counts;                        // Counts of geniune neutrino events. For oscillation
+        TH1D *bkg_counts;                       // Counts of non-neutrino events. Won't be oscillated.
+        TH2D *nu_counts;                        // Counts of geniune neutrino events. For oscillation.
         
         TH1D *CV_counts;                        // CV universe counts.
-        std::vector <double> energies;          // Bin centres for bins in all hists
+        std::vector <double> energies, trueEs;  // Bin centres for bins in all hists; second is for
+                                                // x-axis of nu_counts.
         
         std::vector <std::string> sample_order; // Description of samples, in order they were plotted.
         std::vector <int> sample_bins;          // Bin limits of samples.

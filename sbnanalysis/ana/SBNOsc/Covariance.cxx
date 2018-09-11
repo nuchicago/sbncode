@@ -280,6 +280,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     }
     
+    std::vector <double> trueE_lims = {0, 5};
+    double trueE_binwidth = 0.1;
+    
     std::cout << std::endl << "Got all parameters from the config file." << std::endl;
     
     
@@ -294,21 +297,21 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
         // Get plotting order of samples
-    std::vector <std::string> plot_order = get_plot_order(samples);
+    sample_order = get_plot_order(samples);
     
         // Number of bins needed in big histogram (for covariance)
         // And bin 'boundaries' between each separate sample
     int num_bins = 0;
-    std::vector <int> offset;
-    for (int o = 0; o < plot_order.size(); o++) {
+    sample_bins;
+    for (int o = 0; o < sample_order.size(); o++) {
         
-        offset.push_back(num_bins);
+        sample_bins.push_back(num_bins);
         
-        std::string binkey = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
+        std::string binkey = sample_order[o].substr(sample_order[o].find("_")+1, sample_order[o].length());
         num_bins += fBins[binkey].size() - 1;
         
     }
-    offset.push_back(num_bins); // for later when setting labels to cov plots
+    sample_bins.push_back(num_bins); // for later when setting labels to cov plots
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
@@ -327,7 +330,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     // Large (meaningless x-axis) histograms (one 2d) for oscillation calculations later on
     bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
-    nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    
+    int num_trueE_bins = (trueE_lims[1] - trueE_lims[0])/truE_binwidth;
+    nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", num_trueE_bins*sample_order.size(), 0, num_trueE_bins*sample_order.size(), num_bins, 0, num_bins);
     
     // Canvases for nice histograms
     TCanvas *nue_canvas = new TCanvas("nue_canvas", "#nu_{e} Distribution", 950/3*dets.size(), 345),
@@ -336,7 +341,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     // Get counts
     std::cout << std::endl << "Getting counts for each sample..." << std::endl;
-    for (int o = 0; o < plot_order.size(); o++) {
+    for (int o = 0; o < sample_order.size(); o++) {
         
         // Get relevant sample
         EventSample sample = samples[o];
@@ -359,7 +364,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         TH1D *temp_bkg_counts = new TH1D("tempbkg", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
             // Neutrinos
-        TH2D *temp_nu_counts = new TH2D("tempnu", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        TH2D *temp_nu_counts = new TH2D("tempnu", "", num_truE_bins*sample_order.size(), truE_lims[0], trueE_lims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
         
         // Loop over neutrinos (events in tree)
@@ -386,8 +391,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
                 }
-                if ((!(true_nuE > 3 || true_nuE < 0.2) && (nuE < 0.2 || nuE > 3)) ||
-                    ((true_nuE > 3 || true_nuE < 0.2) && !(nuE < 0.2 || nuE > 3))) {
+                if ((!(true_nuE > trueE_lims[1] || true_nuE < trueE_lims[0]) && (nuE < 0.2 || nuE > 3)) ||
+                    ((true_nuE > trueE_lims[1] || true_nuE < trueE_lims[0]) && !(nuE < 0.2 || nuE > 3))) {
                     std::cout << std::endl << "ONE ENERGY IN RANGE, ONE NOT!!!" << std::endl;
                     continue;
                 }
@@ -423,37 +428,14 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             }
         }
         
-        std::cout << std::endl << "For sample: " << sample.fDet << ", " << sample.fDesc << ", there were " << nucount << " neutrinos." << std::endl;
+        std::cout << std::endl << "In sample: " << sample.fDet << ", " << sample.fDesc << ", there were " << nucount << " neutrinos." << std::endl;
         
         // Rescale to desired POT
-            // base and alt uni counts
-        for (int u = 0; u < temp_count_hists.size(); u++) {
-            for (int b = 0; b < temp_count_hists[u]->GetNbinsX(); b++) {
-                
-                double bincontent = temp_count_hists[u]->GetBinContent(b+1);
-                temp_count_hists[u]->SetBinContent(b+1, bincontent * fScaleTargets[sample.fDet] 
-                                                            / sample.fScaleFactor);
-                
-            }
+        for (int h = 0; h < temp_count_hists.size(); h++) {
+            temp_count_hists[h]->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
         }
-        
-        for (int b1 = 0; b1 < temp_nu_counts->GetNbinsX(); b1++) {
-            
-            // bkg_counts
-            double bkgcontent = temp_bkg_counts->GetBinContent(b1+1);
-            temp_bkg_counts->SetBinContent(b1+1, bkgcontent * fScaleTargets[sample.fDet] 
-                                                    / sample.fScaleFactor);
-            
-            // nu_counts
-            for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
-                
-                double nucontent = temp_nu_counts->GetBinContent(b1+1, b2+1);
-                temp_nu_counts->SetBinContent(b1+1, b2+1, nucontent * fScaleTargets[sample.fDet] 
-                                                                / sample.fScaleFactor);
-                
-            }
-            
-        }
+        temp_bkg_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
+        temp_nu_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
         
         
         // Pass onto the big histograms and get energies
@@ -464,23 +446,23 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
                 if (h == 0) energies.push_back(temp_count_hists[h]->GetBinCenter(bin+1));
                 
-                count_hists[h]->SetBinContent(1+offset[o]+bin, temp_count_hists[h]->GetBinContent(1+bin));
+                count_hists[h]->SetBinContent(1+sample_bins[o]+bin, temp_count_hists[h]->GetBinContent(1+bin));
                 
             }
             
             std::string label = sample.fDet + " " + sample.fDesc;
-            count_hists[h]->GetXaxis()->SetBinLabel((offset[o]+offset[o+1])/2, label.c_str());
+            count_hists[h]->GetXaxis()->SetBinLabel((sample_bins[o]+sample_bins[o+1])/2, label.c_str());
             
         }
         
         for (int b1 = 0; b1 < temp_nu_counts->GetNbinsX(); b1++) {
             
             // bkg_counts
-            bkg_counts->SetBinContent(1+offset[o]+b1, temp_bkg_counts->GetBinContent(1+b1));
+            bkg_counts->SetBinContent(1+sample_bins[o]+b1, temp_bkg_counts->GetBinContent(1+b1));
             
             // nu_counts
             for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
-                nu_counts->SetBinContent(1+offset[o]+b1, 1+offset[o]+b2,
+                nu_counts->SetBinContent(1+sample_bins[o]+b1, 1+sample_bins[o]+b2,
                                          temp_nu_counts->GetBinContent(1+b1, 1+b2));
             }
             
@@ -529,8 +511,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     std::vector <double> covbins = {};
     if (do_varied_bins == 1) {
         
-        for (int o = 0; o < plot_order.size(); o++) {
-            std::string desc = plot_order[o].substr(plot_order[o].find("_")+1, plot_order[o].length());
+        for (int o = 0; o < sample_order.size(); o++) {
+            std::string desc = sample_order[o].substr(sample_order[o].find("_")+1, sample_order[o].length());
             for (int i = 0; i < fBins[desc].size(); i++) {
                 if (o == 0 && i == 0) {
                     covbins.push_back(fBins[desc][i]);
@@ -550,7 +532,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Covariance and fractional covariance
-    TH2D *cov, *fcov;
     if (do_varied_bins == 0) {
         cov = new TH2D("cov", "Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
         fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
@@ -577,7 +558,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Pearson Correlation Coefficients
-    TH2D *corr;
     if (do_varied_bins == 0) {
         corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
     } else {
@@ -593,11 +573,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Add bin labels
-    for (int o = 0; o < plot_order.size(); o++) {
+    for (int o = 0; o < sample_order.size(); o++) {
         
         // Get label and position
-        std::string label = plot_order[o].replace(plot_order[o].find("_"), 1, " ");
-        int pos = 1 + offset[o] + (offset[o+1] - offset[o])/2;
+        std::string label = sample_order[o].replace(sample_order[o].find("_"), 1, " ");
+        int pos = 1 + sample_bins[o] + (sample_bins[o+1] - sample_bins[o])/2;
         
         // Set label
         cov->GetXaxis()->SetBinLabel(pos, label.c_str());
@@ -622,14 +602,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     //// ~~~~~~~~~~~~~~~~~~~~~~~
     
     CV_counts = count_hists[0];
-    //energies was already done directly;
     
-    sample_order = plot_order;
-    sample_bins = offset;
-    
-    covmat = cov;
-    fcovmat = fcov;
-    corrmat = corr;
+    trueEs = {};
+    for (int o = 0; o < sample_order.size(); o++) {
+        for (int i = 0; i < num_trueE_bins; i++) {
+            trueEs.push_back(trueE_lims[0] + (i+0.5)*truE_binwidth);
+        }
+    }
     
     
     
