@@ -174,7 +174,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
  
                         // Numus
                         if (oscillate[tb] == 1) {
-                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+rb, 1+tb) * numu_to_numu(distance[rb]/cov.energies[rb]);
+                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.energies[rb]);
                             dnosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb);
                         // Nues
                         } else if (oscillate[tb] == 2) {
