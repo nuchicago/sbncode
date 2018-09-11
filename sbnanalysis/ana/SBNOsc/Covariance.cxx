@@ -462,7 +462,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             // nu_counts
             for (int b2 = 0; b2 < temp_nu_counts->GetNbinsY(); b2++) {
-                nu_counts->SetBinContent(1+sample_bins[o]+b1, 1+sample_bins[o]+b2,
+                nu_counts->SetBinContent(1+o*num_trueE_bins+b1, 1+sample_bins[o]+b2,
                                          temp_nu_counts->GetBinContent(1+b1, 1+b2));
             }
             
