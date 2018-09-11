@@ -106,6 +106,9 @@ double ECCQE(const TVector3& l_momentum, double l_energy, double energy_distorti
  *
  */
 struct VisibleEnergyCalculator {
+  typedef double (*LeptonEnergyDistortionFunction)(const TVector3& l_momentum, double l_energy); //!< Typedef of function to supply lepton
+    // energy resolution as a function of kinematics. Input variable should be in GeV and output in %.
+
   int lepton_pdgid; //!< PDGID of lepton in the interaction. Used to add 
     // in energy corresponding to lepton mass for CC events (and confused NC
     // events). If you don't want to add in a lepton mass to the energy
@@ -114,13 +117,18 @@ struct VisibleEnergyCalculator {
   double shower_threshold; //!< Energy threshold of shower energy counted in calculation [GeV].
   double track_energy_distortion; //!< Distortion of energies of tracks (%).
   double shower_energy_distortion; //!< Distortion of energies of showers (%).
+  double lepton_energy_distortion; //!< Distortion of energies of primary lepton (%). Used iff f_lepton_energy_distortion is NULL. 
+  LeptonEnergyDistortionFunction f_lepton_energy_distortion; //!< Distortion function to obtain lepton energy from kinematics.
+    // Will use lepton_energy_distortion value if function is set to NULL.
 
   VisibleEnergyCalculator(): 
     lepton_pdgid(0),
     track_threshold(0),
     shower_threshold(0),
     track_energy_distortion(0),
-    shower_energy_distortion(0)
+    shower_energy_distortion(0),
+    lepton_energy_distortion(0),
+    f_lepton_energy_distortion(NULL)
   {}
 };
 

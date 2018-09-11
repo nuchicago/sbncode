@@ -227,7 +227,6 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
       pos = track[i].Position();
     }
   }
-  // TODO: FIX TEMPORARY HACK
   else if (_config.acceptShakyTracks) {
     std::cerr << "WARNING: TRACK WITH NO POINTS" << std::endl;
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.fiducial_volumes);

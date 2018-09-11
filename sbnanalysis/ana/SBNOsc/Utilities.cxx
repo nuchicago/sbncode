@@ -139,32 +139,65 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
 
   // total up visible energy from tracks...
   for (auto const &mct: mctrack_list) {
-    // ignore neutral particles
-    if (isFromNuVertex(mctruth, mct) && abs(PDGCharge(mct.PdgCode())) > 1e-4) {
-      double mass = PDGMass(mct.PdgCode());
-      double this_visible_energy = mct.Start().E() - mass;
-      if (calculator.track_energy_distortion > 1e-4) {
-        this_visible_energy += rand.Gaus(0, calculator.track_energy_distortion) * this_visible_energy;
-      }
-      if (this_visible_energy > calculator.track_threshold) {
-        visible_E += this_visible_energy;
-      }
+    // ignore particles not from nu vertex, non primary particles, and uncharged particles
+    if (!isFromNuVertex(mctruth, mct) || abs(PDGCharge(mct.PdgCode())) < 1e-4 || mct.Process() != "primary")
+       continue;
+    // account for primary lepton later
+    if (abs(mct.PdgCode()) == 13 || abs(mct.PdgCode()) == 11)
+      continue; 
+
+    double mass = PDGMass(mct.PdgCode());
+    double this_visible_energy = mct.Start().E() - mass;
+    if (calculator.track_energy_distortion > 1e-4) {
+      this_visible_energy += rand.Gaus(0, calculator.track_energy_distortion) * this_visible_energy;
+      // clamp to 0
+      this_visible_energy = std::max(this_visible_energy, 0.);
+    }
+    if (this_visible_energy > calculator.track_threshold) {
+      visible_E += this_visible_energy;
     }
   }
 
   // ...and showers
   for (auto const &mcs: mcshower_list) {
-    if (isFromNuVertex(mctruth, mcs) && abs(PDGCharge(mcs.PdgCode())) > 1e-4) {
-      double mass = PDGMass(mcs.PdgCode());
-      double this_visible_energy = mcs.Start().E() - mass;
-      if (calculator.shower_energy_distortion > 1e-4) {
-        this_visible_energy += rand.Gaus(0, calculator.shower_energy_distortion) * this_visible_energy;
-      }
-      if (this_visible_energy > calculator.shower_threshold) {
-        visible_E += this_visible_energy;
-      }
+    // ignore particles not from nu vertex, non primary particles, and uncharged particles
+    if (!isFromNuVertex(mctruth, mcs) || abs(PDGCharge(mcs.PdgCode())) < 1e-4 || mcs.Process() != "primary")
+      continue; 
+    // account for primary lepton later
+    if ((abs(mcs.PdgCode()) == 13 || abs(mcs.PdgCode()) == 11) && isFromNuVertex(mctruth, mcs))
+      continue; 
+
+    double mass = PDGMass(mcs.PdgCode());
+    double this_visible_energy = mcs.Start().E() - mass;
+    if (calculator.shower_energy_distortion > 1e-4) {
+      this_visible_energy += rand.Gaus(0, calculator.shower_energy_distortion) * this_visible_energy;
+      // clamp to 0
+      this_visible_energy = std::max(this_visible_energy, 0.);
+    }
+    if (this_visible_energy > calculator.shower_threshold) {
+      visible_E += this_visible_energy;
     }
   }
+
+  // ..and primary lepton energy
+  const simb::MCParticle& lepton = mctruth.GetNeutrino().Lepton();
+  double smearing_percentage = 0;
+  // smear with function if set
+  if (calculator.f_lepton_energy_distortion != NULL) {
+    smearing_percentage = calculator.f_lepton_energy_distortion(lepton.Momentum().Vect(), lepton.E()); 
+  }
+  // fall back to config-ed variable
+  else {
+    smearing_percentage = calculator.lepton_energy_distortion;
+  }
+  // smear visible energy
+  double lepton_visible_energy = lepton.E() - lepton.Mass(); 
+  double smeared_lepton_visible_energy = lepton_visible_energy + rand.Gaus(0, smearing_percentage) * lepton_visible_energy;
+  // clamp to 0
+  smeared_lepton_visible_energy = std::max(smeared_lepton_visible_energy, 0.);
+
+  visible_E += smeared_lepton_visible_energy; 
+
   // if lepton pdgid is set, add its mass back into the visible energy
   if (calculator.lepton_pdgid != 0) visible_E += PDGMass(calculator.lepton_pdgid);
 
