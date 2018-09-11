@@ -357,7 +357,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Initialise temp hists to store counts
             // Base
         std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
-        std::vector <TH1D*> temp_count_hists = {new TH1D("tempbase", title.c_str(), fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0])};
+        std::vector <TH1D*> temp_count_hists = {new TH1D((sample.fDet+"tempbase").c_str(), title.c_str(), fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0])};
         
             // Alt unis
         for (int u = 0; u < fNumAltUnis; u++) {
@@ -368,10 +368,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
         
             // Bkg
-        TH1D *temp_bkg_counts = new TH1D("tempbkg", "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg"_.c_str(), "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
             // Neutrinos
-        TH2D *temp_nu_counts = new TH2D("tempnu", "", fNumTrueEBins, fTrueELims[0], fTrueELims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        TH2D *temp_nu_counts = new TH2D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, fTrueELims[0], fTrueELims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;

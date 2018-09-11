@@ -184,11 +184,11 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         for (int j = 0; j < fNP; j++) {
         
             if (j == 0) {
-                if (i == 0) std::cout << "Doing i = ";
-                int tempi = i;
+                std::cout << "\r\r\r\r\r\r\r\r\r\r\r";
+                int tempi = (int)( (float)i/fNP*100 );
                 while (tempi > 0) { tempi /= 10; std::cout << "\r"; }
-                std::cout << i;
-                if (i == fNP-1) std::cout << std::endl;
+                std::cout << "Progress: " << (int)( (float)i/fNP*100 ) << "%";
+                if (i == fNP-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
             }
             
             // Set function parameters
