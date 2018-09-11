@@ -59,17 +59,17 @@ int main(int argc, char* argv[]) {
     TFile* covfile = TFile::Open((directory + "cov.root").c_str(), "recreate");
     assert(covfile && covfile->IsOpen());
     
-    cov.covmat->Write();
-    cov.fcovmat->Write();
-    cov.corrmat->Write();
+    cov.cov->Write();
+    cov.fcov->Write();
+    cov.corr->Write();
     
     // Save plots
     int savePDFs = (*config).get("SavePDFs", 0).asInt();
     if (savePDFs == 1) {
         TCanvas *canvas = new TCanvas();
-        cov.covmat->Draw("colz"); cov.covmat->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
-        cov.fcovmat->Draw("colz"); cov.fcovmat->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
-        cov.corrmat->Draw("colz"); cov.corrmat->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
+        cov.cov->Draw("colz"); cov.cov->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
+        cov.fcov->Draw("colz"); cov.fcov->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
+        cov.corr->Draw("colz"); cov.corr->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
     }
     
     // Test bkg_ and nu_ counts
