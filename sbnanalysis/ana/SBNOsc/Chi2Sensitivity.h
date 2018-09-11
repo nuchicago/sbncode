@@ -26,6 +26,7 @@ class Chi2Sensitivity {
     
         std::string fOutputDirectory;
         int fSavePDFs;
+        std::string fScaleSample;
     
 };
 
