@@ -352,7 +352,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Get relevant sample
         EventSample sample = samples[0];
         int s = 0;
-        while (sample.fDet+"_"+sample.fDesc != plot_order[o]) { s++; sample = samples[s]; }
+        while (sample.fDet+"_"+sample.fDesc != sample_order[o]) { s++; sample = samples[s]; }
         
         // Initialise temp hists to store counts
             // Base
@@ -512,13 +512,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     std::cout << std::endl << "Getting covs..." << std::endl;
     
     // Covariance and fractional covariance
-    if (do_varied_bins == 0) {
-        cov = new TH2D("cov", "Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
-        fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
-    } else {
-        cov = new TH2D("cov", "Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
-        fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
-    }
+    cov = new TH2D("cov", "Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
+    fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -538,11 +533,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Pearson Correlation Coefficients
-    if (do_varied_bins == 0) {
-        corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
-    } else {
-        corr = new TH2D("corr", "Correlation Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
-    }
+    corr = new TH2D("corr", "Correlation Matrix", num_bins, &covbins[0], num_bins, &covbins[0]);
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
             
