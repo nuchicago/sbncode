@@ -164,7 +164,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
     for (int i = 0; i < np; i++){
         for (int j = 0; j < np; j++) {
             
-	    if (j == 0) std::cout << "Doing i = " << i << std::endl;
+	    if (i%5 == 0 && j == 0) std::cout << "Doing i = " << i << std::endl;
             
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
@@ -199,7 +199,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, std::string Outputdir) {
                 
             }
             
-            if (i == 200 && j == 70) {
+            if (i == 200 && j == 0) {
                 
                 std::cout << "Comparing osc counts and normal CV counts:" << std::endl
                           << "CV ?= nosc   " << std::endl << std::endl;
