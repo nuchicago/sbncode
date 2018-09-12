@@ -22,7 +22,6 @@ class Chi2Sensitivity {
     
     private:
         
-        std::string fScaleSample;
         int fNP;
     
         std::string fOutputDirectory;
