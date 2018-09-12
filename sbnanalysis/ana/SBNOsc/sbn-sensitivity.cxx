@@ -87,7 +87,7 @@ int main(int argc, char* argv[]) {
     chi2.contour_5sigma->Write();
     
     // Save plot
-    TCanvas *contour_canvas = new TCanvas();
+    TCanvas *contour_canvas = new TCanvas("cont_canvas", "", 1020, 990);
     
     std::vector <int> colours = {30, 38, 46};
     std::vector <TGraph*> contour_graphs = {chi2.contour_90pct, chi2.contour_3sigma, chi2.contour_5sigma};
