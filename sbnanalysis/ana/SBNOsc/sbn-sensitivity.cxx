@@ -37,8 +37,6 @@ int main(int argc, char* argv[]) {
         std::string det = sample["det"].asString(),
                         desc = sample["desc"].asString();
         
-        std::cout << desc << " " << det << std::endl;
-        
         samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc));
         
     }

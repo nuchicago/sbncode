@@ -59,6 +59,9 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         // scale chi2 to this sample (for shape only fit
         fScaleSample = (*config)["Sensitivity"].get("ScaleSample", "").asString();
         
+        // Sample according to which we scale (for shape-only chi squared)
+        fScaleSample = (*config)["Sensitivity"].get("ScaleSample", "").asString();
+    
     }
     
     
@@ -174,7 +177,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     
     
     
-    
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
@@ -221,33 +223,37 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 }
                 
             }
-            // If configured to, scale all bins based on distribution found in first detector
-            // for "shape-only" chi2
+            
+            // If configured to, scale bins based on distribution in given detector for "shape-only" chi2
             if (fScaleSample.size() != 0) /* checks if configured */ {
-              int fit_sample_index = std::find(cov.sample_order.begin(), cov.sample_order.end(), fScaleSample) - cov.sample_order.begin(); 
-              // assert sample exists
-              assert(fit_sample_index != cov.sample_order.size());
-
-              // calculate scale histogram (only part with scaled sample will be used)
-              TH1D scale_histo("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
-              scale_histo.Divide(cov.CV_counts, osc_counts);
-
-              // update each value in osc_counts histogram
-              //
-              // NOTE: This assumes a diagonal transfer matrix -- we may want to change this later to do something more sophisticated
-              for (int o = 0; o < cov.sample_order.size(); o++) {
-                 for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
-                   // get the according bin in the scaled sample histogram
-                   int scale_bin = (rb - cov.sample_bins[o]) + cov.sample_bins[fit_sample_index];
-                   // scale accordingly
-                   double this_count = osc_counts->GetBinContent(1+rb);
-                   double scaled_this_count = scale_histo.GetBinContent(scale_bin) * this_count;
-                   osc_counts->SetBinContent(1+rb, scaled_this_count);
-                 }
-              }
+                
+                int fit_sample_index = std::find(cov.sample_order.begin(), cov.sample_order.end(), fScaleSample) - cov.sample_order.begin(); 
+                assert(fit_sample_index != cov.sample_order.size());
+                
+                // Histogram of scale factors (only part with scaled sample will be used)
+                TH1D *scale_hist = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
+                scale_hist->Divide(cov.CV_counts, osc_counts);
+                
+                // Update each value in osc_counts histogram
+                //
+                // NOTE: This assumes a diagonal transfer matrix -- we may want to change this later to do something more sophisticated
+                for (int o = 0; o < cov.sample_order.size(); o++) {
+                    for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
+                        
+                        // Get corresponding bin in the scaled sample histogram
+                        int scale_bin = (rb - cov.sample_bins[o]) + cov.sample_bins[fit_sample_index];
+                        
+                        // Scale accordingly
+                        double this_count = osc_counts->GetBinContent(1+rb);
+                        double scaled_this_count = scale_hist->GetBinContent(1+scale_bin) * this_count;
+                        osc_counts->SetBinContent(1+rb, scaled_this_count);
+                        
+                    }
+                }
+                
+                scale_hist->Delete();
+                
             }
-
-
 	    
             // Calculate chisq
             for (int k = 0; k < cov.CV_counts->GetNbinsX(); k++) {
