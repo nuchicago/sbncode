@@ -229,8 +229,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 assert(fit_sample_index != cov.sample_order.size());
                 
                 // Histogram of scale factors (only part with scaled sample will be used)
-                TH1D scale_histo("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
-                scale_histo.Divide(cov.CV_counts, osc_counts);
+                TH1D *scale_hist = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
+                scale_hist->Divide(cov.CV_counts, osc_counts);
                 
                 // Update each value in osc_counts histogram
                 for (int o = 0; o < cov.sample_order.size(); o++) {
@@ -241,13 +241,13 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                         
                         // Scale accordingly
                         double this_count = osc_counts->GetBinContent(1+rb);
-                        double scaled_this_count = scale_histo.GetBinContent(scale_bin) * this_count;
+                        double scaled_this_count = scale_hist->GetBinContent(1+scale_bin) * this_count;
                         osc_counts->SetBinContent(1+rb, scaled_this_count);
                         
                     }
                 }
                 
-                scale_histo.Delete();
+                scale_hist->Delete();
                 
             }
 	    
