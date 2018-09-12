@@ -10,7 +10,6 @@
 #include <TCanvas.h>
 #include <TGraph2D.h>
 
-
 namespace ana {
   namespace SBNOsc {
 

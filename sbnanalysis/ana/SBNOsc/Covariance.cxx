@@ -16,6 +16,7 @@
 #include <TFile.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <THStack.h>
 #include <TROOT.h>
 // #include <TTree.h>
 #include <TCanvas.h>
@@ -378,17 +379,17 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         //
         // For pretty plot (temp - while our sample doesn't grow)
         Double_t pretty_bins[] = { 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0 };
-        Int_t n_pretty_bins = sizeof(pretty_bins)/sizeof(Double_t) - 1;
+        Int_t num_pretty_bins = sizeof(pretty_bins)/sizeof(Double_t) - 1;
         
         std::string spaces = "";
         if (sample.fDet == "MicroBooNE") spaces = " ";
         if (sample.fDet == "ICARUS") spaces = "  ";
         
-        std::vector <TH1D*> pretty_basecounts = {new TH1D(("NC"+spaces).c_str(), ""; num_pretty_bins, pretty_bins), new TH1D((sample.fDet+"CC").c_str(), ""; num_pretty_bins, pretty_bins)};
-        pretty_basecounts[0]->SetFillColor(30); pretty_basecounts[0]->SetLineColour(30);
-        pretty_basecounts[1]->SetFillColor(38); pretty_basecounts[1]->SetLineColour(38);
+        std::vector <TH1D*> pretty_basecounts = {new TH1D(("NC"+spaces).c_str(), "", num_pretty_bins, pretty_bins), new TH1D((sample.fDet+"CC").c_str(), "", num_pretty_bins, pretty_bins)};
+        pretty_basecounts[0]->SetFillColor(30); pretty_basecounts[0]->SetLineColor(30);
+        pretty_basecounts[1]->SetFillColor(38); pretty_basecounts[1]->SetLineColor(38);
         
-        THStack *pretty_stack = new THStack((sample.fDet+"pretty_stack").c_str(); title.c_str());
+        THStack *pretty_stack = new THStack((sample.fDet+"pretty_stack").c_str(), title.c_str());
         //
         //
         //
@@ -482,7 +483,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // TEMP
         //
         //
-        pretty_basecounts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
+        for (int pi = 0; pi < 2; pi++) {
+            pretty_basecounts[pi]->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
+        }
         //
         //
         //
@@ -536,10 +539,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                     // TEMP
                     //
                     //
-                    for (ind pi = 0; pi < 2; pi++) {
-                        double binwidth = pretty_basecounts[p]->GetBinWidth(b+1),
-                            bincontent = pretty_basecounts[p]->GetBinContent(b+1);
-                        pretty_basecounts[p]->SetBinContent(b+1, bincontent/binwidth);
+                    for (int pi = 0; pi < 2; pi++) {
+                        double binwidth = pretty_basecounts[pi]->GetBinWidth(b+1),
+                            bincontent = pretty_basecounts[pi]->GetBinContent(b+1);
+                        pretty_basecounts[pi]->SetBinContent(b+1, bincontent/binwidth);
                     }
                     //
                     //
@@ -563,12 +566,11 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // TEMP
         //
         //
-        for (ind pi = 0; pi < 2; pi++) {
-            pretty_basecounts[p]->SetStats(kFALSE);
-            pretty_stack->Add(pretty_basecounts[p]);
+        for (int pi = 0; pi < 2; pi++) {
+            pretty_basecounts[pi]->SetStats(kFALSE);
+            pretty_stack->Add(pretty_basecounts[pi]);
         }
         
-        pretty_stack->SetStats(kFALSE);
         pretty_stack->Draw("hist");
         //
         //
