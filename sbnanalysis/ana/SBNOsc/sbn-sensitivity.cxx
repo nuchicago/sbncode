@@ -96,6 +96,8 @@ int main(int argc, char* argv[]) {
     chi2.contour_3sigma->Write();
     chi2.contour_5sigma->Write();
     
+    chi2.chisqplot->Write();
+    
     // Plot chi squareds
     TCanvas *chisqcanvas = new TCanvas();
     
@@ -153,20 +155,6 @@ int main(int argc, char* argv[]) {
     gr_bestfit->Draw("P same");
     
     if (savePDFs == 1) contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
-    
-    // Save as .root
-    TFile* contourfile = TFile::Open((directory + "contours.root").c_str(), "recreate");
-    assert(contourfile && contourfile->IsOpen());
-    
-    TGraph *contour_90pct = contour_graphs[0], 
-          *contour_3sigma = contour_graphs[1],
-          *contour_5sigma = contour_graphs[2];
-    contour_90pct->Write();
-    contour_3sigma->Write();
-    contour_5sigma->Write();
-    
-    chi2.chisqplot->Write();
-    
     
     
     return 0;
