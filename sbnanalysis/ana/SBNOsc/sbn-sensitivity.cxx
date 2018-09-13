@@ -96,7 +96,15 @@ int main(int argc, char* argv[]) {
     chi2.contour_3sigma->Write();
     chi2.contour_5sigma->Write();
     
-    // Save plot
+    // Plot chi squareds
+    TCanvas *chisqcanvas = new TCanvas();
+    
+    chi2.chisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
+    gStyle->SetPalette(1);
+    chisqplot->Draw("surf1");
+    if (fSavePDFs == 1) chisqcanvas->SaveAs((fOutputDirectory + "chisq.pdf").c_str());
+    
+    // Plot contours
     TCanvas *contour_canvas = new TCanvas("cont_canvas", "", 1020, 990);
     
     std::vector <int> colours = {30, 38, 46};
@@ -144,7 +152,9 @@ int main(int argc, char* argv[]) {
     legend->Draw();
     gr_bestfit->Draw("P same");
     
-        // as .root
+    if (savePDFs == 1) contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
+    
+    // Save as .root
     TFile* contourfile = TFile::Open((directory + "contours.root").c_str(), "recreate");
     assert(contourfile && contourfile->IsOpen());
     
@@ -155,8 +165,8 @@ int main(int argc, char* argv[]) {
     contour_3sigma->Write();
     contour_5sigma->Write();
     
-        // as .pdf
-    if (savePDFs == 1) contour_canvas->SaveAs((directory + "Sensitivity.pdf").c_str());
+    chisqplot->Write();
+    
     
     
     return 0;

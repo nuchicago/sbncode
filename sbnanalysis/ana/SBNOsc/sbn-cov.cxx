@@ -10,8 +10,10 @@
 #include <string>
 #include <vector>
 #include "Covariance.h"
+
 #include <TFile.h>
 #include <TCanvas.h>
+#include <TStyle.h>
 
 int main(int argc, char* argv[]) {
     
