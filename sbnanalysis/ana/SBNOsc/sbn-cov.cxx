@@ -54,6 +54,11 @@ int main(int argc, char* argv[]) {
     cov.cov->Write();
     cov.fcov->Write();
     cov.corr->Write();
+    // also save counts
+    cov.bkg_counts->Write();
+    cov.nu_counts->Write();
+    cov.CV_counts->Write();
+
     
     int savePDFs = (*config).get("SavePDFs", 0).asInt();
     if (savePDFs == 1) {

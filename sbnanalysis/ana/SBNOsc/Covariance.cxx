@@ -458,7 +458,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             }
             
             std::string label = sample.fDet + " " + sample.fDesc;
-            count_hists[h]->GetXaxis()->SetBinLabel((sample_bins[o]+sample_bins[o+1])/2, label.c_str());
+            //count_hists[h]->GetXaxis()->SetBinLabel((sample_bins[o]+sample_bins[o+1])/2, label.c_str());
             
         }
         

@@ -231,7 +231,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 assert(fit_sample_index != cov.sample_order.size());
                 
                 // Histogram of scale factors (only part with scaled sample will be used)
-                TH1D *scale_hist = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
+                TH1D *scale_hist = new TH1D("scale-temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
                 scale_hist->Divide(cov.CV_counts, osc_counts);
                 
                 // Update each value in osc_counts histogram
