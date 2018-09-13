@@ -110,7 +110,40 @@ double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector
     // one contained -- have to find intersection point (which must exist) 
     if (n_contained == 1) {
       auto intersections = algo.Intersection(line, box);
-      assert(intersections.size() == 1); // must have one intersection
+      // Because of floating point errors, it can sometimes happen
+      // that there is 1 contained point but no "Intersections"
+      // if one of the points is right on the edge
+      if (intersections.size() == 0) {
+        // determine which point is on the edge
+        double tol = 1e-5;
+        bool p0_edge = algo.SqDist(p0, box) < tol;
+        bool p1_edge = algo.SqDist(p1, box) < tol;
+        assert(p0_edge || p1_edge);
+        // contained one is on edge -- can treat both as not contained
+        //
+        // In this case, no length
+        if ((p0_edge && box.Contain(p0)) || (box.Contain(p1) && p1_edge))
+          continue;
+        // un-contaned one is on edge -- treat both as contained
+        else if ((p0_edge && box.Contain(p1)) || (box.Contain(p0) && p1_edge)) {
+	  length = (v1 - v0).Mag();
+	  break;
+        }
+        else {
+          assert(false); // bad
+        }
+      }
+      // floating point errors can also falsely cause 2 intersection points
+      //
+      // in this case, one of the intersections must be very close to the 
+      // "contained" point, so the total contained length will be about
+      // the same as the distance between the two intersection points
+      else if (intersections.size() == 2) {
+        length += (intersections.at(0).ToTLorentzVector().Vect() - intersections.at(1).ToTLorentzVector().Vect()).Mag();
+        continue;
+      }
+      else if (intersections.size() != 1)  assert(false); // bad
+      
       // get TVector at intersection point
       TVector3 int_tv(intersections.at(0).ToTLorentzVector().Vect());
       length += ( box.Contain(p0) ? (v0 - int_tv).Mag() : (v1 - int_tv).Mag() ); 
