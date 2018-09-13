@@ -42,7 +42,7 @@ def main(args):
 
         mat.Draw("colz")
         mat.SetStats(False)
-        covcanvas.SaveAs(args.outdir + "cov_plot.pdf")
+        covcanvas.SaveAs(args.outdir + matname + "_plot.pdf")
 
 
     # Chi squareds
@@ -67,7 +67,7 @@ def main(args):
                 chi2file.Get('3sigma'), 
                 chi2file.Get('5sigma')]
     
-    for g in range(len(contour_graphs)):
+    for g in range(len(contours)):
         
         contours[g].SetMarkerStyle(20)
         contours[g].SetMarkerSize(0.25)

@@ -43,7 +43,7 @@
         
         "EnergyType": "Reco",
         
-        "SelectionEfficiency": 1,
+        "SelectionEfficiency": 0.8,
         "RejectionEfficiency": 0,
         
         "BinDefs": {
