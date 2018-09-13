@@ -8,16 +8,29 @@
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 import ROOT
-from ROOT import TFile, TCanvas, TH2D, TH1D, TGraph, TGraph2D, TStyle, TLegend
+from ROOT import TFile, TCanvas, TH2D, TH1D, TGraph, TGraph2D, TStyle, TLegend, THStack, TPad
 import argparse
 import os
+import numpy
 
 
 ## Main function
 ## ~~~~~~~~~~~~~
 
 def main(args):
-
+    
+    
+    # Count plots
+    
+#    countfile = TFile(args.cntfile)
+#    
+#    numu = countfile.Get('numu_counts')
+#    numu_nkg = countfile.Get('numu_bkgs')
+#    
+#    numu_canvas = TCanvas("numu_canvas", "", 1600, 550)
+#    numu_canvas.Divide(, 1);
+    
+    
     # Covariance, fractional covariance and correlation
 
     covfile = TFile(args.covfile)
@@ -57,6 +70,7 @@ def main(args):
     gStyle.SetPalette(1)
     chi2.Draw('surf1')
     chi2canvas.SaveAs(args.outdir + "chisq.pdf")
+    
     
     # Contours
     contcanvas = TCanvas('cont_canvas', '', 1020, 990)
@@ -109,13 +123,46 @@ def main(args):
     
     contcanvas.SaveAs(args.outdir+'Sensitivity.pdf')
     
-
+    
 
 def compare_w_proposal(args):
     
-    pass
-    ## nothing...
+    propcontours = []
+    contournames = ['90pct', '3s', '5s']
+    contourtitles = ['90% Confidence Level', '3$\\sigma$ Confidence Level', '5$\\sigma$ Confidence Level']
+    
+    for i in range(len(contours)):
 
+        x, y = np.loadtxt('numu_'+contournames[i]+'.txt', unpack = True, delimiter = ',', skiprows = 1)
+        propcontours.append(TGraph2D())
+        for j in range(len(x)):
+            propcontours[i].SetPoint(j, x[j], y[j])
+
+        tempcanvas = TCanvas()
+
+        templegend = TLegend()
+        legend.AddEntry(contours[i], 'Our contour', 'l')
+        legend.AddEntry(propcontours[1], 'From proposal', 'l')
+        legend.AddEntry(bestfit, 'Best Fit Point', 'p')
+
+        tempcanvas.SetLogy()
+        tempcanvas.SetLogx()
+
+        gr_range.SetTitle(contourtitles[i]+' Comparison; sin^{2}(2#theta); #Delta m^{2} (eV^{2})')
+
+        gr_range.Draw('AP')
+        gr_range.GetXaxis().SetRangeUser(0.001, 1)
+        gr_range.GetYaxis().SetRangeUser(0.01, 100)
+
+        contours[i].Draw('P same')
+        propcontours[i].Draw('P same')
+
+        templegend.Draw()
+        bestfit.Draw('P same')
+
+        tempcanvas.SaveAs(args.outdir+contournames+'_comparison.pdf')
+    
+    
 
 if __name__ == "__main__":
     
@@ -130,6 +177,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-chi", "--chifile", required = True)
     parser.add_argument("-cov", "--covfile", required = True)
+#    parser.add_argument("-cts", "--cntfile", required = True)
     parser.add_argument("-o", "--outdir", required = True)
     parser.add_argument("-comp", "--compare", default = False)
 

@@ -61,6 +61,9 @@ class Covariance {
         std::vector <std::string> sample_order; // Description of samples, in order they were plotted.
         std::vector <int> sample_bins;          // Bin limits of samples.
     
+        std::vector <TH1D*> numu_counts, 
+            numu_bkgs, nue_counts, nue_bkgs;    // For plotting pretty histograms
+    
     private:
     
         std::string fWeightKey;
