@@ -29,6 +29,9 @@ def main(args):
 #    
 #    numu_canvas = TCanvas("numu_canvas", "", 1600, 550)
 #    numu_canvas.Divide(, 1);
+
+    ### Later might come in handy: to loop through objects in TFile: 
+    # [key.GetName() for key in file.GetListOfKeys()]
     
     
     # Covariance, fractional covariance and correlation
