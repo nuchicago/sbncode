@@ -49,7 +49,7 @@ def main(args):
     
     chi2file = TFile(args.chifile)
     
-    chi2 = chi2file.Get('chisqplot')
+    chi2 = chi2file.Get('chisq')
     
     chi2canvas = TCanvas()
     
@@ -63,9 +63,9 @@ def main(args):
     gStyle.SetPadLeftMargin(0.15); gStyle.SetPadRightMargin(0.15)
     
     colours = [30, 38, 46]
-    contours = [chi2file.Get('contour_90pct'), 
-                chi2file.Get('chi2.contour_3sigma'), 
-                chi2file.Get('chi2.contour_5sigma')]
+    contours = [chi2file.Get('90pct'), 
+                chi2file.Get('3sigma'), 
+                chi2file.Get('5sigma')]
     
     for g in range(len(contour_graphs)):
         

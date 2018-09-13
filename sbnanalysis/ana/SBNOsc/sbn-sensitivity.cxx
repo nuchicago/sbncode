@@ -92,11 +92,11 @@ int main(int argc, char* argv[]) {
     TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
     assert(chi2file && chi2file->IsOpen());
     
-    chi2.contour_90pct->Write();
-    chi2.contour_3sigma->Write();
-    chi2.contour_5sigma->Write();
+    chi2.contour_90pct->SetName("90pct"); chi2.contour_90pct->Write();
+    chi2.contour_3sigma->SetName("3sigma"); chi2.contour_3sigma->Write();
+    chi2.contour_5sigma->SetName("5sigma"); chi2.contour_5sigma->Write();
     
-    chi2.chisqplot->Write();
+    chi2.chisqplot->SetName("chisq"); chi2.chisqplot->Write();
     
     // Plot chi squareds
     TCanvas *chisqcanvas = new TCanvas();
