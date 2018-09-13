@@ -22,7 +22,7 @@ class Chi2Sensitivity {
         Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName);
         Chi2Sensitivity(Covariance cov, char *configFileName);
         
-        TGraph2D
+        TGraph2D chisqplot;
         TGraph *contour_90pct, *contour_3sigma, *contour_5sigma;
     
     private:
