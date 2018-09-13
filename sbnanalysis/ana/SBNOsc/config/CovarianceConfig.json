@@ -39,7 +39,7 @@
     "Covariance": {
     
         "NumAltUnis": 100,
-        "WeightKey": "Flux",
+        "WeightKey": "GetWeights",
         
         "EnergyType": "Reco",
         
@@ -53,8 +53,8 @@
         
         },
         
-        "TrueELims": [ 0.0, 5.0 ],
-        "NumTrueEBins": 50,
+        "TrueELims": [ 0.0, 7.0 ],
+        "NumTrueEBins": 140,
         
         "ScaleTargets": {
             
