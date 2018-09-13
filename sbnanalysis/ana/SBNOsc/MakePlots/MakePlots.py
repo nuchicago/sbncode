@@ -7,9 +7,11 @@
 #
 ## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+import ROOT
 from ROOT import TFile, TCanvas, TH2D, TH1D, TGraph, TGraph2D, TStyle, TLegend
 import argparse
+import os
+
 
 ## Main function
 ## ~~~~~~~~~~~~~
@@ -22,7 +24,7 @@ def main(args):
 
     covcanvas = TCanvas()
 
-    gStyle = TSyle()
+    gStyle = TStyle()
     gStyle.SetPadLeftMargin(0.25); gStyle.SetPadRightMargin(0.15)
     gStyle.SetPalette(56)
 
@@ -39,7 +41,7 @@ def main(args):
         if matname == 'corr': mat.GetZaxis().SetRangeUser(-0.4, 1)
 
         mat.Draw("colz")
-        mat.SetStats(kFALSE)
+        mat.SetStats(False)
         covcanvas.SaveAs(args.outdir + "cov_plot.pdf")
 
 
@@ -47,12 +49,12 @@ def main(args):
     
     chi2file = TFile(args.chifile)
     
-    chi2 = chi2file.Get('chi2')
+    chi2 = chi2file.Get('chisqplot')
     
     chi2canvas = TCanvas()
     
     chi2.SetTitle('#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}');
-    gStyle->SetPalette(1)
+    gStyle.SetPalette(1)
     chi2.Draw('surf1')
     chi2canvas.SaveAs(args.outdir + "chisq.pdf")
     
@@ -111,7 +113,8 @@ def main(args):
 
 def compare_w_proposal(args):
     
-    
+    pass
+    ## nothing...
 
 
 if __name__ == "__main__":
