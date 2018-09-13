@@ -473,7 +473,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         
         // Add numu and nue hists to vectors
-        int detind = dets.find(sample.fDet);
+        int detind = std::find(dets.begin(), dets.end(), sample.fDet) - dets.begin();
         if (sample.fDesc == "#nu_{#mu}" ) {
             
             numu_bkg[detind] = temp_bkg_counts;
