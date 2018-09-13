@@ -214,15 +214,7 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
 
   // ..and primary lepton energy
   const simb::MCParticle& lepton = mctruth.GetNeutrino().Lepton();
-  double smearing_percentage = 0;
-  // smear with function if set
-  if (calculator.f_lepton_energy_distortion != NULL) {
-    smearing_percentage = calculator.f_lepton_energy_distortion(lepton.Momentum().Vect(), lepton.E()); 
-  }
-  // fall back to config-ed variable
-  else {
-    smearing_percentage = calculator.lepton_energy_distortion;
-  }
+  double smearing_percentage = calculator.lepton_energy_distortion;
   // smear visible energy
   double lepton_visible_energy = lepton.E() - lepton.Mass();
   double smeared_lepton_visible_energy = lepton_visible_energy + rand.Gaus(0, smearing_percentage) * lepton_visible_energy;
