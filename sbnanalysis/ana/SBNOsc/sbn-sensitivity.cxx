@@ -67,15 +67,15 @@ int main(int argc, char* argv[]) {
     if (savePDFs == 1) {
         
         TCanvas *canvas = new TCanvas();
-        gStyle->SetPadLeftMargin(0.01); gStyle->SetPadRightMargin(0.01);
+        gStyle->SetPadLeftMargin(0.15); gStyle->SetPadRightMargin(0.15);
         
-        cov.cov->GetYaxis()->SetLabelSize(18); cov.cov->GetXaxis()->SetLabelSize(18);
+        cov.cov->GetYaxis()->SetLabelSize(0.07); cov.cov->GetXaxis()->SetLabelSize(0.07);
         cov.cov->Draw("colz"); cov.cov->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
         
-        cov.fcov->GetYaxis()->SetLabelSize(18); cov.fcov->GetXaxis()->SetLabelSize(18);
+        cov.fcov->GetYaxis()->SetLabelSize(0.07); cov.fcov->GetXaxis()->SetLabelSize(0.07);
         cov.fcov->Draw("colz"); cov.fcov->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
         
-        cov.corr->GetYaxis()->SetLabelSize(18); cov.corr->GetXaxis()->SetLabelSize(18);
+        cov.corr->GetYaxis()->SetLabelSize(0.07); cov.corr->GetXaxis()->SetLabelSize(0.07);
         cov.corr->Draw("colz"); cov.corr->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
         
     }
@@ -101,8 +101,8 @@ int main(int argc, char* argv[]) {
     
     chi2.chisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
     gStyle->SetPalette(1);
-    chisqplot->Draw("surf1");
-    if (fSavePDFs == 1) chisqcanvas->SaveAs((fOutputDirectory + "chisq.pdf").c_str());
+    chi2.chisqplot->Draw("surf1");
+    if (savePDFs == 1) chisqcanvas->SaveAs((directory + "chisq.pdf").c_str());
     
     // Plot contours
     TCanvas *contour_canvas = new TCanvas("cont_canvas", "", 1020, 990);
@@ -165,7 +165,7 @@ int main(int argc, char* argv[]) {
     contour_3sigma->Write();
     contour_5sigma->Write();
     
-    chisqplot->Write();
+    chi2.chisqplot->Write();
     
     
     

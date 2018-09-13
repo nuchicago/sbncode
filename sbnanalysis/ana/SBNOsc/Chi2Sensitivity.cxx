@@ -286,7 +286,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     chisqplot = new TGraph2D();
     for (int i = 0; i < fNP; i++) {
         for (int j = 0; j < fNP; j++) {
-            logchisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
+            chisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
         }
     }
     
