@@ -91,7 +91,8 @@ protected:
     double trackVisibleEnergyThreshold; //!< Energy threshold for track to be acounted in visible energy calculation [GeV].
     double showerEnergyDistortion; //!< Energy distortion of showers for visible energy calculation (%).
     double trackEnergyDistortion; //!< Energy distortion of tracks for visible energy calculation (%).
-    double leptonEnergyDistortion; //<! Energy distortion of lepton (primary track) for visible energy calculation (%).
+    double leptonEnergyDistortionContained; //<! Energy distortion of lepton (primary track) for visible energy calculation (%).
+    double leptonEnergyDistortionLeaving; //<! Energy distortion of lepton (primary track) for visible energy calculation (%).
   };
 
   /** Histograms made for output */
