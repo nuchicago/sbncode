@@ -15,6 +15,7 @@
 #include <TCanvas.h>
 #include <TGraph.h>
 #include <TLegend.h>
+#include <TStyle.h>
 
 int main(int argc, char* argv[]) {
 
@@ -64,10 +65,19 @@ int main(int argc, char* argv[]) {
     // Save plots
     int savePDFs = (*config).get("SavePDFs", 0).asInt();
     if (savePDFs == 1) {
+        
         TCanvas *canvas = new TCanvas();
+        gStyle->SetPadLeftMargin(0.01); gStyle->SetPadRightMargin(0.01);
+        
+        cov.cov->GetYaxis()->SetLabelSize(18); cov.cov->GetXaxis()->SetLabelSize(18);
         cov.cov->Draw("colz"); cov.cov->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
+        
+        cov.fcov->GetYaxis()->SetLabelSize(18); cov.fcov->GetXaxis()->SetLabelSize(18);
         cov.fcov->Draw("colz"); cov.fcov->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
+        
+        cov.corr->GetYaxis()->SetLabelSize(18); cov.corr->GetXaxis()->SetLabelSize(18);
         cov.corr->Draw("colz"); cov.corr->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
+        
     }
     
     
@@ -112,7 +122,7 @@ int main(int argc, char* argv[]) {
     gr_bestfit->SetMarkerSize(1.6);
     gr_bestfit->SetMarkerColor(40);
     
-    range->SetTitle("SBN Sensitivity (Reconstructed Energy); sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
+    range->SetTitle("SBN Sensitivity; sin^{2}(2#theta); #Delta m^{2} (eV^{2})");
     
     TLegend *legend = new TLegend();
     legend->AddEntry(contour_graphs[0], "90% CL", "l");
