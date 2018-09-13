@@ -77,7 +77,7 @@ class Covariance {
         
         std::map <std::string, float> fScaleTargets;
         
-        std::string fPreTitle, fOutputDirectory;
+        std::string fOutputDirectory;
         int fSavePDFs;
         
         

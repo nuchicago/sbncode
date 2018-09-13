@@ -241,7 +241,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         // Weight and universe stuff
         fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
-        if (fWeightKey == "GetWeights") {
+        if (fWeightKey == "GetWeights" || fWeightKey == "Flux" || fWeightKey == "Cross-Section") {
             fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
         } else {
             Event *tempev = new Event;
@@ -285,9 +285,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         for (std::string det : dets) {
             fScaleTargets.insert({det, (*config)["Covariance"]["ScaleTargets"].get(det, -1).asFloat()});
         }
-        
-        // Pre-title
-        fPreTitle = (*config)["Covariance"].get("PreTitle", "").asString();
         
         // more documentation is at: https://open-source-parsers.github.io/jsoncpp-docs/doxygen/index.html#_example
     
@@ -453,6 +450,18 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 std::vector <double> uweights;
                 if (fWeightKey == "GetWeights") {
                     uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
+                } else if (fWeightKey == "Flux") {
+                    std::map <std::string, std::vector<double> > tempweights;
+                    for (auto it : event->truth[truth_ind].weights) {
+                        if (it.first.find("genie") > it.first.size()) tempweights.insert(it);
+                    }
+                    uweights = get_uni_weights(tempweights, fNumAltUnis);
+                } else if (fWeightKey == "Cross-Section") {
+                    std::map <std::string, std::vector<double> > tempweights;
+                    for (auto it : event->truth[truth_ind].weights) {
+                        if (it.first.find("genie") <= it.first.size()) tempweights.insert(it);
+                    }
+                    uweights = get_uni_weights(tempweights, fNumAltUnis);
                 } else {
                     uweights = event->truth[truth_ind].weights[fWeightKey];
                 }
@@ -597,9 +606,12 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "Getting covs..." << std::endl;
     
+    std::string pre_title = "";
+    if (fWeightKey != "GetWeights") pre_title = fWeightKey + " ";
+    
     // Covariance and fractional covariance
-    cov = new TH2D("cov", (fPreTitle+" Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
-    fcov = new TH2D("fcov", ("Fractional "+fPreTitle+" Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    cov = new TH2D("cov", (pre_title+"Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    fcov = new TH2D("fcov", ("Fractional "+pre_title+"Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -619,7 +631,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Pearson Correlation Coefficients
-    corr = new TH2D("corr", (fPreTitle+" Correlation Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    corr = new TH2D("corr", (pre_title+"Correlation Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {

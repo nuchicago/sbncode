@@ -67,15 +67,15 @@ int main(int argc, char* argv[]) {
     if (savePDFs == 1) {
         
         TCanvas *canvas = new TCanvas();
-        gStyle->SetPadLeftMargin(0.15); gStyle->SetPadRightMargin(0.15);
+        // gStyle->SetPadLeftMargin(0.25); gStyle->SetPadRightMargin(0.15);
         
-        cov.cov->GetYaxis()->SetLabelSize(0.07); cov.cov->GetXaxis()->SetLabelSize(0.07);
+        cov.cov->GetYaxis()->SetLabelSize(0.06); cov.cov->GetXaxis()->SetLabelSize(0.06);
         cov.cov->Draw("colz"); cov.cov->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
         
-        cov.fcov->GetYaxis()->SetLabelSize(0.07); cov.fcov->GetXaxis()->SetLabelSize(0.07);
+        cov.fcov->GetYaxis()->SetLabelSize(0.06); cov.fcov->GetXaxis()->SetLabelSize(0.06);
         cov.fcov->Draw("colz"); cov.fcov->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
         
-        cov.corr->GetYaxis()->SetLabelSize(0.07); cov.corr->GetXaxis()->SetLabelSize(0.07);
+        cov.corr->GetYaxis()->SetLabelSize(0.06); cov.corr->GetXaxis()->SetLabelSize(0.06);
         cov.corr->Draw("colz"); cov.corr->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
         
     }
@@ -105,7 +105,7 @@ int main(int argc, char* argv[]) {
     if (savePDFs == 1) chisqcanvas->SaveAs((directory + "chisq.pdf").c_str());
     
     // Plot contours
-    TCanvas *contour_canvas = new TCanvas("cont_canvas", "", 1020, 990);
+    TCanvas *contour_canvas = new TCanvas(); //"cont_canvas", "", 1020, 990);
     
     std::vector <int> colours = {30, 38, 46};
     std::vector <TGraph*> contour_graphs = {chi2.contour_90pct, chi2.contour_3sigma, chi2.contour_5sigma};
