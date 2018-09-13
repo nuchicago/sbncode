@@ -58,6 +58,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.trackVisibleEnergyThreshold = (*config)["NumuSelection"].get("trackVisibleEnergyThreshold", 0.).asDouble();
     _config.showerEnergyDistortion = (*config)["NumuSelection"].get("showerEnergyDistortion", 0.).asDouble();
     _config.trackEnergyDistortion = (*config)["NumuSelection"].get("trackEnergyDistortion", 0.).asDouble();
+    _config.leptonEnergyDistortion = (*config)["NumuSelection"].get("leptonEnergyDistortion", 0.).asDouble();
     _config.acceptShakyTracks = (*config)["NumuSelection"].get("acceptShakyTracks", false).asBool();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
@@ -154,6 +155,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     calculator.track_threshold =  _config.trackVisibleEnergyThreshold;
     calculator.shower_energy_distortion = _config.showerEnergyDistortion;
     calculator.track_energy_distortion = _config.trackEnergyDistortion;
+    calculator.lepton_energy_distortion = _config.leptonEnergyDistortion;
     double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator);
 
     Event::RecoInteraction reco_interaction(interaction, i);
@@ -227,6 +229,8 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
       pos = track[i].Position();
     }
   }
+  // Some MC (Icarus) seem to generate FV tracks w/out trajectory points,
+  // so optionally we can still accept them
   else if (_config.acceptShakyTracks) {
     std::cerr << "WARNING: TRACK WITH NO POINTS" << std::endl;
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.fiducial_volumes);
