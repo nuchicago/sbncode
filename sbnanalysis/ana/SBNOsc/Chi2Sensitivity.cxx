@@ -10,7 +10,6 @@
 #include <TCanvas.h>
 #include <TGraph2D.h>
 
-
 namespace ana {
   namespace SBNOsc {
 
@@ -189,7 +188,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         
             if (j == 0) {
                 std::cout << "\r\r\r\r\r\r\r\r\r\r\r";
-                int tempi = (int)( (float)i/fNP*100 );
+                int tempi = (int)( (float)(i-1)/fNP*100 );
                 while (tempi > 0) { tempi /= 10; std::cout << "\r"; }
                 std::cout << "Progress: " << (int)( (float)i/fNP*100 ) << "%";
                 if (i == fNP-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
@@ -285,7 +284,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     double timechi = tickschi / (double) CLOCKS_PER_SEC;     // make into secs
     
     std::cout << "   Done in " << timechi << "s. " << std::endl;
-    std::cout << "   Min chisq = " << minchisq << std::endl;
     
     
     // Plot
@@ -384,8 +382,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     
     std::cout << "   Done in " << timecont << "s." << std::endl;
     
-    std::cout << "sin contour sizes: " << sin_contour[0].size() << ", " << sin_contour[1].size() << ", " << sin_contour[2].size() << std::endl;
-    std::cout << "dm2 contour sizes: " << dm2_contour[0].size() << ", " << dm2_contour[1].size() << ", " << dm2_contour[2].size() << std::endl;
+    //std::cout << "sin contour sizes: " << sin_contour[0].size() << ", " << sin_contour[1].size() << ", " << sin_contour[2].size() << std::endl;
+    //std::cout << "dm2 contour sizes: " << dm2_contour[0].size() << ", " << dm2_contour[1].size() << ", " << dm2_contour[2].size() << std::endl;
     
     // Create TGraphs
     std::vector <TGraph*> graphs;
