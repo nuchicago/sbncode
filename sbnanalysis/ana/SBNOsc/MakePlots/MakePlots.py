@@ -136,7 +136,10 @@ def compare_w_proposal(args):
     
     for i in range(len(contours)):
 
-        x, y = np.loadtxt('numu_'+contournames[i]+'.txt', unpack = True, delimiter = ',', skiprows = 1)
+        with open('numu_'+contournames[i]+'.txt') as f:
+            for line in f:
+                x.append(line.split(', '))
+                y.append(line.split(', '))
         propcontours.append(TGraph2D())
         for j in range(len(x)):
             propcontours[i].SetPoint(j, x[j], y[j])
@@ -189,6 +192,10 @@ if __name__ == "__main__":
     if parser.parse_args().compare: compare_w_proposal(parser_parse_args())
 
 
+        
+        with open('filename') as f:
+            for line in f:
+                data = [float(x) for x in line.split(",")]
 
 
 
