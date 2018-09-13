@@ -286,6 +286,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             fScaleTargets.insert({det, (*config)["Covariance"]["ScaleTargets"].get(det, -1).asFloat()});
         }
         
+        // Pre-title
+        fPreTitle = (*config)["Covariance"].get("PreTitle", "").asString();
         
         // more documentation is at: https://open-source-parsers.github.io/jsoncpp-docs/doxygen/index.html#_example
     
@@ -596,8 +598,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     std::cout << std::endl << "Getting covs..." << std::endl;
     
     // Covariance and fractional covariance
-    cov = new TH2D("cov", "Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
-    fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    cov = new TH2D("cov", (fPreTitle+" Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    fcov = new TH2D("fcov", ("Fractional "+fPreTitle+" Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -617,7 +619,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Pearson Correlation Coefficients
-    corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    corr = new TH2D("corr", (fPreTitle+" Correlation Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {

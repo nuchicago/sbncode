@@ -286,21 +286,13 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     std::cout << "   Done in " << timechi << "s. " << std::endl;
     
     
-    // Plot
-    TCanvas *chisqcanvas = new TCanvas();
-    
-    TGraph2D *logchisqplot = new TGraph2D();
+    // Save for output
+    chisqplot = new TGraph2D();
     for (int i = 0; i < fNP; i++) {
         for (int j = 0; j < fNP; j++) {
             logchisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
         }
     }
-    
-    logchisqplot->SetTitle("#chi^{2}; log_{10}(sin^{2}(2#theta)); log_{10}(#Delta m^{2}); #chi^{2}");
-    //gStyle->SetPalette(1);
-    logchisqplot->Draw("surf1");
-    if (fSavePDFs == 1) chisqcanvas->SaveAs((fOutputDirectory + "chisq.pdf").c_str());
-    
     
     // Get differences
     std::vector <std::vector <double> > chisq_diffs(fNP, npzeros);
