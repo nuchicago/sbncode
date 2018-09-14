@@ -44,18 +44,6 @@ EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::
 
     // Tree
     tree = (TTree*) file->Get("sbnana");
-    
-    /*
-    // Detector
-    std::map <std::string, std::string> det_to_DET = {{"sbnd", "SBND"}, {"uboone", "MicroBooNE"}, {"icarus", "ICARUS"}};
-
-    if (det_to_DET.find(Det) != det_to_DET.end()) {
-        fDet = det_to_DET[Det];
-    } else {
-        std::cout << std::endl << "ERROR: " << Det << " not valid detector." << std::endl << std::endl;
-        assert(false);
-    }
-    */
 
 };
 
@@ -237,11 +225,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
         // Output directory
         fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
-        fSavePDFs = (*config).get("SavePDFs", 0).asInt();
         
         // Weight and universe stuff
         fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
-        if (fWeightKey == "GetWeights") {
+        if (fWeightKey == "GetWeights" || fWeightKey == "Flux" || fWeightKey == "Cross-Section") {
             fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
         } else {
             Event *tempev = new Event;
@@ -286,9 +273,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             fScaleTargets.insert({det, (*config)["Covariance"]["ScaleTargets"].get(det, -1).asFloat()});
         }
         
-        // Pre-title
-        fPreTitle = (*config)["Covariance"].get("PreTitle", "").asString();
-        
         // more documentation is at: https://open-source-parsers.github.io/jsoncpp-docs/doxygen/index.html#_example
     
     }
@@ -325,7 +309,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
-    // count_hists[0]->GetXaxis()->LabelsOption("h");
     
     for (int u = 0; u < fNumAltUnis; u++) {
         
@@ -333,8 +316,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                     title = "Alt. Uni. " + std::to_string(u+1) + " Counts; Bin; Counts";
         
         count_hists.push_back(new TH1D(name.c_str(), title.c_str(), num_bins, 0, num_bins));
-        
-        // count_hists[u]->GetXaxis()->LabelsOption("h");
     
     }
     
@@ -343,10 +324,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", fNumTrueEBins*sample_order.size(), 0, fNumTrueEBins*sample_order.size(), num_bins, 0, num_bins);
     
-    // Canvases for nice histograms
-    TCanvas *nue_canvas = new TCanvas("nue_canvas", "#nu_{e} Distribution", 950/3*dets.size(), 345),
-           *numu_canvas = new TCanvas("numu_canvas", "#nu_{#mu} Distribution", 950/3*dets.size(), 345);
-    numu_canvas->Divide(dets.size(), 1); nue_canvas->Divide(dets.size(), 1);
+    // Vectors to hold nice histograms
+    std::vector <TH1D*> numu_cts(dets.size(), new TH1D()), numu_bkg(dets.size(), new TH1D()),
+                        nue_cts(dets.size(), new TH1D()), nue_bkg(dets.size(), new TH1D());
     
     // Get counts
     std::cout << std::endl << "Getting counts for each sample..." << std::endl;
@@ -375,31 +355,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         
             // Neutrinos
         TH2D *temp_nu_counts = new TH2D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, fTrueELims[0], fTrueELims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
-        
-        
-        // TEMP
-        //
-        // For pretty plot (temp - while our sample doesn't grow)
-        Double_t pretty_bins[] = { 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0 };
-        Int_t num_pretty_bins = sizeof(pretty_bins)/sizeof(Double_t) - 1;
-        
-        std::string spaces = "";
-        if (sample.fDet == "MicroBooNE") spaces = " ";
-        if (sample.fDet == "ICARUS") spaces = "  ";
-        
-        std::vector <TH1D*> pretty_basecounts = {new TH1D(("NC"+spaces).c_str(), "", num_pretty_bins, pretty_bins), new TH1D((sample.fDet+"CC").c_str(), "", num_pretty_bins, pretty_bins)};
-        pretty_basecounts[0]->SetFillColor(30); pretty_basecounts[0]->SetLineColor(30);
-        pretty_basecounts[1]->SetFillColor(38); pretty_basecounts[1]->SetLineColor(38);
-        
-        THStack *pretty_stack = new THStack((sample.fDet+"pretty_stack").c_str(), title.c_str());
-        //
-        //
-        //
-        //
-        
-        
-        
-        
         
         
         // Loop over neutrinos (events in tree)
@@ -440,19 +395,22 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 // Add to base count histogram
                 temp_count_hists[0]->Fill(nuE, wgt);
                 
-                // TEMP
-                //
-                // Fill pretty hist
-                pretty_basecounts[isCC]->Fill(nuE, wgt);
-                //
-                //
-                //
-                //
-                
                 // Get weights for each alternative universe
                 std::vector <double> uweights;
                 if (fWeightKey == "GetWeights") {
                     uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
+                } else if (fWeightKey == "Flux") {
+                    std::map <std::string, std::vector<double> > tempweights;
+                    for (auto it : event->truth[truth_ind].weights) {
+                        if (it.first.find("genie") > it.first.size()) tempweights.insert(it);
+                    }
+                    uweights = get_uni_weights(tempweights, fNumAltUnis);
+                } else if (fWeightKey == "Cross-Section") {
+                    std::map <std::string, std::vector<double> > tempweights;
+                    for (auto it : event->truth[truth_ind].weights) {
+                        if (it.first.find("genie") <= it.first.size()) tempweights.insert(it);
+                    }
+                    uweights = get_uni_weights(tempweights, fNumAltUnis);
                 } else {
                     uweights = event->truth[truth_ind].weights[fWeightKey];
                 }
@@ -481,17 +439,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
         temp_bkg_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
         temp_nu_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
-        
-        // TEMP
-        //
-        //
-        for (int pi = 0; pi < 2; pi++) {
-            pretty_basecounts[pi]->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
-        }
-        //
-        //
-        //
-        //
         
         
         // Pass onto the big histograms and get energies
@@ -525,70 +472,21 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
         
         
-        // Add numu and nue hists to canvases
-        std::vector <std::string> dets_inorder = get_dets_inorder(samples);
-        for (int d = 0; d < dets_inorder.size(); d++) {
-            if (sample.fDet == dets_inorder[d] && (sample.fDesc == "#nu_{#mu}" || sample.fDesc == "#nu_{e}")) {
-                
-                for (int b = 0; b < temp_count_hists[0]->GetNbinsX(); b++) {
-                    
-                    /*
-                    double binwidth = temp_count_hists[0]->GetBinWidth(b+1), 
-                         bincontent = temp_count_hists[0]->GetBinContent(b+1);
-                    temp_count_hists[0]->SetBinContent(b+1, bincontent/binwidth);
-                    */
-                    
-                    // TEMP
-                    //
-                    //
-                    for (int pi = 0; pi < 2; pi++) {
-                        double binwidth = pretty_basecounts[pi]->GetBinWidth(b+1),
-                            bincontent = pretty_basecounts[pi]->GetBinContent(b+1);
-                        pretty_basecounts[pi]->SetBinContent(b+1, bincontent/binwidth);
-                    }
-                    //
-                    //
-                    //
-                    
-                    
-                
-                }
-                
-                numu_canvas->cd(d+1);
-                if (sample.fDesc == "#nu_{e}") nue_canvas->cd(d+1);
+        // Add numu and nue hists to vectors
+        int detind = std::find(dets.begin(), dets.end(), sample.fDet) - dets.begin();
+        if (sample.fDesc == "#nu_{#mu}" ) {
             
-            }
+            numu_bkg[detind] = temp_bkg_counts;
+            numu_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
+            
+        } else if (sample.fDesc == "#nu_{e}") {
+            
+            nue_bkg[detind] = temp_bkg_counts;
+            nue_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
+            
         }
         
-        /*
-        temp_count_hists[0]->SetStats(kFALSE);
-        temp_count_hists[0]->Draw("hist");
-        */
         
-        // TEMP
-        //
-        //
-        for (int pi = 0; pi < 2; pi++) {
-            pretty_basecounts[pi]->SetStats(kFALSE);
-            pretty_stack->Add(pretty_basecounts[pi]);
-        }
-        
-        pretty_stack->Draw("hist");
-        //
-        //
-        //
-        //
-        
-        
-        
-        
-    }
-    
-    if (fSavePDFs == 1) {
-        
-        numu_canvas->SaveAs((fOutputDirectory + "numu_counts.pdf").c_str());
-        if (nue_appearance == 1) nue_canvas->SaveAs((fOutputDirectory + "nue_counts.pdf").c_str());
-    
     }
     
     
@@ -597,9 +495,12 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "Getting covs..." << std::endl;
     
+    std::string pre_title = "";
+    if (fWeightKey != "GetWeights") pre_title = fWeightKey + " ";
+    
     // Covariance and fractional covariance
-    cov = new TH2D("cov", (fPreTitle+" Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
-    fcov = new TH2D("fcov", ("Fractional "+fPreTitle+" Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    cov = new TH2D("cov", (pre_title+"Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    fcov = new TH2D("fcov", ("Fractional "+pre_title+"Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -619,7 +520,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Pearson Correlation Coefficients
-    corr = new TH2D("corr", (fPreTitle+" Correlation Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    corr = new TH2D("corr", (pre_title+"Correlation Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -669,6 +570,12 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
     }
     
+    numu_counts = numu_cts;
+    numu_bkgs = numu_bkg;
+    if (nue_appearance) {
+        nue_counts = nue_cts;
+        nue_bkgs = nue_bkg;
+    }
     
     
 }

@@ -51,7 +51,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         
         // Output directory
         fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
-        fSavePDFs = (*config).get("SavePDFs", 0).asInt();
         
         // Size of phase space
         fNP = (*config)["Sensitivity"].get("NP", -1).asInt();
@@ -286,11 +285,11 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     std::cout << "   Done in " << timechi << "s. " << std::endl;
     
     
-    // Save for output
+    // Gen TGraph2D for output
     chisqplot = new TGraph2D();
     for (int i = 0; i < fNP; i++) {
         for (int j = 0; j < fNP; j++) {
-            logchisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
+            chisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
         }
     }
     
