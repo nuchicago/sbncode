@@ -16,21 +16,62 @@ import os
 ## Main function
 ## ~~~~~~~~~~~~~
 
-def main(args):
-    
+def plot_cov_output(args):
     
     # Count plots
     
-#    countfile = TFile(args.cntfile)
-#    
-#    numu = countfile.Get('numu_counts')
-#    numu_nkg = countfile.Get('numu_bkgs')
-#    
-#    numu_canvas = TCanvas("numu_canvas", "", 1600, 550)
-#    numu_canvas.Divide(, 1);
-
-    ### Later might come in handy: to loop through objects in TFile: 
-    # [key.GetName() for key in file.GetListOfKeys()]
+    countfile = TFile(args.cntfile)
+    
+    dets = []
+    for key.GetName() in file.GetListOfKeys():
+        if !(key[:key.find("_")] in dets):
+            dets.append(key[:key.find("_")])
+    
+    samples = []
+    for key.GetName() in file.GetListOfKeys():
+        if !(key[key.find("_"):key[key.find("_")+1:].find("_")] in samples):
+            samples.append(key[:key.find("_")])
+    
+    samplename = {"numu": "#nu_{#mu}", "nue": "#nu_{e}"}
+    canvases = []; stacks = []; ct_hists = []; bkg_hists = []; legends = []
+    for s, sample in enumerate(samples):
+        
+        canvases.append(TCanvas(sample+"_canvas"))
+        canvases[s].Divide(len(dets), 1)
+        
+        ct_hists.append([])
+        bkg_hists.append([])
+        stacks.append([])
+        
+        legends.append([])
+        
+        for d, det in enumerate(dets):
+            
+            ct_hists[s].append(file.Get(det+"_"+sample+"_cts"))
+            ct_hists[s][d].SetLineColor(38)
+            ct_hists[s][d].SetFillColor(38)
+            
+            bkg_hists[s].append(file.Get(det+"_"+sample+"_bkg"))
+            bkg_hists[s][d].SetLineColor(30)
+            bkg_hists[s][d].SetFillColor(30)
+            
+            stacks[s].append(THStack(det+"_"+sample+"_stack", det+"; Counts; Energy (GeV)"))
+            stacks[s][d].Add(ct_hists[s][d])
+            stacks[s][d].Add(bkg_hists[s][d])
+            
+            legends[s].append(TLegend())
+            legends[s][d].AddEntry(ct_hists[s][d], 'CC #to #mu + X', 'f')
+            legends[s][d].AddEntry(bkg_hists[s][d], 'NC #to #pi^{#pm} + X', 'f')
+            
+            canvases[s].cd(d+1)
+            stacks[s][d].Draw()
+            legends[s][d].Draw()
+            
+        # NOTE: This will have to be changed when nue samples are added; this assumed a simple
+        #       count + background histogram stack, whereas nue plots in the proposal have the 
+        #       background broken up into many different 'types'
+        
+        canvases[s].SaveAs(args.outdir + sample + "_selection.pdf")
     
     
     # Covariance, fractional covariance and correlation
@@ -59,6 +100,8 @@ def main(args):
         mat.SetStats(False)
         covcanvas.SaveAs(args.outdir + matname + "_plot.pdf")
 
+
+def plot_chi2_output(args):
 
     # Chi squareds
     
@@ -126,7 +169,6 @@ def main(args):
     contcanvas.SaveAs(args.outdir+'Sensitivity.pdf')
     
     
-
 def compare_w_proposal(args):
     
     chi2file = TFile(args.chifile)
@@ -198,15 +240,15 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('.L ' + buildpath + '/libsbnanalysis_SBNOsc_classes.so')
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-chi", "--chifile", required = True)
+    parser.add_argument("-chi", "--chifile", required = False)
     parser.add_argument("-cov", "--covfile", required = True)
-#    parser.add_argument("-cts", "--cntfile", required = True)
+    parser.add_argument("-cts", "--cntfile", required = True)
     parser.add_argument("-o", "--outdir", required = True)
     parser.add_argument("-comp", "--compare", default = False)
 
-    main(parser.parse_args())
-    
-    if parser.parse_args().compare: compare_w_proposal(parser_parse_args())
+    plot_cov_output(parser.parse_args())
+    if parser.parse_args().chifile: plot_chi2_output(parser.parse_args())
+    if parser.parse_args().compare: compare_w_proposal(parser.parse_args())
 
 
         
