@@ -62,25 +62,17 @@ int main(int argc, char* argv[]) {
     cov.fcov->Write();
     cov.corr->Write();
     
-    /*
     // Write counts to file
     TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
     assert(countfile && countfile->IsOpen());
     
-    std::vector <std::vector <TH1D*> > forloop = {numu_counts, numu_bkgs};
-    if (cov.nue_counts.size() > 0) { forloop.push_back(nue_counts); forloop.pushback(nue_bkgs); }
+    std::vector <std::vector <TH1D*> > hist_vecs = {cov.numu_counts, cov.numu_bkgs};
+    if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.pushback(cov.nue_bkgs); }
     
-    for (int v = 0; v < forloop.size(); v++) {
-        
-        std::string toappend = "_numu";
-        if (v > 1) toappend = "_nue";
-        hist->SetName(((std::string)hist->GetName + "_numu").c_str());
-        hist->Write();
-        
+    for (std::vector <TH1D*> hist_vec : hist_vecs) {
+        for (TH1D* hist : hist_vec) hist->Write();
     }
-    cov.numu_counts->Write(); cov.numu_bkgs->Write();
-    if (cov.nue_counts.size() > 0) { cov.nue_counts->Write(); cov.nue_bkgs->Write(); }
-    */
+    
     
     //// Get sensitivity contours
     //// ~~~~~~~~~~~~~~~~~~~~~~~~

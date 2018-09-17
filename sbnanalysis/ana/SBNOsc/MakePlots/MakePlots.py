@@ -143,6 +143,8 @@ def compare_w_proposal(args):
     contournames = ['90pct', '3s', '5s']
     contourtitles = ['90% Confidence Level', '3$\\sigma$ Confidence Level', '5$\\sigma$ Confidence Level']
     
+    print("contours has length " + str(len(contours)))
+    
     for i in range(len(contours)):
 
         with open('numu_'+contournames[i]+'.txt') as f:
