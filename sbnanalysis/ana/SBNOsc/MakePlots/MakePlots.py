@@ -24,12 +24,12 @@ def plot_cov_output(args):
     
     dets = []
     for key.GetName() in file.GetListOfKeys():
-        if !(key[:key.find("_")] in dets):
+        if key[:key.find("_")] not in dets:
             dets.append(key[:key.find("_")])
     
     samples = []
     for key.GetName() in file.GetListOfKeys():
-        if !(key[key.find("_"):key[key.find("_")+1:].find("_")] in samples):
+        if key[key.find("_"):key[key.find("_")+1:].find("_")] not in samples:
             samples.append(key[:key.find("_")])
     
     samplename = {"numu": "#nu_{#mu}", "nue": "#nu_{e}"}
@@ -188,7 +188,7 @@ def compare_w_proposal(args):
     print("contours has length " + str(len(contours)))
     
     for i in range(len(contours)):
-
+        #
         with open('numu_'+contournames[i]+'.txt') as f:
             for line in f:
                 x.append(line.split(', ')[0])

@@ -476,19 +476,19 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         int detind = std::find(dets.begin(), dets.end(), sample.fDet) - dets.begin();
         if (sample.fDesc == "#nu_{#mu}" ) {
             
-            numu_bkg[detind]->SetName((sample.fDet+"_numu_bkg").c_str());
             numu_bkg[detind] = temp_bkg_counts;
+            numu_bkg[detind]->SetName((sample.fDet+"_numu_bkg").c_str());
             
-            numu_cts[detind]->SetName((sample.fDet+"_numu_cts").c_str());
             numu_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
+            numu_cts[detind]->SetName((sample.fDet+"_numu_cts").c_str());
             
         } else if (sample.fDesc == "#nu_{e}") {
             
-            nue_bkg[detind]->SetName((sample.fDet+"_nue_bkg").c_str());
             nue_bkg[detind] = temp_bkg_counts;
+            nue_bkg[detind]->SetName((sample.fDet+"_nue_bkg").c_str());
             
-            nue_cts[detind]->SetName((sample.fDet+"_nue_cts").c_str());
             nue_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
+            nue_cts[detind]->SetName((sample.fDet+"_nue_cts").c_str());
             
         }
         

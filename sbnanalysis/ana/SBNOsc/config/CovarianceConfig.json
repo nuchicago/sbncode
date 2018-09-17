@@ -6,7 +6,7 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/spatel_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
+            "path": "/sbnd/data/users/gputnam/NuMu/outputs/spatel_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
             // Old: "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/sbnd_optimize_length/output_SBNOsc_NumuSelection_L50.root"
             "desc": "#nu_{#mu}",
             "det": "SBND",
@@ -16,7 +16,7 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/spatel_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
+            "path": "/sbnd/data/users/gputnam/NuMu/outputs/spatel_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
             // Old: "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/uboone_optimize_length/output_SBNOsc_NumuSelection_L50.root"
             "desc": "#nu_{#mu}",
             "det": "MicroBooNE",
@@ -26,7 +26,7 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/spatel_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
+            "path": "/sbnd/data/users/gputnam/NuMu/outputs/spatel_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
             "desc": "#nu_{#mu}",
             "det": "ICARUS",
             "scalefactor": 6.59165e18
