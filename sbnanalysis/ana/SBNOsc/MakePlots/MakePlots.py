@@ -23,14 +23,16 @@ def plot_cov_output(args):
     countfile = TFile(args.cntfile)
     
     dets = []
-    for key.GetName() in file.GetListOfKeys():
+    for key in countfile.GetListOfKeys():
+        key = key.GetName()
         if key[:key.find("_")] not in dets:
             dets.append(key[:key.find("_")])
     
     samples = []
-    for key.GetName() in file.GetListOfKeys():
-        if key[key.find("_"):key[key.find("_")+1:].find("_")] not in samples:
-            samples.append(key[:key.find("_")])
+    for key in countfile.GetListOfKeys():
+        key = key.GetName()
+        if key[key.find("_")+1:key.find("_")+1+key[key.find("_")+1:].find("_")] not in samples:
+            samples.append(key[key.find("_")+1:key.find("_")+1+key[key.find("_")+1:].find("_")])
     
     samplename = {"numu": "#nu_{#mu}", "nue": "#nu_{e}"}
     canvases = []; stacks = []; ct_hists = []; bkg_hists = []; legends = []
@@ -47,24 +49,28 @@ def plot_cov_output(args):
         
         for d, det in enumerate(dets):
             
-            ct_hists[s].append(file.Get(det+"_"+sample+"_cts"))
+            ct_hists[s].append(countfile.Get(det+"_"+sample+"_cts"))
             ct_hists[s][d].SetLineColor(38)
             ct_hists[s][d].SetFillColor(38)
             
-            bkg_hists[s].append(file.Get(det+"_"+sample+"_bkg"))
+            bkg_hists[s].append(countfile.Get(det+"_"+sample+"_bkg"))
             bkg_hists[s][d].SetLineColor(30)
             bkg_hists[s][d].SetFillColor(30)
             
+            for b in range(ct_hists[s][d].GetNbinsX()):
+                ct_hists[s][d].SetBinContent(1+b, ct_hists[s][d].GetBinContent(1+b) / ct_hists[s][d].GetBinWidth(1+b))
+                bkg_hists[s][d].SetBinContent(1+b, bkg_hists[s][d].GetBinContent(1+b) / bkg_hists[s][d].GetBinWidth(1+b))
+             
             stacks[s].append(THStack(det+"_"+sample+"_stack", det+"; Counts; Energy (GeV)"))
-            stacks[s][d].Add(ct_hists[s][d])
             stacks[s][d].Add(bkg_hists[s][d])
+            stacks[s][d].Add(ct_hists[s][d])
             
             legends[s].append(TLegend())
-            legends[s][d].AddEntry(ct_hists[s][d], 'CC #to #mu + X', 'f')
-            legends[s][d].AddEntry(bkg_hists[s][d], 'NC #to #pi^{#pm} + X', 'f')
+            legends[s][d].AddEntry(ct_hists[s][d], 'CC -> #mu + X', 'f')
+            legends[s][d].AddEntry(bkg_hists[s][d], 'NC -> #pi^{#pm} + X', 'f')
             
             canvases[s].cd(d+1)
-            stacks[s][d].Draw()
+            stacks[s][d].Draw("hist")
             legends[s][d].Draw()
             
         # NOTE: This will have to be changed when nue samples are added; this assumed a simple
@@ -106,6 +112,8 @@ def plot_chi2_output(args):
     # Chi squareds
     
     chi2file = TFile(args.chifile)
+    
+    gStyle = TStyle()
     
     chi2 = chi2file.Get('chisq')
     
@@ -183,26 +191,42 @@ def compare_w_proposal(args):
     
     propcontours = []
     contournames = ['90pct', '3s', '5s']
-    contourtitles = ['90% Confidence Level', '3$\\sigma$ Confidence Level', '5$\\sigma$ Confidence Level']
+    contourtitles = ['90% Confidence Level', '3#sigma Confidence Level', '5#sigma Confidence Level']
+    
+    gr_range = TGraph()
+    gr_range.SetPoint(0, 0.001, 0.01)
+    gr_range.SetPoint(1, 1, 100)
+    gr_range.SetMarkerColor(0)
+    
+    bestfit = TGraph()
+    bestfit.SetPoint(0, 0.062, 1.7)
+    bestfit.SetMarkerStyle(29)
+    bestfit.SetMarkerSize(1.6)
+    bestfit.SetMarkerColor(40)
     
     print("contours has length " + str(len(contours)))
     
     for i in range(len(contours)):
-        #
-        with open('numu_'+contournames[i]+'.txt') as f:
-            for line in f:
-                x.append(line.split(', ')[0])
-                y.append(line.split(', ')[1])
-        propcontours.append(TGraph2D())
+        
+        x = []
+        y = []
+        
+        with open(args.compdir+'numu'+contournames[i]+'.txt') as f:
+            for l, line in enumerate(f):
+                if l == 0: continue
+                x.append(float(line.split(', ')[0]))
+                y.append(float(line.split(', ')[1].replace("\n", "")))
+        
+        propcontours.append(TGraph())
         for j in range(len(x)):
             propcontours[i].SetPoint(j, x[j], y[j])
 
         tempcanvas = TCanvas('temp_canvas', '', 1020, 990)
 
         templegend = TLegend()
-        legend.AddEntry(contours[i], 'Our contour', 'l')
-        legend.AddEntry(propcontours[1], 'From proposal', 'l')
-        legend.AddEntry(bestfit, 'Best Fit Point', 'p')
+        templegend.AddEntry(contours[i], 'Our contour', 'l')
+        templegend.AddEntry(propcontours[i], 'From proposal', 'l')
+        templegend.AddEntry(bestfit, 'Best Fit Point', 'p')
 
         tempcanvas.SetLogy()
         tempcanvas.SetLogx()
@@ -216,8 +240,8 @@ def compare_w_proposal(args):
         for lst in (contours, propcontours):
             lst[i].SetMarkerStyle(20)
             lst[i].SetMarkerSize(0.25)
-            lst[i].SetMarkerColor(colours[i])
-            lst[i].SetLineColor(colours[i])
+            lst[i].SetMarkerColor(colours[i] if lst == contours else 1)
+            lst[i].SetLineColor(colours[i] if lst == contours else 1)
         
         contours[i].Draw('P same')
         propcontours[i].Draw('P same')
@@ -225,7 +249,7 @@ def compare_w_proposal(args):
         templegend.Draw()
         bestfit.Draw('P same')
 
-        tempcanvas.SaveAs(args.outdir+contournames+'_comparison.pdf')
+        tempcanvas.SaveAs(args.outdir+contournames[i]+'_comparison.pdf')
     
     
 
@@ -244,11 +268,11 @@ if __name__ == "__main__":
     parser.add_argument("-cov", "--covfile", required = True)
     parser.add_argument("-cts", "--cntfile", required = True)
     parser.add_argument("-o", "--outdir", required = True)
-    parser.add_argument("-comp", "--compare", default = False)
+    parser.add_argument("-comp", "--compdir", default = False)
 
     plot_cov_output(parser.parse_args())
     if parser.parse_args().chifile: plot_chi2_output(parser.parse_args())
-    if parser.parse_args().compare: compare_w_proposal(parser.parse_args())
+    if parser.parse_args().compdir: compare_w_proposal(parser.parse_args())
 
 
 
