@@ -169,63 +169,63 @@ def plot_chi2_output(args):
     contcanvas.SaveAs(args.outdir+'Sensitivity.pdf')
     
     
-#def compare_w_proposal(args):
-#    
-#    chi2file = TFile(args.chifile)
-#    
-#    gStyle = TStyle()
-#    gStyle.SetPadLeftMargin(0.15); gStyle.SetPadRightMargin(0.15)
-#    
-#    colours = [30, 38, 46]
-#    contours = [chi2file.Get('90pct'), 
-#                chi2file.Get('3sigma'), 
-#                chi2file.Get('5sigma')]
-#    
-#    propcontours = []
-#    contournames = ['90pct', '3s', '5s']
-#    contourtitles = ['90% Confidence Level', '3$\\sigma$ Confidence Level', '5$\\sigma$ Confidence Level']
-#    
-#    print("contours has length " + str(len(contours)))
-#    
-#    for i in range(len(contours)):
-#        #
-#        with open('numu_'+contournames[i]+'.txt') as f:
-#            for line in f:
-#                x.append(line.split(', ')[0])
-#                y.append(line.split(', ')[1])
-#        propcontours.append(TGraph2D())
-#        for j in range(len(x)):
-#            propcontours[i].SetPoint(j, x[j], y[j])
-#
-#        tempcanvas = TCanvas('temp_canvas', '', 1020, 990)
-#
-#        templegend = TLegend()
-#        legend.AddEntry(contours[i], 'Our contour', 'l')
-#        legend.AddEntry(propcontours[1], 'From proposal', 'l')
-#        legend.AddEntry(bestfit, 'Best Fit Point', 'p')
-#
-#        tempcanvas.SetLogy()
-#        tempcanvas.SetLogx()
-#
-#        gr_range.SetTitle(contourtitles[i]+' Comparison; sin^{2}(2#theta); #Delta m^{2} (eV^{2})')
-#
-#        gr_range.Draw('AP')
-#        gr_range.GetXaxis().SetRangeUser(0.001, 1)
-#        gr_range.GetYaxis().SetRangeUser(0.01, 100)
-#        
-#        for lst in (contours, propcontours):
-#            lst[i].SetMarkerStyle(20)
-#            lst[i].SetMarkerSize(0.25)
-#            lst[i].SetMarkerColor(colours[i])
-#            lst[i].SetLineColor(colours[i])
-#        
-#        contours[i].Draw('P same')
-#        propcontours[i].Draw('P same')
-#
-#        templegend.Draw()
-#        bestfit.Draw('P same')
-#
-#        tempcanvas.SaveAs(args.outdir+contournames+'_comparison.pdf')
+def compare_w_proposal(args):
+    
+    chi2file = TFile(args.chifile)
+    
+    gStyle = TStyle()
+    gStyle.SetPadLeftMargin(0.15); gStyle.SetPadRightMargin(0.15)
+    
+    colours = [30, 38, 46]
+    contours = [chi2file.Get('90pct'), 
+                chi2file.Get('3sigma'), 
+                chi2file.Get('5sigma')]
+    
+    propcontours = []
+    contournames = ['90pct', '3s', '5s']
+    contourtitles = ['90% Confidence Level', '3$\\sigma$ Confidence Level', '5$\\sigma$ Confidence Level']
+    
+    print("contours has length " + str(len(contours)))
+    
+    for i in range(len(contours)):
+        #
+        with open('numu_'+contournames[i]+'.txt') as f:
+            for line in f:
+                x.append(line.split(', ')[0])
+                y.append(line.split(', ')[1])
+        propcontours.append(TGraph2D())
+        for j in range(len(x)):
+            propcontours[i].SetPoint(j, x[j], y[j])
+
+        tempcanvas = TCanvas('temp_canvas', '', 1020, 990)
+
+        templegend = TLegend()
+        legend.AddEntry(contours[i], 'Our contour', 'l')
+        legend.AddEntry(propcontours[1], 'From proposal', 'l')
+        legend.AddEntry(bestfit, 'Best Fit Point', 'p')
+
+        tempcanvas.SetLogy()
+        tempcanvas.SetLogx()
+
+        gr_range.SetTitle(contourtitles[i]+' Comparison; sin^{2}(2#theta); #Delta m^{2} (eV^{2})')
+
+        gr_range.Draw('AP')
+        gr_range.GetXaxis().SetRangeUser(0.001, 1)
+        gr_range.GetYaxis().SetRangeUser(0.01, 100)
+        
+        for lst in (contours, propcontours):
+            lst[i].SetMarkerStyle(20)
+            lst[i].SetMarkerSize(0.25)
+            lst[i].SetMarkerColor(colours[i])
+            lst[i].SetLineColor(colours[i])
+        
+        contours[i].Draw('P same')
+        propcontours[i].Draw('P same')
+
+        templegend.Draw()
+        bestfit.Draw('P same')
+
+        tempcanvas.SaveAs(args.outdir+contournames+'_comparison.pdf')
     
     
 
@@ -249,12 +249,6 @@ if __name__ == "__main__":
     plot_cov_output(parser.parse_args())
     if parser.parse_args().chifile: plot_chi2_output(parser.parse_args())
     if parser.parse_args().compare: compare_w_proposal(parser.parse_args())
-
-
-        
-        with open('filename') as f:
-            for line in f:
-                data = [float(x) for x in line.split(",")]
 
 
 
