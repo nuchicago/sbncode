@@ -39,7 +39,7 @@
     "Covariance": {
     
         "NumAltUnis": 100,
-        "WeightKey": "GetWeights",
+        "WeightKey": "Flux",
         
         "EnergyType": "Reco",
         

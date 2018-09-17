@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
     assert(countfile && countfile->IsOpen());
     
     std::vector <std::vector <TH1D*> > hist_vecs = {cov.numu_counts, cov.numu_bkgs};
-    if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.pushback(cov.nue_bkgs); }
+    if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.push_back(cov.nue_bkgs); }
     
     for (std::vector <TH1D*> hist_vec : hist_vecs) {
         for (TH1D* hist : hist_vec) hist->Write();
