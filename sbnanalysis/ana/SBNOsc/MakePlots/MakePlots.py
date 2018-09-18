@@ -267,7 +267,10 @@ def dm2_chi2_slice(args):
     NP = int(math.sqrt(len(chi2_vals)))
     
     reusable_canvas = TCanvas()
-    
+    print(dm2s)
+    print("min_sin = " + str(min_sin) + " and max_sin = " + str(max_sin))
+    print("min_dm2 = " + str(min_dm2) + " and max_dm2 + " + str(max_dm2))
+    print("NP + " + str(NP))
     slices = []
     for m, dm2 in enumerate(dm2s):
         
@@ -276,11 +279,12 @@ def dm2_chi2_slice(args):
         
         slices.append(TGraph())
         for c, chi in enumerate(tempslice):
-            slices[m].SetPoint(c, 10**(min_sin + c*max_sin/(NP-1)), chi)
+            slices[m].SetPoint(c, (min_sin + c*(max_sin - min_sin)/(NP-1)), chi)
         
         slices[m].SetTitle("#chi^{2} @ #Delta m^{2} = " + str(dm2) + "; log_{10}(sin^{2}(2#theta)); #chi^{2}")
-        slices[m].Draw('surf1')
-        reusable_canvas.SaveAs(args.outdir + "dm2_"+str(dm2).replace(".", "")+"_slice.pdf")
+        slices[m].Draw("AP")
+        
+        reusable_canvas.SaveAs(args.outdir + "dm2_"+str(dm2).replace(".", "-")+"_slice.pdf")
     
 def sin_chi2_slice(args):
     
@@ -298,18 +302,18 @@ def sin_chi2_slice(args):
     reusable_canvas = TCanvas()
     
     slices = []
-    for m, dm2 in enumerate(dm2s):
+    for s, sin in enumerate(sins):
         
         ival = int((math.log10(sin) - min_sin)*(NP-1)/(max_sin-min_sin))
         tempslice = [chi2_vals[ival*NP + j] for j in range(NP)]
         
         slices.append(TGraph())
         for c, chi in enumerate(tempslice):
-            slices[m].SetPoint(c, 10**(min_dm2 + c*max_dm2/(NP-1)), chi)
+            slices[s].SetPoint(c, 10**(min_dm2 + c*(max_dm2 - min_dm2)/(NP-1)), chi)
         
-        slices[m].SetTitle("#chi^{2} @ #sin^{2}(2#theta) = " + str(sin) + "; log_{10}(#Delta m^{2}); #chi^{2}")
-        slices[m].Draw('surf1')
-        reusable_canvas.SaveAs(args.outdir + "sin_"+str(sin).replace(".", "")+"_slice.pdf")
+        slices[s].SetTitle("#chi^{2} @ #sin^{2}(2#theta) = " + str(sin) + "; log_{10}(#Delta m^{2}); #chi^{2}")
+        slices[s].Draw("AP")
+        reusable_canvas.SaveAs(args.outdir + "sin_"+str(sin).replace(".", "-")+"_slice.pdf")
     
 
 if __name__ == "__main__":
@@ -328,7 +332,7 @@ if __name__ == "__main__":
     parser.add_argument("-cts", "--cntfile", default = False)
     parser.add_argument("-o", "--outdir", required = True)
     parser.add_argument("-comp", "--compdir", default = False)
-    parser.add_argument("-m2slice", "--dm2list", default = False)
+    parser.add_argument("-dm2slice", "--dm2list", default = False)
     parser.add_argument("-sinslice", "--sinlist", default = False)
     
     args = parser.parse_args()
