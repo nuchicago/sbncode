@@ -11,6 +11,7 @@ import ROOT
 from ROOT import TFile, TCanvas, TH2D, TH1D, TGraph, TGraph2D, TStyle, TLegend, THStack, TPad
 import argparse
 import os
+import math
 
 
 ## Main function
@@ -252,6 +253,64 @@ def compare_w_proposal(args):
         tempcanvas.SaveAs(args.outdir+contournames[i]+'_comparison.pdf')
     
     
+def dm2_chi2_slice(args):
+    
+    dm2s = [float(dm2) for dm2 in args.dm2list.split(",")]
+    
+    chi2file = TFile(args.chifile)
+    chi2 = chi2file.Get('chisq')
+    
+    min_sin = chi2.GetXmin(); max_sin = chi2.GetXmax()
+    min_dm2 = chi2.GetYmin(); max_dm2 = chi2.GetYmax()
+    
+    chi2_vals = [float(chi) for chi in chi2.GetZ()]
+    NP = int(math.sqrt(len(chi2_vals)))
+    
+    reusable_canvas = TCanvas()
+    
+    slices = []
+    for m, dm2 in enumerate(dm2s):
+        
+        jval = int((math.log10(dm2) - min_dm2)*(NP-1)/(max_dm2-min_dm2))
+        tempslice = [chi2_vals[i*NP + jval] for i in range(NP)]
+        
+        slices.append(TGraph())
+        for c, chi in enumerate(tempslice):
+            slices[m].SetPoint(c, 10**(min_sin + c*max_sin/(NP-1)), chi)
+        
+        slices[m].SetTitle("#chi^{2} @ #Delta m^{2} = " + str(dm2) + "; log_{10}(sin^{2}(2#theta)); #chi^{2}")
+        slices[m].Draw('surf1')
+        reusable_canvas.SaveAs(args.outdir + "dm2_"+str(dm2).replace(".", "")+"_slice.pdf")
+    
+def sin_chi2_slice(args):
+    
+    sins = [float(sin) for sin in args.sinlist.split(",")]
+    
+    chi2file = TFile(args.chifile)
+    chi2 = chi2file.Get('chisq')
+    
+    min_sin = chi2.GetXmin(); max_sin = chi2.GetXmax()
+    min_dm2 = chi2.GetYmin(); max_dm2 = chi2.GetYmax()
+    
+    chi2_vals = [float(chi) for chi in chi2.GetZ()]
+    NP = int(math.sqrt(len(chi2_vals)))
+    
+    reusable_canvas = TCanvas()
+    
+    slices = []
+    for m, dm2 in enumerate(dm2s):
+        
+        ival = int((math.log10(sin) - min_sin)*(NP-1)/(max_sin-min_sin))
+        tempslice = [chi2_vals[ival*NP + j] for j in range(NP)]
+        
+        slices.append(TGraph())
+        for c, chi in enumerate(tempslice):
+            slices[m].SetPoint(c, 10**(min_dm2 + c*max_dm2/(NP-1)), chi)
+        
+        slices[m].SetTitle("#chi^{2} @ #sin^{2}(2#theta) = " + str(sin) + "; log_{10}(#Delta m^{2}); #chi^{2}")
+        slices[m].Draw('surf1')
+        reusable_canvas.SaveAs(args.outdir + "sin_"+str(sin).replace(".", "")+"_slice.pdf")
+    
 
 if __name__ == "__main__":
     
@@ -264,16 +323,24 @@ if __name__ == "__main__":
     ROOT.gROOT.ProcessLine('.L ' + buildpath + '/libsbnanalysis_SBNOsc_classes.so')
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("-chi", "--chifile", required = False)
-    parser.add_argument("-cov", "--covfile", required = True)
-    parser.add_argument("-cts", "--cntfile", required = True)
+    parser.add_argument("-chi", "--chifile", default = False)
+    parser.add_argument("-cov", "--covfile", default = False)
+    parser.add_argument("-cts", "--cntfile", default = False)
     parser.add_argument("-o", "--outdir", required = True)
     parser.add_argument("-comp", "--compdir", default = False)
-
-    plot_cov_output(parser.parse_args())
-    if parser.parse_args().chifile: plot_chi2_output(parser.parse_args())
-    if parser.parse_args().compdir: compare_w_proposal(parser.parse_args())
-
+    parser.add_argument("-m2slice", "--dm2list", default = False)
+    parser.add_argument("-sinslice", "--sinlist", default = False)
+    
+    args = parser.parse_args()
+    
+    print(args.dm2list)
+    
+    if args.covfile: plot_cov_output(args)
+    if args.chifile: plot_chi2_output(args)
+    if args.compdir: compare_w_proposal(args)
+    if args.dm2list: dm2_chi2_slice(args)
+    if args.sinlist: sin_chi2_slice(args)
+    
 
 
 
