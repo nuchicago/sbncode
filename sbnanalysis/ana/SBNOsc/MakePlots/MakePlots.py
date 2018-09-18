@@ -285,8 +285,10 @@ def dm2_chi2_slice(args):
         
         if args.chilims:
             chilims = [float(lim) for lim in args.chilims.split(",")]
-            slices[m].GetYaxis().SetRangeUser((len(chilims) > 1)*chilims[0], 
-                                              (len(chilims) == 1)*chilims[0] + (len(chilims) > 1)*chilims[1])
+            if len(chilims) == 1:
+                slices[m].GetYaxis().SetRangeUser(0, chilims[0])
+            else:
+                slices[m].GetYaxis().SetRangeUser(chilims[0], chilims[1])
         
         slices[m].SetTitle("#chi^{2} @ #Delta m^{2} = " + str(dm2) + "; log_{10}(sin^{2}(2#theta)); #chi^{2}")
         slices[m].Draw("AP")
@@ -320,8 +322,10 @@ def sin_chi2_slice(args):
         
         if args.chilims:
             chilims = [float(lim) for lim in args.chilims.split(",")]
-            slices[s].GetYaxis().SetRangeUser((len(chilims) > 1)*chilims[0], 
-                                              (len(chilims) == 1)*chilims[0] + (len(chilims) > 1)*chilims[1])
+            if len(chilims) == 1:
+                slices[s].GetYaxis().SetRangeUser(0, chilims[0])
+            else:
+                slices[s].GetYaxis().SetRangeUser(chilims[0], chilims[1])
         
         slices[s].SetTitle("#chi^{2} @ #sin^{2}(2#theta) = " + str(sin) + "; log_{10}(#Delta m^{2}); #chi^{2}")
         slices[s].Draw("AP")

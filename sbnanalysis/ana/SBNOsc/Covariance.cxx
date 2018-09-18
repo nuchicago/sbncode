@@ -512,7 +512,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Add bin labels
-    std::vector <TH1D*> hists = {cov, fcov, corr};
+    std::vector <TH2D*> hists = {cov, fcov, corr};
     for (int o = 0; o < sample_order.size(); o++) {
 
         // Get label and position
@@ -520,14 +520,14 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         int bin = (sample_bins[o] + sample_bins[o+1])/2;
 
         // Set label
-        for (TH1D* hist : hists) {
+        for (TH2D* hist : hists) {
             hist->GetXaxis()->SetBinLabel(1+bin, label.c_str());
             hist->GetYaxis()->SetBinLabel(1+bin, label.c_str());
         }
 
     }
 
-    for (TH1D* hist : hists) { hist->GetXaxis()->LabelsOption("h"); hist->GetYaxis()->LabelsOption("v"); }
+    for (TH2D* hist : hists) { hist->GetXaxis()->LabelsOption("h"); hist->GetYaxis()->LabelsOption("v"); }
     
     std::cout << std::endl << "  Got covs." << std::endl;
     

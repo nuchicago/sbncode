@@ -35,8 +35,6 @@ target_link_libraries(sbnanalysis_SBNOsc_NumuSelection
   ubana_BasicTool_GeoAlgo
 )
 target_link_libraries(sbnanalysis_SBNOsc_Chi2Sensitivity sbnanalysis_SBNOsc_Covariance)
-target_link_libraries(${LARSIM_BASE_LIBRARY})
-target_link_libraries(${LARSIM_BASE_DICT})
 
 # Build executables
 add_executable(sbn-cov sbn-cov.cxx)
