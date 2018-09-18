@@ -104,7 +104,7 @@ def plot_cov_output(args):
         mat.SetTitleSize(0.3, 't')  # doesn't work...
 
         if matname == 'corr': mat.GetZaxis().SetRangeUser(-0.4, 1)
-
+        
         mat.Draw("colz")
         mat.SetStats(False)
         covcanvas.SaveAs(args.outdir + matname + "_plot.pdf")
@@ -283,6 +283,11 @@ def dm2_chi2_slice(args):
         for c, chi in enumerate(tempslice):
             slices[m].SetPoint(c, (min_sin + c*(max_sin - min_sin)/(NP-1)), chi)
         
+        if args.chilims:
+            chilims = [float(lim) for lim in args.chilims.split(",")]
+            slices[m].GetYaxis().SetRangeUser((len(chilims) > 1)*chilims[0], 
+                                              (len(chilims) == 1)*chilims[0] + (len(chilims) > 1)*chilims[1])
+        
         slices[m].SetTitle("#chi^{2} @ #Delta m^{2} = " + str(dm2) + "; log_{10}(sin^{2}(2#theta)); #chi^{2}")
         slices[m].Draw("AP")
         
@@ -313,6 +318,11 @@ def sin_chi2_slice(args):
         for c, chi in enumerate(tempslice):
             slices[s].SetPoint(c, 10**(min_dm2 + c*(max_dm2 - min_dm2)/(NP-1)), chi)
         
+        if args.chilims:
+            chilims = [float(lim) for lim in args.chilims.split(",")]
+            slices[s].GetYaxis().SetRangeUser((len(chilims) > 1)*chilims[0], 
+                                              (len(chilims) == 1)*chilims[0] + (len(chilims) > 1)*chilims[1])
+        
         slices[s].SetTitle("#chi^{2} @ #sin^{2}(2#theta) = " + str(sin) + "; log_{10}(#Delta m^{2}); #chi^{2}")
         slices[s].Draw("AP")
         reusable_canvas.SaveAs(args.outdir + "sin_"+str(sin).replace(".", "-")+"_slice.pdf")
@@ -336,6 +346,7 @@ if __name__ == "__main__":
     parser.add_argument("-comp", "--compdir", default = False)
     parser.add_argument("-dm2slice", "--dm2list", default = False)
     parser.add_argument("-sinslice", "--sinlist", default = False)
+    parser.add_argument("-chilims", "--chilims", default = False)
     
     args = parser.parse_args()
     

@@ -282,7 +282,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         num_bins += fBins[binkey].size() - 1;
         
     }
-    sample_bins.push_back(num_bins); // for later when setting labels to cov plots
+    sample_bins.push_back(num_bins);
     
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
@@ -430,9 +430,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 
             }
             
-            std::string label = sample.fDet + " " + sample.fDesc;
-            count_hists[h]->GetXaxis()->SetBinLabel((sample_bins[o]+sample_bins[o+1])/2, label.c_str());
-            
         }
         
         for (int rb = 0; rb < temp_nu_counts->GetNbinsY(); rb++) {
@@ -515,27 +512,22 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Add bin labels
+    std::vector <TH1D*> hists = {cov, fcov, corr};
     for (int o = 0; o < sample_order.size(); o++) {
-        
+
         // Get label and position
         std::string label = sample_order[o].replace(sample_order[o].find("_"), 1, " ");
-        int pos = 1 + sample_bins[o] + (sample_bins[o+1] - sample_bins[o])/2;
-        
+        int bin = (sample_bins[o] + sample_bins[o+1])/2;
+
         // Set label
-        cov->GetXaxis()->SetBinLabel(pos, label.c_str());
-        cov->GetYaxis()->SetBinLabel(pos, label.c_str());
-        
-        fcov->GetXaxis()->SetBinLabel(pos, label.c_str());
-        fcov->GetYaxis()->SetBinLabel(pos, label.c_str());
-        
-        corr->GetXaxis()->SetBinLabel(pos, label.c_str());
-        corr->GetYaxis()->SetBinLabel(pos, label.c_str());
-        
+        for (TH1D* hist : hists) {
+            hist->GetXaxis()->SetBinLabel(1+bin, label.c_str());
+            hist->GetYaxis()->SetBinLabel(1+bin, label.c_str());
+        }
+
     }
-    
-    cov->GetXaxis()->LabelsOption("h"); cov->GetYaxis()->LabelsOption("v");
-    fcov->GetXaxis()->LabelsOption("h"); fcov->GetYaxis()->LabelsOption("v");
-    corr->GetXaxis()->LabelsOption("h"); corr->GetYaxis()->LabelsOption("v");
+
+    for (TH1D* hist : hists) { hist->GetXaxis()->LabelsOption("h"); hist->GetYaxis()->LabelsOption("v"); }
     
     std::cout << std::endl << "  Got covs." << std::endl;
     
