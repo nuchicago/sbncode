@@ -57,20 +57,15 @@ int main(int argc, char* argv[]) {
     cov.fcov->Write();
     cov.corr->Write();
     
-    int savePDFs = (*config).get("SavePDFs", 0).asInt();
-    if (savePDFs == 1) {
-        
-        TCanvas *canvas = new TCanvas();
-        gStyle->SetPadLeftMargin(0.01); gStyle->SetPadRightMargin(0.01);
-        cov.cov->GetYaxis()->SetLabelSize(18); cov.cov->GetXaxis()->SetLabelSize(18);
-        cov.cov->Draw("colz"); cov.cov->SetStats(kFALSE); canvas->SaveAs((directory + "cov_plot.pdf").c_str());
-        
-        cov.fcov->GetYaxis()->SetLabelSize(18); cov.fcov->GetXaxis()->SetLabelSize(18);
-        cov.fcov->Draw("colz"); cov.fcov->SetStats(kFALSE); canvas->SaveAs((directory + "fcov_plot.pdf").c_str());
-        
-        cov.corr->GetYaxis()->SetLabelSize(18); cov.corr->GetXaxis()->SetLabelSize(18);
-        cov.corr->Draw("colz"); cov.corr->SetStats(kFALSE); canvas->SaveAs((directory + "corr_plot.pdf").c_str());
-        
+    // Write counts to file
+    TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
+    assert(countfile && countfile->IsOpen());
+    
+    std::vector <std::vector <TH1D*> > hist_vecs = {cov.numu_counts, cov.numu_bkgs};
+    if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.push_back(cov.nue_bkgs); }
+    
+    for (std::vector <TH1D*> hist_vec : hist_vecs) {
+        for (TH1D* hist : hist_vec) hist->Write();
     }
     
     

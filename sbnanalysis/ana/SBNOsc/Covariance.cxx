@@ -81,29 +81,6 @@ std::vector <double> get_uni_weights(std::map <std::string, std::vector <double>
     
 }
 
-// Function that gets statistical errors
-std::vector <double> stat_err(TH1D *counts) {
-    
-    std::vector <double> errors;
-    for (int b = 0; b < counts->GetNbinsX(); b++) {
-        errors.push_back(TMath::Sqrt(counts->GetBinContent(b+1)));
-    }
-    
-    return errors;
-    
-}
-
-// Function that gets systematic errors
-std::vector <double> syst_err(TH1D *counts, TH2D *cov) {
-    
-    std::vector <double> errors;
-    for (int b = 0; b < counts->GetNbinsX(); b++) {
-        errors.push_back(TMath::Sqrt(cov->GetBinContent(b+1, b+1)));
-    }
-    
-    return errors;
-}
-
 // Function that gets plotting order (SBND-ICARUS-MicroBooNE and, within each det, nue-numu-rest)
 std::vector <std::string> get_plot_order(std::vector<EventSample> samples) {
     

@@ -70,7 +70,10 @@
         
         "ScaleSample": "SBND #nu_{#mu}",
         
-        "NP": 300
+        "NumDm2": 300,
+        "LogDm2Lims": [ -2.0, 2.0 ],
+        "NumSin": 300,
+        "LogSinLims": [ -3.0, 0.0 ]
         
     }
     

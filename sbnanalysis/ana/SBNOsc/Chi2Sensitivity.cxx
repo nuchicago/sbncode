@@ -26,7 +26,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     
     /*
         Inputs: 
-        From the (Covariance::Covariance) cov, we'll use the following arributes:
+        From (Covariance::Covariance) cov, we'll use the following arributes:
             - cov         , the covariance matrix as a TH2D*;
             - bkg_counts  , a TH1D* containing the CV counts of non-oscillating particles
             - nu_counts   , a TH2D* containing the CV counts of oscillating particles, with
@@ -39,7 +39,10 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                             samples described in sample_order.
                             
         From the config file:
-            - fNP         , number of points in each dimension of the (dm2, sin2(2theta)) phase space.
+            - fNumDm2     , number of points in dm2 dimension of (dm2, sin2(2theta)) phase space,
+            - fLogDm2Lims , limits of the dm2 dimension of the phase space, in log units,
+            - fNumSin     , number of points in sin dimension of phase space,
+            - fLogSinLims , limits of the sin dimension of the phase space, in log units.
     */
     
     //// Get parameters from config file
@@ -52,8 +55,17 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         // Output directory
         fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
         
-        // Size of phase space
-        fNP = (*config)["Sensitivity"].get("NP", -1).asInt();
+        // Phase space parameters
+        fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
+        fLogDm2Lims = {};
+        for (auto binlim : (*config)["Sensitivity"]["LogDm2Lims"]) {
+            fDm2Lims.push_back(binlim.asDouble());
+        }
+        fNumSin = (*config)["Sensitivity"].get("NumSin", -1).asInt();
+        fLogSinLims = {};
+        for (auto binlim : (*config)["Sensitivity"]["LogSinLims"]) {
+            fSinLims.push_back(binlim.asDouble());
+        }
         
         // Sample according to which we scale (for shape-only chi squared)
         fScaleSample = (*config)["Sensitivity"].get("ScaleSample", "").asString();
@@ -151,10 +163,12 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     int num_trueE_bins = cov.trueEs.size()/cov.sample_order.size();
     
     // Phase space
-    std::vector <double> dm2(fNP), sin2theta(fNP);
-    for (int i = 0; i < fNP; i++) {
-        dm2[i] = TMath::Power(10, -2.0 + i*4.0/(fNP-1));
-        sin2theta[i] = TMath::Power(10, -3.0 + i*3.0/(fNP-1));
+    std::vector <double> sin2theta(fNumSin), dm2(fNumDm2);
+    for (int i = 0; i < fNumSin; i++) {
+        sin2theta[i] = TMath::Power(10, fLogSinLims[0] + i*(fLogSinLims[1] - fLogSinLims[0])/(fNumSin-1));
+    }
+    for (int j = 0; j < fNumDm2; j++) {
+        dm2[j] = TMath::Power(10, fLogDm2Lims[0] + j*(fLogDm2Lims[1] - fLogDm2Lims[0])/(fNumDm2-1));
     }
     
     
@@ -178,17 +192,18 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
     
     double minchisq = 1e99;
-    std::vector <double> npzeros(fNP, 0);
-    std::vector <std::vector <double> > chisq(fNP, npzeros);
-    for (int i = 0; i < fNP; i++){
-        for (int j = 0; j < fNP; j++) {
-        
+    std::vector <double> chisq_builder(fNumDm2, 0);
+    std::vector <std::vector <double> > chisq(fNumSin, chisq_builder);
+    for (int i = 0; i < fNumSin; i++){
+        for (int j = 0; j < fNumDm2; j++) {
+            
+            // Progress counter
             if (j == 0) {
                 std::cout << "\r\r\r\r\r\r\r\r\r\r\r";
-                int tempi = (int)( (float)(i-1)/fNP*100 );
+                int tempi = (int)( (float)(i-1)/fNumSin*100 );
                 while (tempi > 0) { tempi /= 10; std::cout << "\r"; }
-                std::cout << "Progress: " << (int)( (float)i/fNP*100 ) << "%";
-                if (i == fNP-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
+                std::cout << "Progress: " << (int)( (float)i/fNumSin*100 ) << "%";
+                if (i == fNumSin-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
             }
             
             // Set function parameters
@@ -215,6 +230,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     }
                     
                     osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
+                    osc_counts->SetBinLabel(1+rb, cov.CV_counts->GetBinLabel(1+rb)); // for no warning messages
                     
                 }
                 
@@ -245,7 +261,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     }
                 }
                 
-                scale_hist->Delete();
+                // scale_hist->Delete();
+                del scale_hist;
                 
             }
 	    
@@ -283,17 +300,17 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     
     // Gen TGraph2D for output
     chisqplot = new TGraph2D();
-    for (int i = 0; i < fNP; i++) {
-        for (int j = 0; j < fNP; j++) {
-            chisqplot->SetPoint(i*fNP + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
+    for (int i = 0; i < fNumSin; i++) {
+        for (int j = 0; j < fNumDm2; j++) {
+            chisqplot->SetPoint(i*fNumSin + j, TMath::Log10(sin2theta[i]), TMath::Log10(dm2[j]), chisq[i][j]);
         }
     }
     
     // Get differences
-    std::vector <std::vector <double> > chisq_diffs(fNP, npzeros);
-    for (int i = 0; i < chisq.size(); i++) {
-        for (int j = 0; j < chisq[0].size(); j++) {
-            chisq_diffs[i][j] = chisq[i][j] - minchisq;
+    std::vector <std::vector <double> > chisq_diffs = chisq;
+    for (int i = 0; i < fNumSin; i++) {
+        for (int j = 0; j < fNumDm2; j++) {
+            chisq_diffs[i][j] -= minchisq;
         }
     }
     
@@ -313,22 +330,22 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     // Get contours
     double target;
     std::vector <double> target_dchisq = {1.64, 7.75, 23.40}, corners(4, 0), twozeros(2, 0);
-    std::vector <std::vector <double> > contour, sin_contour(target_dchisq.size()), dm2_contour(target_dchisq.size()), vecof2vecs(fNP, twozeros);
-    std::vector <std::vector <std::vector <double> > > box_minmax(fNP, vecof2vecs);
+    std::vector <std::vector <double> > contour, sin_contour(target_dchisq.size()), dm2_contour(target_dchisq.size()), vecof2vecs(fNumDm2, twozeros);
+    std::vector <std::vector <std::vector <double> > > box_minmax(fNumSin, vecof2vecs);
     for  (int k = 0; k < target_dchisq.size(); k++){
         
         target = target_dchisq[k];
         
         // Initialise box_minmax
-        for (int i = 0; i < fNP-1; i++) {
-            for (int j = 0; j < fNP-1; j++) {
+        for (int i = 0; i < fNumSin-1; i++) {
+            for (int j = 0; j < fNumDm2-1; j++) {
                 box_minmax[i][j] = {0, 0};
             }
         }
         
         // Fill box_minmax out
-        for (int i = 0; i < fNP-1; i++) {
-            for (int j = 0; j < fNP-1; j++) {
+        for (int i = 0; i < fNumSin-1; i++) {
+            for (int j = 0; j < fNumDm2-1; j++) {
                 
                 corners = {chisq_diffs[i][j], chisq_diffs[i+1][j], chisq_diffs[i][j+1], chisq_diffs[i+1][j+1]};
                 box_minmax[i][j] = {corners[0], corners[0]};
@@ -345,8 +362,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         
         // Get the contour
         contour.clear();
-        for (int i = 0; i < fNP-1; i++) {
-            for (int j = 0; j < fNP-1; j++) {
+        for (int i = 0; i < fNumSin-1; i++) {
+            for (int j = 0; j < fNumDm2-1; j++) {
                 
                 if ((target >= box_minmax[i][j][0]) && (target <= box_minmax[i][j][1])) {
                     contour.push_back({(sin2theta[i] + sin2theta[i+1])/2, (dm2[j] + dm2[j+1])/2});
