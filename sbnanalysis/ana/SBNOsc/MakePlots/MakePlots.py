@@ -17,7 +17,7 @@ import math
 ## Main function
 ## ~~~~~~~~~~~~~
 
-def plot_cov_output(args):
+def make_count_plot(args):
     
     # Count plots
     
@@ -80,6 +80,8 @@ def plot_cov_output(args):
         
         canvases[s].SaveAs(args.outdir + sample + "_selection.pdf")
     
+    
+def plot_cov_output(args):
     
     # Covariance, fractional covariance and correlation
 
@@ -337,8 +339,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    print(args.dm2list)
-    
+    if args.cntfile: make_count_plot(args)
     if args.covfile: plot_cov_output(args)
     if args.chifile: plot_chi2_output(args)
     if args.compdir: compare_w_proposal(args)

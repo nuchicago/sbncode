@@ -59,12 +59,12 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
         fLogDm2Lims = {};
         for (auto binlim : (*config)["Sensitivity"]["LogDm2Lims"]) {
-            fDm2Lims.push_back(binlim.asDouble());
+            fLogDm2Lims.push_back(binlim.asDouble());
         }
         fNumSin = (*config)["Sensitivity"].get("NumSin", -1).asInt();
         fLogSinLims = {};
         for (auto binlim : (*config)["Sensitivity"]["LogSinLims"]) {
-            fSinLims.push_back(binlim.asDouble());
+            fLogSinLims.push_back(binlim.asDouble());
         }
         
         // Sample according to which we scale (for shape-only chi squared)
@@ -163,12 +163,12 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     int num_trueE_bins = cov.trueEs.size()/cov.sample_order.size();
     
     // Phase space
-    std::vector <double> sin2theta(fNumSin), dm2(fNumDm2);
+    std::vector <double> sin2theta, dm2;
     for (int i = 0; i < fNumSin; i++) {
-        sin2theta[i] = TMath::Power(10, fLogSinLims[0] + i*(fLogSinLims[1] - fLogSinLims[0])/(fNumSin-1));
+        sin2theta.push_back(TMath::Power(10, fLogSinLims[0] + i*(fLogSinLims[1] - fLogSinLims[0])/(fNumSin-1)));
     }
     for (int j = 0; j < fNumDm2; j++) {
-        dm2[j] = TMath::Power(10, fLogDm2Lims[0] + j*(fLogDm2Lims[1] - fLogDm2Lims[0])/(fNumDm2-1));
+        dm2.push_back(TMath::Power(10, fLogDm2Lims[0] + j*(fLogDm2Lims[1] - fLogDm2Lims[0])/(fNumDm2-1)));
     }
     
     
@@ -183,7 +183,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     //   generate transfer matrices
     //
     //
-    
     
     
     
@@ -210,7 +209,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
             // Create and fill hist to hold oscillated counts
-            TH1D *osc_counts = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
+            TH1D *osc_counts = new TH1D("temposc", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
             
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
@@ -230,7 +229,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     }
                     
                     osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
-                    osc_counts->SetBinLabel(1+rb, cov.CV_counts->GetBinLabel(1+rb)); // for no warning messages
                     
                 }
                 
@@ -243,7 +241,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 assert(fit_sample_index != cov.sample_order.size());
                 
                 // Histogram of scale factors (only part with scaled sample will be used)
-                TH1D *scale_hist = new TH1D("temp", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX()); 
+                TH1D *scale_hist = new TH1D("tempscale", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
                 scale_hist->Divide(cov.CV_counts, osc_counts);
                 
                 // Update each value in osc_counts histogram
@@ -261,8 +259,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     }
                 }
                 
-                // scale_hist->Delete();
-                del scale_hist;
+                scale_hist->Delete();
                 
             }
 	    
