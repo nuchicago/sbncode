@@ -1,5 +1,5 @@
 {
-    "OutputDirectory": "/sbnd/data/users/gavarela/selection/new/diff_weights/",
+    "OutputDirectory": "/sbnd/data/users/gavarela/selection/new/cov_output/",
     "SavePDFs": 1,
     
     "EventSamples": [
@@ -13,14 +13,14 @@
         
         },
         
-        {
+//        {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_allTrajPoints_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
-            "desc": "#nu_{#mu}",
-            "det": "MicroBooNE",
-            "scalefactor": 5.9544e17
+//            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_allTrajPoints_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
+//            "desc": "#nu_{#mu}",
+//            "det": "MicroBooNE",
+//            "scalefactor": 5.9544e17
             
-        },
+//        },
         
         {
             
