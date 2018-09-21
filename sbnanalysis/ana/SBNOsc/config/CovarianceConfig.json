@@ -9,7 +9,8 @@
             "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_oldSim_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
             "desc": "#nu_{#mu}",
             "det": "SBND",
-            "scalefactor": 1.2508299e18
+            "scalefactor": 1.397986359e18 
+            // 1.2508299e18
         
         },
         
@@ -27,7 +28,8 @@
             "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_allTrajPoints_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
             "desc": "#nu_{#mu}",
             "det": "ICARUS",
-            "scalefactor": 2.472774e18
+            "scalefactor": 4.4509932e18 
+            // 2.472774e18
             
         }
         
