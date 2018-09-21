@@ -59,7 +59,8 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.showerEnergyDistortion = (*config)["NumuSelection"].get("showerEnergyDistortion", 0.).asDouble();
     _config.trackEnergyDistortion = (*config)["NumuSelection"].get("trackEnergyDistortion", 0.).asDouble();
     _config.leptonEnergyDistortionContained = (*config)["NumuSelection"].get("leptonEnergyDistortionContained", 0.).asDouble();
-    _config.leptonEnergyDistortionLeaving = (*config)["NumuSelection"].get("leptonEnergyDistortionLeaving", 0.).asDouble();
+    _config.leptonEnergyDistortionLeavingA = (*config)["NumuSelection"].get("leptonEnergyDistortionLeavingA", 0.).asDouble();
+    _config.leptonEnergyDistortionLeavingB = (*config)["NumuSelection"].get("leptonEnergyDistortionLeavingB", 0.).asDouble();
     _config.acceptShakyTracks = (*config)["NumuSelection"].get("acceptShakyTracks", false).asBool();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
   }
@@ -161,10 +162,12 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     calculator.track_threshold =  _config.trackVisibleEnergyThreshold;
     calculator.shower_energy_distortion = _config.showerEnergyDistortion;
     calculator.track_energy_distortion = _config.trackEnergyDistortion;
-
-    if (intInfo.t_is_contained) calculator.lepton_energy_distortion = _config.leptonEnergyDistortionContained;
-    else calculator.lepton_energy_distortion = _config.leptonEnergyDistortionLeaving;
-
+    calculator.lepton_energy_distortion = _config.leptonEnergyDistortionContained;
+    calculator.lepton_energy_distortion_escaped_A = _config.leptonEnergyDistortionLeavingA;
+    calculator.lepton_energy_distortion_escaped_B = _config.leptonEnergyDistortionLeavingB;
+    calculator.lepton_contained = intInfo.t_is_contained;
+    calculator.lepton_contained_track = intIndo.t_contained_length;
+    
     double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator);
 
     Event::RecoInteraction reco_interaction(interaction, i);
