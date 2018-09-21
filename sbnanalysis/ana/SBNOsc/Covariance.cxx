@@ -358,7 +358,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
                 }
-                if (nuE < 0.2 || nuE > 3) {
+                if (nuE < fBins[sample.fDesc][0] || nuE > fBins[sample.fDesc][fBins[sample.fDesc].size()-1]) {
                     continue;
                 } else if (true_nuE < fTrueELims[0] || true_nuE > fTrueELims[1]) {
                     std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
