@@ -115,6 +115,12 @@ struct VisibleEnergyCalculator {
   double track_energy_distortion; //!< Distortion of energies of tracks (%).
   double shower_energy_distortion; //!< Distortion of energies of showers (%).
   double lepton_energy_distortion; //!< Distortion of energies of primary lepton (%). Used iff f_lepton_energy_distortion is NULL. 
+    
+  double lepton_energy_distortion_contained; //!< Distortion of energies of primary lepton whose tracks are contained within the TPC (%).
+  double lepton_energy_distortion_leaving_A; //!< Distortion of energies of primary lepton whose tracks are NOT contained within the TPC (%).
+  double lepton_energy_distortion_leaving_B; //!< Distortion of energies of primary lepton whose tracks are NOT contained within the TPC (%).
+  bool lepton_contained; //!< True if primary lepton's track is contained within TPC.
+  double lepton_contained_length; //!< Length of section of primary lepton's track that is contained within the TPC.
 
   VisibleEnergyCalculator(): 
     lepton_pdgid(0),
@@ -122,7 +128,12 @@ struct VisibleEnergyCalculator {
     shower_threshold(0),
     track_energy_distortion(0),
     shower_energy_distortion(0),
-    lepton_energy_distortion(0)
+    lepton_energy_distortion(0),
+    lepton_energy_distortion_contained(0),
+    lepton_energy_distortion_leaving_A(0),
+    lepton_energy_distortion_leaving_B(0),
+    lepton_contained(false),
+    lepton_contained_length(1)
   {}
 };
 
