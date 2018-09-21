@@ -117,8 +117,10 @@ struct VisibleEnergyCalculator {
   double lepton_energy_distortion; //!< Distortion of energies of primary lepton (%). Used iff f_lepton_energy_distortion is NULL. 
     
   double lepton_energy_distortion_contained; //!< Distortion of energies of primary lepton whose tracks are contained within the TPC (%).
-  double lepton_energy_distortion_leaving_A; //!< Distortion of energies of primary lepton whose tracks are NOT contained within the TPC (%).
-  double lepton_energy_distortion_leaving_B; //!< Distortion of energies of primary lepton whose tracks are NOT contained within the TPC (%).
+  double lepton_energy_distortion_leaving_A; //!< Parameter in function to calculate primary lepton energy resolution. 
+      // (%) = -A * Log(B * L)  where L is the lepton contained length
+  double lepton_energy_distortion_leaving_B; //!< Parameter in function to calculate primary lepton energy resolution.
+      // (%) = -A * Log(B * L)  where L is the lepton contained length
   bool lepton_contained; //!< True if primary lepton's track is contained within TPC.
   double lepton_contained_length; //!< Length of section of primary lepton's track that is contained within the TPC.
 
