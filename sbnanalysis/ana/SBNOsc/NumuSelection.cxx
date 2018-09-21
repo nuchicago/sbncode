@@ -239,6 +239,16 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.active_volumes);
     length = (track.Start().Position().Vect() - track.End().Position().Vect()).Mag();
     contained_in_FV = containedInFV(track.Start().Position().Vect()) && containedInFV(track.End().Position().Vect());
+
+    //std::cout << "WARNING: SHAKY TRACK." << std::endl;
+    //std::cout << "CONTAINED IN FV: " << contained_in_FV << std::endl;
+    //std::cout << "CONTAINED LENGTH: " << contained_length << std::endl; 
+    //std::cout << "LENGTH: " << length << std::endl;
+    //
+    //TVector3 start = track.Start().Position().Vect();
+    //TVector3 end = track.End().Position().Vect();
+    //std::cout << "START: " << start.X() << " " << start.Y() << " " << start.Z() << std::endl;
+    //std::cout << "END: " << end.X() << " " << end.Y() << " " << end.Z() << std::endl;
   }
   
   return NumuSelection::NuMuInteraction({contained_in_FV, contained_length, length, pdgid});
