@@ -45,14 +45,6 @@
 	"xmin": -364.49,
 	"ymin": -173.41,
 	"zmin": -909.950652,
-	"xmax": -216.29,
-	"ymax": 143.41,
-	"zmax": 879.950652
-      },
-      {
-	"xmin": -216.14,
-	"ymin": -173.41,
-	"zmin": -909.950652,
 	"xmax": -67.94,
 	"ymax": 143.41,
 	"zmax": 879.950652
@@ -61,19 +53,10 @@
 	"xmin": 67.94,
 	"ymin": -173.41,
 	"zmin": -909.950652,
-	"xmax": 216.14,
-	"ymax": 143.41,
-	"zmax": 879.950652
-      },
-      {
-	"xmin": 216.29,
-	"ymin": -173.41,
-	"zmin": -909.950652,
 	"xmax": 364.49,
 	"ymax": 143.41,
 	"zmax": 879.950652
       }
-
      ],
      "minLengthContainedTrack": 50, // value taken from proposal
      "minLengthExitingTrack": 100, // value taken from proposal
