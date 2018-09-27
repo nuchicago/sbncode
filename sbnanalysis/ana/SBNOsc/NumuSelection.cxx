@@ -225,12 +225,28 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
   // Get the length and determine if any point leaves the fiducial volume
   if (track.size() != 0) {
     TLorentzVector pos = track.Start().Position();
+    // get the active volume that the start position is in
+    int active_volume_index = -1;
+    // contruct pos Point
+    geoalgo::Point_t pos_point(pos);
+    for (int i = 0; i < _config.active_volumes.size(); i++) {
+      if (_config.active_volumes[i].Contain(pos_point)) {
+        active_volume_index = i;
+      }
+    }
+
+    // only consider contained length in the active volume containing the interaction
+    std::vector<geoalgo::AABox> volumes;
+    if (active_volume_index >= 0) {
+      volumes.push_back(_config.active_volumes[active_volume_index]);
+    }
+    
     for (int i = 1; i < track.size(); i++) {
       // update if track is contained
       if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
       
       // update length
-      contained_length += containedLength(track[i].Position().Vect(), pos.Vect(), _config.active_volumes);
+      contained_length += containedLength(track[i].Position().Vect(), pos.Vect(), volumes);
       length += (track[i].Position().Vect() - pos.Vect()).Mag();
       
       pos = track[i].Position();
