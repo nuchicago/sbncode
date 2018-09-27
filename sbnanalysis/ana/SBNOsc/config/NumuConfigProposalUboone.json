@@ -31,7 +31,8 @@
      "showerEnergyDistortion": 0.05, // not sure about this one
      "trackEnergyDistortion": 0.05, // taken from proposal
      "leptonEnergyDistortionContained": 0.02, // needs update
-     "leptonEnergyDistortionLeaving": 0.2 // needs update
+     "leptonEnergyDistortionLeavingA": 0.102, // from joseph email
+     "leptonEnergyDistortionLeavingB": 0.000612 // from joseph email
    }
 }
 
