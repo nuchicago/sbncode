@@ -154,6 +154,7 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
     interaction.neutrino.w = nu.W();
     interaction.neutrino.energy = nu.Nu().EndMomentum().Energy();
     interaction.neutrino.momentum = nu.Nu().EndMomentum().Vect();
+    interaction.neutrino.position = nu.Nu().Position().Vect();
 
     // Primary lepton
     const simb::MCParticle& lepton = nu.Lepton();
