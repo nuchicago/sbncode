@@ -114,7 +114,6 @@ struct VisibleEnergyCalculator {
   double shower_threshold; //!< Energy threshold of shower energy counted in calculation [GeV].
   double track_energy_distortion; //!< Distortion of energies of tracks (%).
   double shower_energy_distortion; //!< Distortion of energies of showers (%).
-  double lepton_energy_distortion; //!< Distortion of energies of primary lepton (%). Used iff f_lepton_energy_distortion is NULL. 
     
   double lepton_energy_distortion_contained; //!< Distortion of energies of primary lepton whose tracks are contained within the TPC (%).
   double lepton_energy_distortion_leaving_A; //!< Parameter in function to calculate primary lepton energy resolution. 
@@ -130,7 +129,6 @@ struct VisibleEnergyCalculator {
     shower_threshold(0),
     track_energy_distortion(0),
     shower_energy_distortion(0),
-    lepton_energy_distortion(0),
     lepton_energy_distortion_contained(0),
     lepton_energy_distortion_leaving_A(0),
     lepton_energy_distortion_leaving_B(0),
@@ -150,7 +148,7 @@ struct VisibleEnergyCalculator {
  * \return Visble energy in GeV.
  * */
 double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list,  
-    const VisibleEnergyCalculator &calculator=VisibleEnergyCalculator());
+    const VisibleEnergyCalculator &calculator=VisibleEnergyCalculator(), bool include_showers=true);
   }  // namespace SBNOsc
 }  // namespace ana
 

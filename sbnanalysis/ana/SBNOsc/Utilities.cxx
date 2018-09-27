@@ -166,7 +166,7 @@ double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector
 }
 
 double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list, 
-    const VisibleEnergyCalculator &calculator) {
+    const VisibleEnergyCalculator &calculator, bool include_showers) {
   double visible_E = 0;
 
   // set up distortion if need be
@@ -194,44 +194,49 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
   }
 
   // ...and showers
-  for (auto const &mcs: mcshower_list) {
-    // ignore particles not from nu vertex, non primary particles, and uncharged particles
-    if (!isFromNuVertex(mctruth, mcs) || abs(PDGCharge(mcs.PdgCode())) < 1e-4 || mcs.Process() != "primary")
-      continue; 
-    // account for primary lepton later
-    if ((abs(mcs.PdgCode()) == 13 || abs(mcs.PdgCode()) == 11) && isFromNuVertex(mctruth, mcs))
-      continue; 
+  if (include_showers) {
+    for (auto const &mcs: mcshower_list) {
+      // ignore particles not from nu vertex, non primary particles, and uncharged particles
+      if (!isFromNuVertex(mctruth, mcs) || abs(PDGCharge(mcs.PdgCode())) < 1e-4 || mcs.Process() != "primary")
+        continue; 
+      // account for primary lepton later
+      if ((abs(mcs.PdgCode()) == 13 || abs(mcs.PdgCode()) == 11) && isFromNuVertex(mctruth, mcs))
+        continue; 
 
-    double mass = PDGMass(mcs.PdgCode());
-    double this_visible_energy = (mcs.Start().E() - mass) / 1000. /* MeV to GeV */;
-    if (calculator.shower_energy_distortion > 1e-4) {
-      this_visible_energy += rand.Gaus(0, calculator.shower_energy_distortion) * this_visible_energy;
-      // clamp to 0
-      this_visible_energy = std::max(this_visible_energy, 0.);
-    }
-    if (this_visible_energy > calculator.shower_threshold) {
-      visible_E += this_visible_energy;
+      double mass = PDGMass(mcs.PdgCode());
+      double this_visible_energy = (mcs.Start().E() - mass) / 1000. /* MeV to GeV */;
+      if (calculator.shower_energy_distortion > 1e-4) {
+        this_visible_energy += rand.Gaus(0, calculator.shower_energy_distortion) * this_visible_energy;
+        // clamp to 0
+        this_visible_energy = std::max(this_visible_energy, 0.);
+      }
+      if (this_visible_energy > calculator.shower_threshold) {
+        visible_E += this_visible_energy;
+      }
     }
   }
 
-  // ..and primary lepton energy
-  const simb::MCParticle& lepton = mctruth.GetNeutrino().Lepton();
-  double smearing_percentage;
-  if (calculator.lepton_contained) {
-    smearing_percentage = calculator.lepton_energy_distortion_contained;
-  } else {
-    double A = calculator.lepton_energy_distortion_leaving_A,
-           B = calculator.lepton_energy_distortion_leaving_B;
-    smearing_percentage = -A * TMath::Log(B * calculator.lepton_contained_length);
+  // ...and primary lepton energy (for CC events)
+  bool is_cc = mctruth.GetNeutrino().CCNC() == simb::kCC;
+ 
+  if (is_cc) {
+    const simb::MCParticle& lepton = mctruth.GetNeutrino().Lepton();
+    double smearing_percentage;
+    if (calculator.lepton_contained) {
+      smearing_percentage = calculator.lepton_energy_distortion_contained;
+    } else {
+      double A = calculator.lepton_energy_distortion_leaving_A,
+             B = calculator.lepton_energy_distortion_leaving_B;
+      smearing_percentage = -A * TMath::Log(B * calculator.lepton_contained_length);
+    }
+    // smear visible energy
+    double lepton_visible_energy = lepton.E() - lepton.Mass();
+    double smeared_lepton_visible_energy = lepton_visible_energy + rand.Gaus(0, smearing_percentage) * lepton_visible_energy;
+    // clamp to 0
+    smeared_lepton_visible_energy = std::max(smeared_lepton_visible_energy, 0.);
+
+    visible_E += smeared_lepton_visible_energy; 
   }
-  // smear visible energy
-  double lepton_visible_energy = lepton.E() - lepton.Mass();
-  double smeared_lepton_visible_energy = lepton_visible_energy + rand.Gaus(0, smearing_percentage) * lepton_visible_energy;
-  // clamp to 0
-  smeared_lepton_visible_energy = std::max(smeared_lepton_visible_energy, 0.);
-
-  visible_E += smeared_lepton_visible_energy; 
-
   // if lepton pdgid is set, add its mass back into the visible energy
   if (calculator.lepton_pdgid != 0) visible_E += PDGMass(calculator.lepton_pdgid) / 1000.;
 

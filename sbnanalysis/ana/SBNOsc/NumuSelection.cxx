@@ -162,13 +162,13 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     calculator.track_threshold =  _config.trackVisibleEnergyThreshold;
     calculator.shower_energy_distortion = _config.showerEnergyDistortion;
     calculator.track_energy_distortion = _config.trackEnergyDistortion;
-    calculator.lepton_energy_distortion = _config.leptonEnergyDistortionContained;
+    calculator.lepton_energy_distortion_contained = _config.leptonEnergyDistortionContained;
     calculator.lepton_energy_distortion_leaving_A = _config.leptonEnergyDistortionLeavingA;
     calculator.lepton_energy_distortion_leaving_B = _config.leptonEnergyDistortionLeavingB;
     calculator.lepton_contained = intInfo.t_is_contained;
     calculator.lepton_contained_length = intInfo.t_contained_length;
     
-    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator);
+    double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator, false);
 
     Event::RecoInteraction reco_interaction(interaction, i);
     reco_interaction.reco_energy = visible_energy;

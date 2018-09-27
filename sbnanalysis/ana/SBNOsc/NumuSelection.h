@@ -92,7 +92,6 @@ protected:
     double showerEnergyDistortion; //!< Energy distortion of showers for visible energy calculation (%).
     double trackEnergyDistortion; //!< Energy distortion of tracks for visible energy calculation (%).
     double leptonEnergyDistortionContained; //<! Energy distortion of lepton (primary track) for visible energy calculation (%).
-    double leptonEnergyDistortionLeaving; //<! Energy distortion of lepton (primary track) for visible energy calculation (%).
     double leptonEnergyDistortionLeavingA; //!< Parameter to be used in the energy distortion of primary lepton for visible energy calculation. 
       // (%) = -A * Log(B * L)  where L is the lepton contained length
     double leptonEnergyDistortionLeavingB; //!< Parameter to be used in the energy distortion of primary lepton for visible energy calculation. 
