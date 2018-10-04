@@ -229,6 +229,25 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         }
         fNumTrueEBins = (*config)["Covariance"].get("NumTrueEBins", -1).asInt();
         
+        // Detector dimensions and distances
+        fNumDistBinsPerMeter = (*config)["Covariance"].get("NumDistanceBins", -1).asInt();
+        fDetDists = {}; fDetDims = {};
+        for (auto det : (*config)["Covariance"]["DetectorDimensions"]) {
+            
+            std::string detname = det["Detector"].asString();
+            
+            std::vector <std::vector <double > > xyz_lims;
+            for (auto lim : det["X"]) xyz_lims[0].push_back(lim);
+            for (auto lim : det["Y"]) xyz_lims[1].push_back(lim);
+            for (auto lim : det["Z"]) xyz_lims[2].push_back(lim);
+            
+            fDetDims.insert({detname, xyz_lims});
+            
+            float distance = det["Distance"].asFloat();
+            fDetDists.insert({detname, distance});
+            
+        }
+        
         // Histogram bins
         std::vector <double> default_bins = { 0.2, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.25, 1.5, 2, 2.5, 3 };
         for (std::string desc : descs) {
@@ -284,6 +303,59 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     sample_bins.push_back(num_bins);
     
+        // Number of distance bins needed in 3D histogram of true CC interactions
+    std::map <std::string, std::vector <double> > dist_bin_lims;
+    std::map <std::string, int> dist_bin_nums;
+    for (auto it : fDetDims) {
+        
+        int min_dist, max_dist; 
+        min_dist = fDetDists[it.first];
+        
+        float xlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
+              ylen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
+              zlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */;
+        max_dist = TMath::Sqrt( xlen*xlen + ylen*ylen + (min_dist+zlen)*(min_dist+zlen) )
+        
+        dist_bin_lims.insert({it.first, {min_dist, max_dist}});
+        dist_bin_nums.insert({it.first, (int)((max_dist - min_dist)/(fNumDistBinsPerMeter*1000 /* 1/m -> 1/km */))})
+    }
+    
+    std::cout << std::endl << "Doing distance bins:" << std::endl;
+    
+    int num_dist_bins = 0;
+    dist_bins = {}; sample_dist_bins = {0};
+    for (std::string sample : sample_order) {
+        
+        std::cout << "   Sample = " << sample << " with ";
+        
+        for (auto it : dist_bin_nums) {
+            if (sample.find(it.first) != std::string::npos) {
+                
+                num_dist_bins += it.second;
+                sample_dist_bins.push_back(sample_dist_bins[sample_dist_bins.size()-1] + it.second);
+                
+                std::cout << it.second << " bins:" << std::endl;
+                
+                for (int i = 0; i < it.second; i++) {
+                    dist_bins.push_back(dist_bin_lims[it.first][0] + i*(dist_bin_lims[it.first][1] - dist_bin_lims[it.first][0])/(it.second - 1));
+                    
+                    std::cout << dist_bins[dist_bins.size()-1] << ", ";
+                }
+                
+                std::cout << std::endl;
+                
+                break;
+            }
+        }
+        
+    }
+    
+    std::cout << "And sample_dist_bins came out as ";
+    for (double bin : sample_dist_bins) {
+        std::cout << bin << ", ";
+    }
+    std::cout << std::endl;
+    
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
     
@@ -296,10 +368,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     }
     
-    // Large (meaningless x-axis) histograms (one 2d) for oscillation calculations later on
+    // Large (meaningless x-axis) histograms (one 3d) for oscillation calculations later on
     bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
     
-    nu_counts = new TH2D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin", fNumTrueEBins*sample_order.size(), 0, fNumTrueEBins*sample_order.size(), num_bins, 0, num_bins);
+    nu_counts = new TH3D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin; Distance Bin", fNumTrueEBins*sample_order.size(), 0, fNumTrueEBins*sample_order.size(), num_bins, 0, num_bins, num_dist_bins, 0, num_dist_bins);
     
     // Vectors to hold nice histograms
     std::vector <TH1D*> numu_cts(dets.size(), new TH1D()), numu_bkg(dets.size(), new TH1D()),
@@ -331,8 +403,25 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
         
             // Neutrinos
-        TH2D *temp_nu_counts = new TH2D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, fTrueELims[0], fTrueELims[1], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0]);
+        std::cout << std::endl << "For sample " << sample.fDet << " " << sample.fDesc << " there are:" << std::endl;
         
+        std::cout << "  " << fNumTrueEBins << " true E bins: ";
+        std::vector temp_trueE_bins = {};
+        for (int i = 0; i < fNumTrueEBins; i++) {
+            temp_trueE_bins.push_back(fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins-1));
+            std::cout << fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins-1) << ", ";
+        }
+        std::cout << std::endl;
+        
+        std::cout << "  " << dist_bin_nums[sample.fDet] << " distance bins: ";
+        std::vector temp_dist_bins = {};
+        for (int i = 0; i < dist_bin_nums[sample.fDet]; i++) {
+            temp_dist_bins.push_back(dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]-1));
+            std::cout << dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]-1) << ", ";
+        }
+        std::cout << std::endl;
+        
+        TH3D *temp_nu_counts = new TH3D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, &temp_trueE_bins[0], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0], dist_bin_nums[sample.fDet], &temp_dist_bins[0]);
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -392,15 +481,21 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                     uweights = event->truth[truth_ind].weights[fWeightKey];
                 }
                 
-                // Fill other histograms
+                // Fill alternative universe histograms
                 for (int u = 0; u < uweights.size(); u++) {
                     temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
                 }
                 
+                // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
+                double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
+                       dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
+                       dz = (event->truth[truth_ind].neutrino.position.Z() - (fDetDims[sample.fDet][2][1] + fDetDims[sample.fDet][2][0])/2) / 100000 /* cm -> km */;
+                double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDims[sampe.fDet][2][0] + dz)*(fDetDims[sampe.fDet][2][0] + dz) );
+                
                 // Fill chisq histograms
                 bool isnu = (sample.fDesc.find("#nu") != std::string::npos);
                 if (isnu && isCC) {
-                    temp_nu_counts->Fill(true_nuE, nuE, wgt);
+                    temp_nu_counts->Fill(true_nuE, nuE, dist, wgt);
                 } else {
                     temp_bkg_counts->Fill(nuE, wgt);
                 }
@@ -439,8 +534,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
             // nu_counts
             for (int tb = 0; tb < temp_nu_counts->GetNbinsX(); tb++) {
-                nu_counts->SetBinContent(1 + o*fNumTrueEBins + tb, 1 + sample_bins[o] + rb,
-                                         temp_nu_counts->GetBinContent(1+tb, 1+rb));
+                for (int db = 0; db < temp_nu_counts->GetNbinsZ(); db++) {
+                    
+                    nu_counts->SetBinContent(1 + o*fNumTrueEBins + tb, 1 + sample_bins[o] + rb, 
+                                             1 + sample_dist_bins[o] + db, 
+                                             temp_nu_counts->GetBinContent(1+tb, 1+rb, 1+db));
+                    
+                }
             }
             
         }

@@ -52,7 +52,11 @@ class Covariance {
                                                 // matrices.
         
         TH1D *bkg_counts;                       // Counts of non-neutrino events. Won't be oscillated.
-        TH2D *nu_counts;                        // Counts of geniune neutrino events. For oscillation.
+        TH3D *nu_counts;                        // Counts of geniune neutrino events. For oscillation.
+        
+        std::vector <double> sample_dist_bins,  // Distance bin limits of samples.
+                             dist_bins;         // All distance bins.
+        
         
         TH1D *CV_counts;                        // CV universe counts.
         std::vector <double> energies, trueEs;  // Bin centres for bins in all hists; second is for
@@ -74,6 +78,10 @@ class Covariance {
         double fSelectionEfficiency, fRejectionEfficiency;
         
         std::map <std::string, std::vector <double> > fBins;
+        
+        int fNumDistBinsPerMeter;
+        std::map <std::string, float> fDetDists;
+        std::map <std::string, std::vector <std::vector <double > > fDetDims;
         
         std::vector <double> fTrueELims;
         int fNumTrueEBins;
