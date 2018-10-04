@@ -6,30 +6,28 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_oldSim_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_gavarela_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
             "desc": "#nu_{#mu}",
             "det": "SBND",
-            "scalefactor": 1.397986359e18 
-            // 1.2508299e18
+            "scalefactor": 298742200000000000.000000
         
         },
         
-//        {
+        {
             
-//            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_allTrajPoints_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
-//            "desc": "#nu_{#mu}",
-//            "det": "MicroBooNE",
-//            "scalefactor": 5.9544e17
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/uboone_oldFlux_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
+            "desc": "#nu_{#mu}",
+            "det": "MicroBooNE",
+            "scalefactor": 19780727000000000000.000000
             
-//        },
+        },
         
         {
             
             "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_allTrajPoints_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
             "desc": "#nu_{#mu}",
             "det": "ICARUS",
-            "scalefactor": 4.4509932e18 
-            // 2.472774e18
+            "scalefactor": 2472774000000000000.000000
             
         }
         
@@ -52,6 +50,41 @@
             "#nu_{e}": [ 0.2, 0.35, 0.5, 0.65, 0.8, 0.95, 1.1, 1.3, 1.5, 1.75, 2, 3 ]
         
         },
+        
+        "NumDistanceBinsPerMeter": 10,
+        "DetectorDimensions": [
+            
+            {
+                
+                "Detector": "SBND",
+                "Distance": 0.1,
+                "X": [ -190.9, 190.9 ],
+                "Y": [ -185, 185 ],
+                "Z": [ 15, 415 ]
+                
+            },
+            
+            {
+                
+                "Detector": "MicroBooNE",
+                "Distance": 0.47,
+                "X": [ 13.45, 239.8 ],
+                "Y": [ -100.53, 102.47 ],
+                "Z": [ 15.1, 956.9 ]
+                
+            },
+            
+            {
+                
+                "Detector": "ICARUS",
+                "Distance": 0.6,
+                "X": [ -356.24, 356.24 ],
+                "Y": [ -158.41, 128.41 ],
+                "Z": [ -894.950652, 799.950652]
+                
+            },
+            
+        ],
         
         "TrueELims": [ 0.0, 7.0 ],
         "NumTrueEBins": 140,

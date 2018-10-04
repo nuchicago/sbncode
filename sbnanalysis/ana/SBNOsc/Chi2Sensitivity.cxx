@@ -29,14 +29,17 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         From (Covariance::Covariance) cov, we'll use the following arributes:
             - cov         , the covariance matrix as a TH2D*;
             - bkg_counts  , a TH1D* containing the CV counts of non-oscillating particles
-            - nu_counts   , a TH2D* containing the CV counts of oscillating particles, with
-                            true E bins on the x-axis and reconstructed E bins on the y-axis
+            - nu_counts   , a TH3D* containing the CV counts of oscillating particles, by
+                            true E (x-axis), reconstructed E (y) and distance from target (z)
             - CV_counts   , a TH1D* containing the CV counts;
             - energies    , a vector <double> with the energies corresponding 
                             to the bin centers in the three count hists above;
             - sample_order, a vector <string> with the samples plotted in the count hists above;
             - sample_bins , a vector <int> with the bins in the count hists above that separate the
-                            samples described in sample_order.
+                            samples described in sample_order;
+            - trueEs      , a vector containing the true energy value for each bin of nu_counts;
+            - sample_dist_bins, a vector containing the distance bins separating different samples;
+            - dist_bins   , a vector containing the distance value for each bin of nu_counts.
                             
         From the config file:
             - fNumDm2     , number of points in dm2 dimension of (dm2, sin2(2theta)) phase space,
@@ -122,7 +125,8 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         // [0] is sin^2(2theta) {diff theta!}, [1] is delta m^2 {same}, x is L/E
     
     // Distances
-    double SBND_dist = 0.1, MicroBooNE_dist = 0.47, ICARUS_dist = 0.6; // all in km
+    /*
+    double SBND_dist = 0.1, MicroBooNE_dist = 0.47, ICARUS_dist = 0.6; // all in km <- make configurable?
     std::vector <double> distance;
     for (int s = 0; s < cov.sample_order.size(); s++) {
         
@@ -142,6 +146,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         }
         
     }
+    */
     
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
     std::vector <int> oscillate(cov.CV_counts->GetNbinsX(), 0);
@@ -217,15 +222,17 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     
                     double dosc_counts_rb = 0;
                     for (int tb = o*num_trueE_bins; tb < (o+1)*num_trueE_bins; tb++) {
+                        for (int db = cov.sample_dist_bins[o]; db < cov.sample_dist)bins[o+1]; db++) {
 
-                        // Numus
-                        if (oscillate[rb] == 1) {
-                            dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb) * numu_to_numu(distance[rb]/cov.trueEs[tb]);
-                        // Nues
-                        } else if (oscillate[rb] == 2) {
-                            // For the future...
+                            // Numus
+                            if (oscillate[rb] == 1) {
+                                dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb, 1+db) * numu_to_numu(cov.dist_bins[db]/cov.trueEs[tb]);
+                            // Nues
+                            } else if (oscillate[rb] == 2) {
+                                // For the future...
+                            }
+                            
                         }
-                        
                     }
                     
                     osc_counts->SetBinContent(1+rb, cov.bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
