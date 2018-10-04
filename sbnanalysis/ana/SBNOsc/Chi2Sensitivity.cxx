@@ -200,7 +200,10 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     std::vector <std::vector <double> > chisq(fNumSin, chisq_builder);
     for (int i = 0; i < fNumSin; i++){
         for (int j = 0; j < fNumDm2; j++) {
-            
+    
+std::cout << "i = " << i << ", j = " << j << std::endl;
+       
+/* 
             // Progress counter
             if (j == 0) {
                 std::cout << "\r\r\r\r\r\r\r\r\r\r\r";
@@ -209,7 +212,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 std::cout << "Progress: " << (int)( (float)i/fNumSin*100 ) << "%";
                 if (i == fNumSin-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
             }
-            
+  */          
             // Set function parameters
             numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
             
@@ -222,7 +225,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     
                     double dosc_counts_rb = 0;
                     for (int tb = o*num_trueE_bins; tb < (o+1)*num_trueE_bins; tb++) {
-                        for (int db = cov.sample_dist_bins[o]; db < cov.sample_dist)bins[o+1]; db++) {
+                        for (int db = cov.sample_dist_bins[o]; db < cov.sample_dist_bins[o+1]; db++) {
 
                             // Numus
                             if (oscillate[rb] == 1) {

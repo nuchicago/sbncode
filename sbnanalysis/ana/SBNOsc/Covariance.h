@@ -17,7 +17,9 @@
 
 #include <TFile.h>
 #include <TTree.h>
+#include <TH1D.h>
 #include <TH2D.h>
+#include <TH3D.h>
 
 class TTree;
 
@@ -81,7 +83,7 @@ class Covariance {
         
         int fNumDistBinsPerMeter;
         std::map <std::string, float> fDetDists;
-        std::map <std::string, std::vector <std::vector <double > > fDetDims;
+        std::map <std::string, std::vector <std::vector <double > > > fDetDims;
         
         std::vector <double> fTrueELims;
         int fNumTrueEBins;

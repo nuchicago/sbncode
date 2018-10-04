@@ -14,8 +14,10 @@
 #include <cassert>
 
 #include <TFile.h>
+#include <TVector3.h>
 #include <TH1D.h>
 #include <TH2D.h>
+#include <TH3D.h>
 #include <THStack.h>
 #include <TROOT.h>
 // #include <TTree.h>
@@ -230,19 +232,19 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         fNumTrueEBins = (*config)["Covariance"].get("NumTrueEBins", -1).asInt();
         
         // Detector dimensions and distances
-        fNumDistBinsPerMeter = (*config)["Covariance"].get("NumDistanceBins", -1).asInt();
+        fNumDistBinsPerMeter = (*config)["Covariance"].get("NumDistanceBinsPerMeter", -1).asInt();
         fDetDists = {}; fDetDims = {};
         for (auto det : (*config)["Covariance"]["DetectorDimensions"]) {
             
             std::string detname = det["Detector"].asString();
             
-            std::vector <std::vector <double > > xyz_lims;
-            for (auto lim : det["X"]) xyz_lims[0].push_back(lim);
-            for (auto lim : det["Y"]) xyz_lims[1].push_back(lim);
-            for (auto lim : det["Z"]) xyz_lims[2].push_back(lim);
+            std::vector <std::vector <double > > xyz_lims = {{}, {}, {}};
+            for (auto lim : det["X"]) xyz_lims[0].push_back(lim.asDouble());
+            for (auto lim : det["Y"]) xyz_lims[1].push_back(lim.asDouble());
+            for (auto lim : det["Z"]) xyz_lims[2].push_back(lim.asDouble());
             
             fDetDims.insert({detname, xyz_lims});
-            
+
             float distance = det["Distance"].asFloat();
             fDetDists.insert({detname, distance});
             
@@ -308,18 +310,33 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     std::map <std::string, int> dist_bin_nums;
     for (auto it : fDetDims) {
         
-        int min_dist, max_dist; 
+        double min_dist, max_dist; 
         min_dist = fDetDists[it.first];
-        
+       
+std::cout << "Detector " << it.first << " gave min_dist" << min_dist << std::endl;
+ 
         float xlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
               ylen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
               zlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */;
-        max_dist = TMath::Sqrt( xlen*xlen + ylen*ylen + (min_dist+zlen)*(min_dist+zlen) )
+        max_dist = TMath::Sqrt( xlen*xlen + ylen*ylen + (min_dist+zlen)*(min_dist+zlen) );
         
+std::cout << "    and max_dist " << max_dist << std::endl;
+std::cout << "    and number of bins - (max_dist - min_dist)*(fNumDistBinsPerMeter*1000 /* 1/m -> 1/km */) - : " << (max_dist - min_dist)/(fNumDistBinsPerMeter*1000 /* 1/m -> 1/km */) << std::endl;
+
+std::cout << fNumDistBinsPerMeter << " is num bins per meter" << std::endl;
+
         dist_bin_lims.insert({it.first, {min_dist, max_dist}});
-        dist_bin_nums.insert({it.first, (int)((max_dist - min_dist)/(fNumDistBinsPerMeter*1000 /* 1/m -> 1/km */))})
+        dist_bin_nums.insert({it.first, (max_dist - min_dist)*(fNumDistBinsPerMeter*1000 /* 1/m -> 1/km */)});
     }
     
+std::cout << std::endl << "Dist bin Lims:";
+std::cout << std::endl << "uBooNE: ";
+for (auto x : dist_bin_lims["MicroBooNE"]) std::cout << x << "  ";
+std::cout << std::endl << "SBND: ";
+for (auto x : dist_bin_lims["SBND"]) std::cout << x << "  ";
+std::cout << std::endl << "ICARUS: ";
+for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
+
     std::cout << std::endl << "Doing distance bins:" << std::endl;
     
     int num_dist_bins = 0;
@@ -406,7 +423,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         std::cout << std::endl << "For sample " << sample.fDet << " " << sample.fDesc << " there are:" << std::endl;
         
         std::cout << "  " << fNumTrueEBins << " true E bins: ";
-        std::vector temp_trueE_bins = {};
+        std::vector <double> temp_trueE_bins = {};
         for (int i = 0; i < fNumTrueEBins; i++) {
             temp_trueE_bins.push_back(fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins-1));
             std::cout << fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins-1) << ", ";
@@ -414,15 +431,25 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         std::cout << std::endl;
         
         std::cout << "  " << dist_bin_nums[sample.fDet] << " distance bins: ";
-        std::vector temp_dist_bins = {};
+        std::vector <double> temp_dist_bins = {};
         for (int i = 0; i < dist_bin_nums[sample.fDet]; i++) {
             temp_dist_bins.push_back(dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]-1));
             std::cout << dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]-1) << ", ";
         }
         std::cout << std::endl;
         
+        std::cout << std::endl << "Will now build the TH3D with axes:";
+        std::cout << std::endl << "X (size = " << fNumTrueEBins << "): ";
+        for (auto a : temp_trueE_bins) std::cout << a << ", ";
+        std::cout << std::endl << "Y (size = " << fBins[sample.fDesc].size() - 1 << "): ";
+        for (auto a : fBins[sample.fDesc]) std::cout << a << ", ";
+        std::cout << std::endl << "Z (size = " << dist_bin_nums[sample.fDet] << "): ";
+        for (auto a : temp_dist_bins) std::cout << a << ", ";
+         
         TH3D *temp_nu_counts = new TH3D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, &temp_trueE_bins[0], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0], dist_bin_nums[sample.fDet], &temp_dist_bins[0]);
         
+        std::cout << "Defined the TH3D in the line above." << std::endl;
+
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
         sample.tree->SetBranchAddress("events", &event);
@@ -490,7 +517,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
                        dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
                        dz = (event->truth[truth_ind].neutrino.position.Z() - (fDetDims[sample.fDet][2][1] + fDetDims[sample.fDet][2][0])/2) / 100000 /* cm -> km */;
-                double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDims[sampe.fDet][2][0] + dz)*(fDetDims[sampe.fDet][2][0] + dz) );
+                double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDims[sample.fDet][2][0] + dz)*(fDetDims[sample.fDet][2][0] + dz) );
                 
                 // Fill chisq histograms
                 bool isnu = (sample.fDesc.find("#nu") != std::string::npos);

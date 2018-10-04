@@ -73,6 +73,22 @@ int main(int argc, char* argv[]) {
         for (TH1D* hist : hist_vec) hist->Write();
     }
     
+    TCanvas *c = new TCanvas();
+
+    TH1D *dists = (TH1D*) cov.nu_counts->ProjectionZ();
+    dists->Draw();
+    c->SaveAs((directory + "dists_hist.png").c_str());
+    
+    TH1D *reco = new TH1D("reco", "All Neutrino Counts, from TH3D; Reconstructed E (GeV); Counts", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
+    reco->Add(cov.bkg_counts, (TH1D*) cov.nu_counts->ProjectionY());
+    reco->Draw();
+    c->SaveAs((directory + "cts_from_3d.png").c_str());
+    
+    cov.CV_counts->Draw();
+    c->SaveAs((directory + "cts_from_CV.png").c_str());
+    
+    cov.bkg_counts->Draw();
+    c->SaveAs((directory + "bkg_cts.png").c_str());
     
     //// Get sensitivity contours
     //// ~~~~~~~~~~~~~~~~~~~~~~~~
