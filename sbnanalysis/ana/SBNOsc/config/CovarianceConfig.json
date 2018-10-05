@@ -24,7 +24,7 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_icarus_sample/output_SBNOsc_NumuSelection_Proposal_Icarus",
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_icarus_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
             "desc": "#nu_{#mu}",
             "det": "ICARUS",
             "scalefactor": 2472774000000000000.000000 
