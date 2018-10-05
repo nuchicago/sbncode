@@ -316,8 +316,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
 std::cout << "Detector " << it.first << " gave min_dist" << min_dist << std::endl;
  
         float xlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
-              ylen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
-              zlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */;
+              ylen = (it.second[1][1] - it.second[1][0])/100000 /* cm -> km */,
+              zlen = (it.second[2][1] - it.second[2][0])/100000 /* cm -> km */;
         max_dist = TMath::Sqrt( xlen*xlen + ylen*ylen + (min_dist+zlen)*(min_dist+zlen) );
         
 std::cout << "    and max_dist " << max_dist << std::endl;
@@ -353,8 +353,8 @@ for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
                 
                 std::cout << it.second << " bins:" << std::endl;
                 
-                for (int i = 0; i < it.second; i++) {
-                    dist_bins.push_back(dist_bin_lims[it.first][0] + i*(dist_bin_lims[it.first][1] - dist_bin_lims[it.first][0])/(it.second - 1));
+                for (int i = 0; i < it.second + 1; i++) {
+                    dist_bins.push_back(dist_bin_lims[it.first][0] + i*(dist_bin_lims[it.first][1] - dist_bin_lims[it.first][0])/(it.second));
                     
                     std::cout << dist_bins[dist_bins.size()-1] << ", ";
                 }
@@ -373,6 +373,11 @@ for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
     }
     std::cout << std::endl;
     
+std::cout << std::endl << "With the bins themselves:" << std::endl;
+for (auto bin : dist_bins) std::cout << bin << ", ";
+std::cout << std::endl << std::endl;
+
+
     // Large (meaningless x-axis) histograms for cov
     std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
     
@@ -424,17 +429,17 @@ for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
         
         std::cout << "  " << fNumTrueEBins << " true E bins: ";
         std::vector <double> temp_trueE_bins = {};
-        for (int i = 0; i < fNumTrueEBins; i++) {
-            temp_trueE_bins.push_back(fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins-1));
-            std::cout << fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins-1) << ", ";
+        for (int i = 0; i < fNumTrueEBins + 1; i++) {
+            temp_trueE_bins.push_back(fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins));
+            std::cout << fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins) << ", ";
         }
         std::cout << std::endl;
         
         std::cout << "  " << dist_bin_nums[sample.fDet] << " distance bins: ";
         std::vector <double> temp_dist_bins = {};
-        for (int i = 0; i < dist_bin_nums[sample.fDet]; i++) {
-            temp_dist_bins.push_back(dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]-1));
-            std::cout << dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]-1) << ", ";
+        for (int i = 0; i < dist_bin_nums[sample.fDet]+1; i++) {
+            temp_dist_bins.push_back(dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]));
+            std::cout << dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]) << ", ";
         }
         std::cout << std::endl;
         
@@ -448,7 +453,9 @@ for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
          
         TH3D *temp_nu_counts = new TH3D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, &temp_trueE_bins[0], fBins[sample.fDesc].size() - 1, &fBins[sample.fDesc][0], dist_bin_nums[sample.fDet], &temp_dist_bins[0]);
         
-        std::cout << "Defined the TH3D in the line above." << std::endl;
+        std::cout << "Defined the TH3D in the line above." << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl << std::endl;
+
+std::cout << "Will loop over nus now. The distances are (in m, for select events)";
 
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -516,9 +523,21 @@ for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
                 // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
                 double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
                        dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
-                       dz = (event->truth[truth_ind].neutrino.position.Z() - (fDetDims[sample.fDet][2][1] + fDetDims[sample.fDet][2][0])/2) / 100000 /* cm -> km */;
-                double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDims[sample.fDet][2][0] + dz)*(fDetDims[sample.fDet][2][0] + dz) );
-                
+                       dz = (event->truth[truth_ind].neutrino.position.Z() - fDetDims[sample.fDet][2][0]) / 100000 /* cm -> km */;
+                double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDists[sample.fDet] + dz)*(fDetDists[sample.fDet] + dz) );
+
+if (e%200 == 0) {
+std::cout << std::endl << "For event " << e << std::endl
+<< "X = " << event->truth[truth_ind].neutrino.position.X() << " and dx = " << dx << std::endl
+<< "Y = " << event->truth[truth_ind].neutrino.position.Y() << " and dy = " << dy << std::endl
+<< "Z = " << event->truth[truth_ind].neutrino.position.Z() << " and dz = " << dz << std::endl
+<< "dist = " << dist * 1000;
+}
+
+if ((dist < temp_dist_bins[0]) | (dist > temp_dist_bins[temp_dist_bins.size()-1])) {
+std::cout << std::endl << std::endl << " DIST OUTSIDE OF BOUNDS!!! " << dist << " !in (" << temp_dist_bins[0] << ", " << temp_dist_bins[temp_dist_bins.size()-1] << ")" << std::endl;
+} 
+
                 // Fill chisq histograms
                 bool isnu = (sample.fDesc.find("#nu") != std::string::npos);
                 if (isnu && isCC) {
@@ -530,6 +549,8 @@ for (auto x : dist_bin_lims["ICARUS"]) std::cout << x << "  ";
             }
         }
         
+std::cout << std::endl << std::endl << std::endl << std::endl;
+
         std::cout << "Sample " << sample.fDet << " - " << sample.fDesc << " had " << nucount << " neutrinos." << std::endl;
         
         // Rescale to desired POT

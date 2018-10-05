@@ -24,10 +24,10 @@
         
         {
             
-            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_allTrajPoints_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_icarus_sample/output_SBNOsc_NumuSelection_Proposal_Icarus",
             "desc": "#nu_{#mu}",
             "det": "ICARUS",
-            "scalefactor": 2472774000000000000.000000
+            "scalefactor": 2472774000000000000.000000 
             
         }
         
@@ -101,7 +101,7 @@
     
     "Sensitivity": {
         
-        "ScaleSample": "SBND #nu_{#mu}",
+//        "ScaleSample": "SBND #nu_{#mu}",
         
         "NumDm2": 300,
         "LogDm2Lims": [ -2.0, 2.0 ],
