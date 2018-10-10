@@ -113,7 +113,7 @@ protected:
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram [cm]
   };
 
-  static const unsigned nCuts = 4; //!< number of cuts
+  static const unsigned nCuts = 5; //!< number of cuts
 
   /* Applies FV cut 
   * \param v The neutrino interaction vertex
@@ -178,7 +178,7 @@ protected:
  * \return List of names of cuts (for histogram names)
  * */
   static const std::array<std::string, nCuts> cutNames() {
-    return {"Track", "FV", "min_L", "reco_V"};
+    return {"Track", "FV", "min_L", "reco_V", "AV"};
   }
 
   Config _config; //!< The config

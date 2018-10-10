@@ -386,8 +386,15 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
     std::cout << "pass Length: " << pass_min_length << std::endl;
   }
 
+  // TEMP: add in an active volume cut
+  bool pass_AV = false; 
+  geoalgo::Point_t interaction(nu.Nu().Position().Vect());
+  for (auto const& AV: _config.active_volumes) {
+    if (AV.Contain(interaction)) pass_AV = true;
+  }
+
   // retrun list of cuts
-  return {pass_valid_track, pass_valid_track && pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex};
+  return {pass_valid_track, pass_valid_track && pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex, pass_AV};
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
