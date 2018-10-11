@@ -255,6 +255,8 @@ std::cout << "i = " << i << ", j = " << j << std::endl;
                 scale_hist->Divide(cov.CV_counts, osc_counts);
                 
                 // Update each value in osc_counts histogram
+                //
+                // NOTE: This assumes a diagonal transfer matrix -- we may want to change this later to do something more sophisticated
                 for (int o = 0; o < cov.sample_order.size(); o++) {
                     for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
                         

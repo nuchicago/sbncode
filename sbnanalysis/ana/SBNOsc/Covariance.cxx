@@ -572,7 +572,6 @@ std::cout << std::endl << std::endl << std::endl << std::endl;
                 count_hists[h]->SetBinContent(1+sample_bins[o]+bin, temp_count_hists[h]->GetBinContent(1+bin));
                 
             }
-            
         }
         
         for (int rb = 0; rb < temp_nu_counts->GetNbinsY(); rb++) {

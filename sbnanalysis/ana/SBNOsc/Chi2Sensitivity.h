@@ -30,7 +30,6 @@ class Chi2Sensitivity {
         std::string fScaleSample;
         int fNumDm2, fNumSin;
         std::vector <double> fLogDm2Lims, fLogSinLims;
-    
         std::string fOutputDirectory;
         int fSavePDFs;
     

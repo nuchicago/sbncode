@@ -103,10 +103,14 @@ def plot_cov_output(args):
 
         mat.SetTitleSize(0.3, 't')  # doesn't work...
 
-        if matname == 'corr': mat.GetZaxis().SetRangeUser(-0.4, 1)
-        
+        if matname == 'corr': 
+            mat.GetZaxis().SetRangeUser(-0.4, 1)
+            mat.SetTitle("Flux Correlation Matrix")
+
         mat.Draw("colz")
         mat.SetStats(False)
+        covcanvas.SetLeftMargin(0.25)
+        covcanvas.Update()
         covcanvas.SaveAs(args.outdir + matname + "_plot.pdf")
 
 
@@ -177,6 +181,8 @@ def plot_chi2_output(args):
     legend.Draw()
     bestfit.Draw('P same')
     
+    contcanvas.SetLeftMargin(0.15)
+    contcanvas.Update()
     contcanvas.SaveAs(args.outdir+'Sensitivity.pdf')
     
     
@@ -361,6 +367,11 @@ if __name__ == "__main__":
     if args.dm2list: dm2_chi2_slice(args)
     if args.sinlist: sin_chi2_slice(args)
     
+    if parser.parse_args().compare: 
+        compare_w_proposal(parser_parse_args())
+        with open('filename') as f:
+            for line in f:
+                data = [float(x) for x in line.split(",")]
 
 
 

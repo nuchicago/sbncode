@@ -61,6 +61,10 @@ int main(int argc, char* argv[]) {
     cov.cov->Write();
     cov.fcov->Write();
     cov.corr->Write();
+    // also save counts
+    cov.bkg_counts->Write();
+    cov.nu_counts->Write();
+    cov.CV_counts->Write();
     
     // Write counts to file
     TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
