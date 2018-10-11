@@ -96,6 +96,7 @@ protected:
       // (%) = -A * Log(B * L)  where L is the lepton contained length
     double leptonEnergyDistortionLeavingB; //!< Parameter to be used in the energy distortion of primary lepton for visible energy calculation. 
       // (%) = -A * Log(B * L)  where L is the lepton contained length
+    bool cutKMEC; //!< Whether to remove MEC events (useful for studying difference w.r.t. proposal)
   };
 
   /** Histograms made for output */
@@ -113,7 +114,7 @@ protected:
     TH2D *h_numu_Vyz; //!< 2D y-z vertex histogram [cm]
   };
 
-  static const unsigned nCuts = 5; //!< number of cuts
+  static const unsigned nCuts = 6; //!< number of cuts
 
   /* Applies FV cut 
   * \param v The neutrino interaction vertex
@@ -178,7 +179,7 @@ protected:
  * \return List of names of cuts (for histogram names)
  * */
   static const std::array<std::string, nCuts> cutNames() {
-    return {"Track", "FV", "min_L", "reco_V", "AV"};
+    return {"Track", "FV", "min_L", "reco_V", "AV", "MEC"};
   }
 
   Config _config; //!< The config

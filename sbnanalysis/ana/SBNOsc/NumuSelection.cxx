@@ -63,6 +63,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.leptonEnergyDistortionLeavingB = (*config)["NumuSelection"].get("leptonEnergyDistortionLeavingB", 0.).asDouble();
     _config.acceptShakyTracks = (*config)["NumuSelection"].get("acceptShakyTracks", false).asBool();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
+    _config.cutKMEC = (*config)["NumuSelection"].get("cutKMEC", false).asBool();
   }
 
   // Setup histo's for root output
@@ -393,8 +394,11 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
     if (AV.Contain(interaction)) pass_AV = true;
   }
 
+  // STUDY KMEC: remove MEC events
+  bool pass_kMEC = !(_config.cutKMEC && nu.Mode() == simb::kMEC);
+
   // retrun list of cuts
-  return {pass_valid_track, pass_valid_track && pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex, pass_AV};
+  return {pass_valid_track, pass_valid_track && pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex, pass_AV, pass_kMEC && pass_AV};
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
