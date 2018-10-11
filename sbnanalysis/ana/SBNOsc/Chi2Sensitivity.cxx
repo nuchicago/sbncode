@@ -13,6 +13,20 @@
 namespace ana {
   namespace SBNOsc {
 
+// Oscillation function
+double numu_to_numu(x, sin, dm2) {
+    
+    // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
+    return 1 - sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
+    
+}
+
+double numu_to_nue(x, sin, dm2) {
+    
+    // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
+    return sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
+}
+
 Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName) {
     
     Covariance cov(samples, configFileName);
@@ -118,36 +132,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         }
     }
     
-    // Oscillation function
-    TF1 numu_to_numu("numu_to_numu", "1 - [0] * (sin(1.27 * [1] * x))^2", 0, 25);
-        // [0] is sin^2(2theta), [1] is delta m^2, x is L/E
-    TF1 numu_to_nue("numu_to_nue", "[0] * (sin(1.27 * [1] * x))^2", 0, 25);
-        // [0] is sin^2(2theta) {diff theta!}, [1] is delta m^2 {same}, x is L/E
-    
-    // Distances
-    /*
-    double SBND_dist = 0.1, MicroBooNE_dist = 0.47, ICARUS_dist = 0.6; // all in km <- make configurable?
-    std::vector <double> distance;
-    for (int s = 0; s < cov.sample_order.size(); s++) {
-        
-        // Set dist for the sample
-        double tempdist = 0;
-        if (cov.sample_order[s].find("SBND") != std::string::npos) {
-            tempdist = SBND_dist;
-        } else if (cov.sample_order[s].find("MicroBooNE") != std::string::npos) {
-            tempdist = MicroBooNE_dist;
-        } else if (cov.sample_order[s].find("ICARUS") != std::string::npos) {
-            tempdist = ICARUS_dist;
-        }
-        
-        // Add to distance vector
-        for (int d = cov.sample_bins[s]; d < cov.sample_bins[s+1]; d++) {
-            distance.push_back(tempdist);
-        }
-        
-    }
-    */
-    
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
     std::vector <int> oscillate(cov.CV_counts->GetNbinsX(), 0);
     for (int i = 0; i < cov.sample_order.size(); i++) {
@@ -198,12 +182,13 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     double minchisq = 1e99;
     std::vector <double> chisq_builder(fNumDm2, 0);
     std::vector <std::vector <double> > chisq(fNumSin, chisq_builder);
+    TH1D *osc_counts = new TH1D("temposc", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
     for (int i = 0; i < fNumSin; i++){
         for (int j = 0; j < fNumDm2; j++) {
     
-std::cout << "i = " << i << ", j = " << j << std::endl;
+            std::cout << "i = " << i << ", j = " << j << std::endl;
        
-/* 
+            /*
             // Progress counter
             if (j == 0) {
                 std::cout << "\r\r\r\r\r\r\r\r\r\r\r";
@@ -212,13 +197,9 @@ std::cout << "i = " << i << ", j = " << j << std::endl;
                 std::cout << "Progress: " << (int)( (float)i/fNumSin*100 ) << "%";
                 if (i == fNumSin-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
             }
-  */          
-            // Set function parameters
-            numu_to_numu.SetParameters(sin2theta[i], dm2[j]);
+            */
             
-            // Create and fill hist to hold oscillated counts
-            TH1D *osc_counts = new TH1D("temposc", "", cov.bkg_counts->GetNbinsX(), 0, cov.bkg_counts->GetNbinsX());
-            
+            // Fill hist that holds oscillated counts
             for (int o = 0; o < cov.sample_order.size(); o++) { // For limits on bin loops inside:
                 
                 for (int rb = cov.sample_bins[o]; rb < cov.sample_bins[o+1]; rb++) {
@@ -229,7 +210,7 @@ std::cout << "i = " << i << ", j = " << j << std::endl;
 
                             // Numus
                             if (oscillate[rb] == 1) {
-                                dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb, 1+db) * numu_to_numu(cov.dist_bins[db]/cov.trueEs[tb]);
+                                dosc_counts_rb += cov.nu_counts->GetBinContent(1+tb, 1+rb, 1+db) * numu_to_numu(cov.dist_bins[db]/cov.trueEs[tb], sin2theta[i], dm2[j]);
                             // Nues
                             } else if (oscillate[rb] == 2) {
                                 // For the future...
