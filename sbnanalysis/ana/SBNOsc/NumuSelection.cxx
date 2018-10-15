@@ -131,7 +131,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
   _interactionInfo->clear();
 
   // update total count of interactions
-  _cut_counts->SetPoint(0, 0, _cut_counts->GetY()[0] + 1);
+  _cut_counts->SetPoint(0, 0, _cut_counts->GetY()[0] + truth.size());
 
   // Get truth
   auto const& mctruths = \
@@ -253,8 +253,8 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
       pos = track[i].Position();
     }
   }
-  // Some MC (Icarus) seem to generate FV tracks w/out trajectory points,
-  // so optionally we can still accept them
+  // If active volume is misconfigured, then tracks may be generated w/out points.
+  // Optionally, we can accept them.
   else if (_config.acceptShakyTracks) {
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.active_volumes);
     length = (track.Start().Position().Vect() - track.End().Position().Vect()).Mag();
@@ -398,7 +398,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   bool pass_kMEC = !(_config.cutKMEC && nu.Mode() == simb::kMEC);
 
   // retrun list of cuts
-  return {pass_valid_track, pass_valid_track && pass_FV, pass_valid_track && pass_FV && pass_min_length, pass_valid_track && pass_FV && pass_reco_vertex, pass_AV, pass_kMEC && pass_AV};
+  return {pass_kMEC, pass_AV && pass_kMEC, pass_valid_track && pass_kMEC && pass_AV, pass_valid_track && pass_kMEC && pass_FV, pass_valid_track && pass_kMEC && pass_FV && pass_min_length};
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
