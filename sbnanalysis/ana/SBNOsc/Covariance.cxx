@@ -50,7 +50,7 @@ EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::
 };
 
 // Function that gets scale factors (weights) for different universes
-std::vector <double> get_uni_weights(std::map <std::string, std::vector <double> > weights, int n_unis) {
+std::vector <double> get_uni_weights(std::map <std::string, std::vector <double> > weights, std::vector<std::string> keys, int n_unis) {
     
     // Tentative format: universe u scale factor is the product of the u-th entries on each vector 
     // inside the map. For vectors with less than u entries, use the (u - vec_size)-th entry
@@ -62,10 +62,10 @@ std::vector <double> get_uni_weights(std::map <std::string, std::vector <double>
         double weight = 1;
         int wind;
         
-        for (auto it : weights) {
-            wind = u;
-            while (wind >= it.second.size()) { wind -= it.second.size(); }
-            weight *= it.second.at(wind);
+        for (auto const &key: keys) {
+            std::vector<double>& this_weights = weights[key];
+            wind = u % this_weights.size();
+            weight *= this_weights.at(wind);
         }
         
         uweights.push_back(weight);
@@ -206,15 +206,46 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
         
         // Weight and universe stuff
-        fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
-        if (fWeightKey == "GetWeights" || fWeightKey == "Flux" || fWeightKey == "Cross-Section") {
-            fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
-        } else {
-            Event *tempev = new Event;
-            samples[0].tree->SetBranchAddress("events", &tempev);
-            samples[0].tree->GetEntry(0);
-            fNumAltUnis = tempev->truth[0].weights[fWeightKey].size();
-                // Relies on all 'weights' branches being the same for all samples – should be true
+        // WeightKey can either be the name of a single weight, or a name signifying a list of weights,
+        // or a list of weights to be oscillated
+
+        Json::Value configWeightKey = (*config)["Covariance"].get("WeightKey", ""); 
+        if (configWeightKey.type() == Json::arrayValue) {
+          for (auto const& keyName: configWeightKey) {
+            fWeightKeys.push_back(keyName.asString());
+          }
+        }
+        else {
+          std::string WeightKey = configWeightKey.asString();
+
+          // either way, we'll need an event to get some info about the weights
+          // Relies on all 'weights' branches being the same for all samples – should be true
+          Event *tempev = new Event;
+          samples[0].tree->SetBranchAddress("events", &tempev);
+          samples[0].tree->GetEntry(0);
+
+          // get the number of universes
+          if (WeightKey == "GetWeights" || WeightKey == "Flux" || WeightKey == "Cross-Section") {
+              fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
+          } else {
+              fNumAltUnis = tempev->truth[0].weights[WeightKey].size();
+          }
+          // get the list of weights
+          if (WeightKey == "GetWeights") {
+              for (auto it : tempev->truth[0].weights) {
+                  fWeightKeys.push_back(it.first);
+              }
+          } else if (WeightKey == "Flux") {
+              for (auto it : tempev->truth[0].weights) {
+                  if (it.first.find("genie") > it.first.size()) fWeightKeys.push_back(it.first);
+              }
+          } else if (WeightKey == "Cross-Section") {
+              for (auto it : tempev->truth[0].weights) {
+                  if (it.first.find("genie") <= it.first.size()) fWeightKeys.push_back(it.first);
+              }
+          } else {
+              fWeightKeys.push_back(WeightKey);
+          }
         }
         
         // Type of energy
@@ -496,24 +527,7 @@ std::cout << "Will loop over nus now. The distances are (in m, for select events
                 temp_count_hists[0]->Fill(nuE, wgt);
                 
                 // Get weights for each alternative universe
-                std::vector <double> uweights;
-                if (fWeightKey == "GetWeights") {
-                    uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
-                } else if (fWeightKey == "Flux") {
-                    std::map <std::string, std::vector<double> > tempweights;
-                    for (auto it : event->truth[truth_ind].weights) {
-                        if (it.first.find("genie") > it.first.size()) tempweights.insert(it);
-                    }
-                    uweights = get_uni_weights(tempweights, fNumAltUnis);
-                } else if (fWeightKey == "Cross-Section") {
-                    std::map <std::string, std::vector<double> > tempweights;
-                    for (auto it : event->truth[truth_ind].weights) {
-                        if (it.first.find("genie") <= it.first.size()) tempweights.insert(it);
-                    }
-                    uweights = get_uni_weights(tempweights, fNumAltUnis);
-                } else {
-                    uweights = event->truth[truth_ind].weights[fWeightKey];
-                }
+                std::vector <double> uweights = uweights = get_uni_weights(event->truth[truth_ind].weights, fWeightKeys, fNumAltUnis);
                 
                 // Fill alternative universe histograms
                 for (int u = 0; u < uweights.size(); u++) {
@@ -622,12 +636,9 @@ std::cout << std::endl << std::endl << std::endl << std::endl;
     
     std::cout << std::endl << "Getting covs..." << std::endl;
     
-    std::string pre_title = "";
-    if (fWeightKey != "GetWeights") pre_title = fWeightKey + " ";
-    
     // Covariance and fractional covariance
-    cov = new TH2D("cov", (pre_title+"Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
-    fcov = new TH2D("fcov", ("Fractional "+pre_title+"Covariance Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    cov = new TH2D("cov", "Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
+    fcov = new TH2D("fcov", "Fractional Covariance Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
@@ -647,7 +658,7 @@ std::cout << std::endl << std::endl << std::endl << std::endl;
     }
     
     // Pearson Correlation Coefficients
-    corr = new TH2D("corr", (pre_title+"Correlation Matrix").c_str(), num_bins, 0, num_bins, num_bins, 0, num_bins);
+    corr = new TH2D("corr", "Correlation Matrix", num_bins, 0, num_bins, num_bins, 0, num_bins);
     
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {

@@ -72,7 +72,7 @@ class Covariance {
     
     private:
     
-        std::string fWeightKey;
+        std::vector<std::string> fWeightKeys;
         int fNumAltUnis;
         
         std::string fEnergyType;
