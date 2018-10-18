@@ -271,8 +271,6 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                 }
             }
             
-            osc_counts->Delete();
-            
             // Check if min chisq
             if (chisq[i][j] < minchisq) {
                 minchisq = chisq[i][j];
