@@ -92,7 +92,7 @@ class Covariance {
         
         std::string fOutputDirectory;
         int fSavePDFs;
-        
+        bool fIncludeBackground; //!< Whether to include background sample in calculating covariance matrix        
         
     
 };
