@@ -14,14 +14,14 @@ namespace ana {
   namespace SBNOsc {
 
 // Oscillation function
-double numu_to_numu(x, sin, dm2) {
+double numu_to_numu(double x, double sin, double dm2) {
     
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return 1 - sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
     
 }
 
-double numu_to_nue(x, sin, dm2) {
+double numu_to_nue(double x, double sin, double dm2) {
     
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
