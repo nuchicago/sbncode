@@ -254,10 +254,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Further selection and rejection 'efficiencies'
         fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", -1e99).asDouble();
         fRejectionEfficiency = (*config)["Covariance"].get("RejectionEfficiency", -1e99).asDouble();
-
-
-        // what to include in covariance calculation
-        fIncludeBackground = (*config)["Covariance"].get("IncludeBackground", true).asBool();
         
         // True energy binning
         fTrueELims = {};
@@ -496,18 +492,16 @@ std::cout << "Will loop over nus now. The distances are (in m, for select events
         Event *event = new Event;
         sample.tree->SetBranchAddress("events", &event);
         
-        // Number of neutrinos in sample -- NOT necessarily number of neutrinos included in covariance matrix
         int nucount = 0;
         for (int e = 0; e < sample.tree->GetEntries(); e++) {
             
             sample.tree->GetEntry(e);
             
             for (int n = 0; n < event->reco.size(); n++) {
+                
                 nucount++;
-
+                
                 unsigned truth_ind = event->reco[n].truth_index;
-                int isCC = event->truth[truth_ind].neutrino.iscc;
- 
                 
                 // Get energy
                 double nuE, true_nuE = event->reco[n].truth.neutrino.energy;
@@ -524,25 +518,21 @@ std::cout << "Will loop over nus now. The distances are (in m, for select events
                     std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
                     continue;
                 }
-
+                
                 // Apply selection (or rejection) efficiencies
+                int isCC = event->truth[truth_ind].neutrino.iscc;
                 double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
                 
-                // if not including background sample in covariance, skip this one if bkg
-                if (!fIncludeBackground && !isCC) {
-                    // Add to base count histogram
-                    temp_count_hists[0]->Fill(nuE, wgt);
+                // Add to base count histogram
+                temp_count_hists[0]->Fill(nuE, wgt);
                 
-                    // Get weights for each alternative universe
-                    std::vector <double> uweights = uweights = get_uni_weights(event->truth[truth_ind].weights, fWeightKeys, fNumAltUnis);
+                // Get weights for each alternative universe
+                std::vector <double> uweights = uweights = get_uni_weights(event->truth[truth_ind].weights, fWeightKeys, fNumAltUnis);
                 
-                    // Fill alternative universe histograms
-                    for (int u = 0; u < uweights.size(); u++) {
-                        temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
-                    }
+                // Fill alternative universe histograms
+                for (int u = 0; u < uweights.size(); u++) {
+                    temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
                 }
-                // always fill the CV counts histo for output
-                CV_counts->Fill(nuE, wgt);
                 
                 // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
                 double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
@@ -702,6 +692,9 @@ std::cout << std::endl << std::endl << std::endl << std::endl;
     
     //// Output relevant objects
     //// ~~~~~~~~~~~~~~~~~~~~~~~
+    
+    CV_counts = count_hists[0];
+    
     trueEs = {};
     double trueE_binwidth = (fTrueELims[1] - fTrueELims[0])/fNumTrueEBins;
     for (int o = 0; o < sample_order.size(); o++) {
