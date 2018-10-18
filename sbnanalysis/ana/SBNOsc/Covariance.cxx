@@ -527,7 +527,7 @@ std::cout << "Will loop over nus now. The distances are (in m, for select events
                 temp_count_hists[0]->Fill(nuE, wgt);
                 
                 // Get weights for each alternative universe
-                std::vector <double> uweights = uweights = get_uni_weights(event->truth[truth_ind].weights, fWeightKeys, fNumAltUnis);
+                std::vector <double> uweights = get_uni_weights(event->truth[truth_ind].weights, fWeightKeys, fNumAltUnis);
                 
                 // Fill alternative universe histograms
                 for (int u = 0; u < uweights.size(); u++) {
