@@ -14,14 +14,14 @@ namespace ana {
   namespace SBNOsc {
 
 // Oscillation function
-double numu_to_numu(x, sin, dm2) {
+double numu_to_numu(double x, double sin, double dm2) {
     
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return 1 - sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
     
 }
 
-double numu_to_nue(x, sin, dm2) {
+double numu_to_nue(double x, double sin, double dm2) {
     
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
@@ -36,7 +36,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configF
 }
       
 // Personal preference (more explicit about what is used)...
-Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
+Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance cov, char *configFileName) {
     
     /*
         Inputs: 
@@ -106,10 +106,12 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         }
         
         // Exposure normalisation
-        for (std::string det : dets) {
-            fScaleTargets.insert({det, (*config)["Covariance"]["ScaleTargets"].get(det, -1).asFloat()});
+        for (auto sample : samples) {
+            if (fScaleTargets.find(sample.fDet) == fScaleTargets.end()) {
+                fScaleTargets.insert({sample.fDet, (*config)["Covariance"]["ScaleTargets"].get(sample.fDet, -1).asFloat()});
+            }
         }
-        
+               
         // Phase space parameters
         fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
         fLogDm2Lims = {};
@@ -189,7 +191,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     // Large (meaningless x-axis) histograms (one 3d) for oscillation calculations later on
     TH1D *bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
     
-    TH3D *nu_counts = new TH3D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin; Distance Bin", fNumTrueEBins*sample_order.size(), 0, fNumTrueEBins*sample_order.size(), num_bins, 0, num_bins, num_dist_bins, 0, num_dist_bins);
+    TH3D *nu_counts = new TH3D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin; Distance Bin", fNumTrueEBins*samples.size(), 0, fNumTrueEBins*samples.size(), num_bins, 0, num_bins, num_dist_bins, 0, num_dist_bins);
     
     
     // Get counts
@@ -205,10 +207,10 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         // Initialise temp hists to store counts
             // Base
         std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
-        TH1D *temp_CV_counts = {new TH1D((sample.fDet+"tempCV").c_str(), title.c_str(), sample.fBins[sample.fDesc].size() - 1, &sample.fBins[sample.fDesc][0])};
+        TH1D *temp_CV_counts = {new TH1D((sample.fDet+"tempCV").c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0])};
         
             // Bkg
-        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", sample.fBins[sample.fDesc].size() - 1, &sample.fBins[sample.fDesc][0]);
+        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", sample.fBins.size() - 1, &sample.fBins[0]);
         
             // Neutrinos
         std::vector <double> temp_trueE_bins = {};
@@ -221,7 +223,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
             temp_dist_bins.push_back(dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]));
         }
         
-        TH3D *temp_nu_counts = new TH3D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, &temp_trueE_bins[0], sample.fBins[sample.fDesc].size() - 1, &sample.fBins[sample.fDesc][0], dist_bin_nums[sample.fDet], &temp_dist_bins[0]);
+        TH3D *temp_nu_counts = new TH3D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, &temp_trueE_bins[0], sample.fBins.size() - 1, &sample.fBins[0], dist_bin_nums[sample.fDet], &temp_dist_bins[0]);
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -248,7 +250,7 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
                     nuE = event->reco[n].reco_energy;
                 }
                 
-                if (nuE < sample.fBins[sample.fDesc][0] || nuE > sample.fBins[sample.fDesc][sample.fBins[sample.fDesc].size()-1]) {
+                if (nuE < sample.fBins[0] || nuE > sample.fBins[sample.fBins.size()-1]) {
                     continue;
                 } else if (true_nuE < fTrueELims[0] || true_nuE > fTrueELims[1]) {
                     std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
@@ -286,10 +288,10 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
         
         
         // Pass onto the big histograms and get energies
-        for (int bin = 0; bin < temp_count_hists[h]->GetNbinsX(); bin++) {
+        for (int bin = 0; bin < temp_CV_counts->GetNbinsX(); bin++) {
             
             CV_counts->SetBinContent(1+sample_bins[o]+bin, temp_CV_counts->GetBinContent(1+bin));
-            energies.push_back(temp_count_hists[h]->GetBinCenter(bin+1));
+            energies.push_back(temp_CV_counts->GetBinCenter(bin+1));
             
         }
         
@@ -368,11 +370,11 @@ Chi2Sensitivity::Chi2Sensitivity(Covariance cov, char *configFileName) {
     std::vector <int> oscillate(CV_counts->GetNbinsX(), 0);
     for (int i = 0; i < samples.size(); i++) {
         
-        if (sample.fDesc == "#nu_{#mu}") {
+        if (samples[i].fDesc == "#nu_{#mu}") {
             for (int j = sample_bins[i]; j < sample_bins[i+1]; j++) {
                 oscillate[j] = 1;
             }
-        } else if (sample.fDesc == "#nu_{e}") {
+        } else if (samples[i].fDesc == "#nu_{e}") {
             for (int j = sample_bins[i]; j < sample_bins[i+1]; j++) {
                 oscillate[j] = 2;
             }

@@ -42,7 +42,7 @@ EventSample::EventSample(std::vector<std::string> filenames, float scaleFactor) 
 };
     
 // My own constructor that deals with the extra public members I added.
-EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, scale_sample) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc), fBins(bins), fScaleSample(scale_sample) {
+EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc), fBins(bins), fScaleSample(scale_sample) {
 
     // Tree
     tree = (TTree*) file->Get("sbnana");
@@ -215,6 +215,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", -1e99).asDouble();
         fRejectionEfficiency = (*config)["Covariance"].get("RejectionEfficiency", -1e99).asDouble();
         
+        // Exposure normalisation
+        for (auto sample : samples) {
+            if (fScaleTargets.find(sample.fDet) == fScaleTargets.end()) {
+                fScaleTargets.insert({sample.fDet, (*config)["Covariance"]["ScaleTargets"].get(sample.fDet, -1).asFloat()});
+            }
+        }
+        
         // more documentation is at: https://open-source-parsers.github.io/jsoncpp-docs/doxygen/index.html#_example
     
     }
@@ -252,8 +259,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     }
     
     // Vectors to hold nice histograms
-    std::vector <TH1D*> numu_cts(dets.size(), new TH1D()), numu_bkg(dets.size(), new TH1D()),
-                        nue_cts(dets.size(), new TH1D()), nue_bkg(dets.size(), new TH1D());
+    std::vector <TH1D*> numu_cts(fScaleTargets.size(), new TH1D()), numu_bkg(fScaleTargets.size(), new TH1D()),
+                        nue_cts(fScaleTargets.size(), new TH1D()), nue_bkg(fScaleTargets.size(), new TH1D());
     
     // Get counts
     std::cout << std::endl << "Getting counts for each sample..." << std::endl;
@@ -267,13 +274,13 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
         // Initialise temp hists to store counts
             // Base
         std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
-        std::vector <TH1D*> temp_count_hists = {new TH1D((sample.fDet+"tempbase").c_str(), title.c_str(), sample.fBins[sample.fDesc].size() - 1, &sample.fBins[sample.fDesc][0])};
+        std::vector <TH1D*> temp_count_hists = {new TH1D((sample.fDet+"tempbase").c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0])};
         
             // Alt unis
         for (int u = 0; u < fNumAltUnis; u++) {
             
             std::string name = sample.fDet + "tempalt" + std::to_string(u+1);
-            temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), sample.fBins[sample.fDesc].size() - 1, &sample.fBins[sample.fDesc][0]));
+            temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0]));
             
         }
         
@@ -300,12 +307,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                     nuE = true_nuE;
                 } else if (fEnergyType == "Reco") {
                     nuE = event->reco[n].reco_energy;
-                }
-                if (nuE < sample.fBins[sample.fDesc][0] || nuE > sample.fBins[sample.fDesc][sample.fBins[sample.fDesc].size()-1]) {
-                    continue;
-                } else if (true_nuE < fTrueELims[0] || true_nuE > fTrueELims[1]) {
-                    std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
-                    continue;
                 }
                 
                 // Apply selection (or rejection) efficiencies
@@ -358,9 +359,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             
         }
         
-        
+        /*
         // Add numu and nue hists to vectors
-        int detind = std::find(dets.begin(), dets.end(), sample.fDet) - dets.begin();
         if (sample.fDesc == "#nu_{#mu}" ) {
             
             numu_bkg[detind] = temp_bkg_counts;
@@ -378,6 +378,7 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             nue_cts[detind]->SetName((sample.fDet+"_nue_cts").c_str());
             
         }
+        */
         
         o++;
         
@@ -427,10 +428,10 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     // Add bin labels
     std::vector <TH2D*> hists = {cov, fcov, corr};
-    for (int o = 0; o < sample_order.size(); o++) {
+    for (int o = 0; o < samples.size(); o++) {
 
         // Get label and position
-        std::string label = sample_order[o].replace(sample_order[o].find("_"), 1, " ");
+        std::string label = samples[o].fDet + " " + samples[o].fDesc;
         int bin = (sample_bins[o] + sample_bins[o+1])/2;
 
         // Set label
@@ -449,12 +450,14 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     //// Output relevant objects
     //// ~~~~~~~~~~~~~~~~~~~~~~~
     
+    /*
     numu_counts = numu_cts;
     numu_bkgs = numu_bkg;
     if (nue_appearance) {
         nue_counts = nue_cts;
         nue_bkgs = nue_bkg;
     }
+    */
     
     
 }
