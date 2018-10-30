@@ -37,8 +37,13 @@ int main(int argc, char* argv[]) {
         float scalefactor = sample["scalefactor"].asFloat();
         std::string det = sample["det"].asString(),
                         desc = sample["desc"].asString();
+        std::vector <double> bins = {};
+        for (auto binlim : sample["binlims"][desc]) {
+            bins.push_back(binlim.asDouble());
+        }
+        int scale_sample = sample.get("scalesample", 0).asInt();
         
-        samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc));
+        samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc, bins, scale_sample));
         
     }
     

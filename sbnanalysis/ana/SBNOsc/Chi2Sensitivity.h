@@ -19,6 +19,7 @@ namespace SBNOsc {
 class Chi2Sensitivity {
     
     public:
+        
         Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName);
         Chi2Sensitivity(Covariance cov, char *configFileName);
         
@@ -27,10 +28,24 @@ class Chi2Sensitivity {
     
     private:
         
-        std::string fScaleSample;
+        std::string fEnergyType;
+        
+        double fSelectionEfficiency, fRejectionEfficiency;
+        
+        int fNumDistBinsPerMeter;
+        std::map <std::string, float> fDetDists;
+        std::map <std::string, std::vector <std::vector <double > > > fDetDims;
+        
+        std::vector <double> fTrueELims;
+        int fNumTrueEBins;
+        
+        std::map <std::string, float> fScaleTargets;
+        
         int fNumDm2, fNumSin;
         std::vector <double> fLogDm2Lims, fLogSinLims;
-    
+        
+        int fShapeOnly;
+        
         std::string fOutputDirectory;
         int fSavePDFs;
     

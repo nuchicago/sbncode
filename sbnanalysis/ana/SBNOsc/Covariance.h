@@ -33,13 +33,15 @@ class EventSample {
         EventSample();
         EventSample(TTree* _tree, float scaleFactor) : tree(_tree), fScaleFactor(scaleFactor) {}
         EventSample(std::vector<std::string> filenames, float fScaleFactor);
-        EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc);
+        EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins);
         
-        TFile* file;            //!< File containing the tree
-        TTree* tree;            //!< Event tree
-        float fScaleFactor;     //!< Factor for POT (etc.) scaling
-        std::string fDet;       //!< What detector it comes from
-        std::string fDesc;      //!< (Very concise) Description of sample
+        TFile* file;                //!< File containing the tree
+        TTree* tree;                //!< Event tree
+        float fScaleFactor;         //!< Factor for POT (etc.) scaling
+        std::string fDet;           //!< What detector it comes from
+        std::string fDesc;          //!< (Very concise) Description of sample
+        std::vector <double> fBins; //!< Energy bin limits
+        int fScaleSample;           //!< Scale to this sample (shape+rate chisq)?
     
 };
 
@@ -52,20 +54,6 @@ class Covariance {
         
         TH2D *cov, *fcov, *corr;                // Covariance, fractional covariance and correlation
                                                 // matrices.
-        
-        TH1D *bkg_counts;                       // Counts of non-neutrino events. Won't be oscillated.
-        TH3D *nu_counts;                        // Counts of geniune neutrino events. For oscillation.
-        
-        std::vector <double> sample_dist_bins,  // Distance bin limits of samples.
-                             dist_bins;         // All distance bins.
-        
-        
-        TH1D *CV_counts;                        // CV universe counts.
-        std::vector <double> energies, trueEs;  // Bin centres for bins in all hists; second is for
-                                                // x-axis of nu_counts.
-        
-        std::vector <std::string> sample_order; // Description of samples, in order they were plotted.
-        std::vector <int> sample_bins;          // Bin limits of samples.
     
         std::vector <TH1D*> numu_counts, 
             numu_bkgs, nue_counts, nue_bkgs;    // For plotting pretty histograms
@@ -78,15 +66,6 @@ class Covariance {
         std::string fEnergyType;
         
         double fSelectionEfficiency, fRejectionEfficiency;
-        
-        std::map <std::string, std::vector <double> > fBins;
-        
-        int fNumDistBinsPerMeter;
-        std::map <std::string, float> fDetDists;
-        std::map <std::string, std::vector <std::vector <double > > > fDetDims;
-        
-        std::vector <double> fTrueELims;
-        int fNumTrueEBins;
         
         std::map <std::string, float> fScaleTargets;
         
