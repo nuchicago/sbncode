@@ -10,6 +10,19 @@
 #include <TCanvas.h>
 #include <TGraph2D.h>
 
+#include <TFile.h>
+#include <TVector3.h>
+#include <TH1D.h>
+#include <TH2D.h>
+#include <TH3D.h>
+#include <THStack.h>
+#include <TROOT.h>
+#include <TTree.h>
+#include <TCanvas.h>
+#include <TMath.h>
+#include <TCanvas.h>
+#include <core/Event.hh>
+
 namespace ana {
   namespace SBNOsc {
 
@@ -507,7 +520,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
                 }
             }
             
-            osc_counts->Delete();
+            //osc_counts->Delete();
             
             // Check if min chisq
             if (chisq[i][j] < minchisq) {

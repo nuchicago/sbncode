@@ -38,7 +38,8 @@ int main(int argc, char* argv[]) {
         std::string det = sample["det"].asString(),
                         desc = sample["desc"].asString();
         std::vector <double> bins = {};
-        for (auto binlim : sample["binlims"][desc]) {
+        
+        for (auto binlim : sample["binlims"]) {
             bins.push_back(binlim.asDouble());
         }
         int scale_sample = sample.get("scalesample", 0).asInt();
@@ -67,6 +68,7 @@ int main(int argc, char* argv[]) {
     cov.fcov->Write();
     cov.corr->Write();
     
+    /*
     // Write counts to file
     TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
     assert(countfile && countfile->IsOpen());
@@ -95,12 +97,14 @@ int main(int argc, char* argv[]) {
     cov.bkg_counts->Draw();
     c->SaveAs((directory + "bkg_cts.png").c_str());
     
+    */
+    
     //// Get sensitivity contours
     //// ~~~~~~~~~~~~~~~~~~~~~~~~
     
     std::cout << std::endl << "Starting chisq/sensitivity procedure..." << std::endl << std::endl;
     
-    ana::SBNOsc::Chi2Sensitivity chi2(cov, configFileName);
+    ana::SBNOsc::Chi2Sensitivity chi2(samples, cov, configFileName);
     
     // Wite to file
     TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
