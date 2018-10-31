@@ -172,25 +172,32 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
   // set up distortion if need be
   TRandom rand;
 
+  // primary leptron track
+  const sim::MCTrack *lepton_track = NULL;
+  bool lepton_track_exists = false;
+
   // total up visible energy from tracks...
+  unsigned ind = 0;
   for (auto const &mct: mctrack_list) {
     // ignore particles not from nu vertex, non primary particles, and uncharged particles
     if (!isFromNuVertex(mctruth, mct) || abs(PDGCharge(mct.PdgCode())) < 1e-4 || mct.Process() != "primary")
        continue;
     // account for primary lepton later
-    if (abs(mct.PdgCode()) == 13 || abs(mct.PdgCode()) == 11)
-      continue; 
+    if ((abs(mct.PdgCode()) == 13 || abs(mct.PdgCode()) == 11) && calculator.lepton_index == ind) {
+      continue;
+    }
 
     double mass = PDGMass(mct.PdgCode());
     double this_visible_energy = (mct.Start().E() - mass) / 1000. /* MeV to GeV */;
     if (calculator.track_energy_distortion > 1e-4) {
-      this_visible_energy += rand.Gaus(0, calculator.track_energy_distortion) * this_visible_energy;
+      this_visible_energy = rand.Gaus(this_visible_energy, calculator.track_energy_distortion*this_visible_energy);
       // clamp to 0
       this_visible_energy = std::max(this_visible_energy, 0.);
     }
     if (this_visible_energy > calculator.track_threshold) {
       visible_E += this_visible_energy;
     }
+    ind ++;
   }
 
   // ...and showers
@@ -206,7 +213,7 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
       double mass = PDGMass(mcs.PdgCode());
       double this_visible_energy = (mcs.Start().E() - mass) / 1000. /* MeV to GeV */;
       if (calculator.shower_energy_distortion > 1e-4) {
-        this_visible_energy += rand.Gaus(0, calculator.shower_energy_distortion) * this_visible_energy;
+        this_visible_energy = rand.Gaus(this_visible_energy, calculator.shower_energy_distortion*this_visible_energy);
         // clamp to 0
         this_visible_energy = std::max(this_visible_energy, 0.);
       }
@@ -217,30 +224,33 @@ double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrac
   }
 
   // ...and primary lepton energy (for CC events)
-  bool is_cc = mctruth.GetNeutrino().CCNC() == simb::kCC;
- 
-  if (is_cc) {
-    const simb::MCParticle& lepton = mctruth.GetNeutrino().Lepton();
-    double smearing_percentage;
-    if (calculator.lepton_contained) {
-      smearing_percentage = calculator.lepton_energy_distortion_contained;
-    } else {
-      double A = calculator.lepton_energy_distortion_leaving_A,
-             B = calculator.lepton_energy_distortion_leaving_B;
-      smearing_percentage = -A * TMath::Log(B * calculator.lepton_contained_length);
-    }
-    // smear visible energy
-    double lepton_visible_energy = lepton.E() - lepton.Mass();
-    double smeared_lepton_visible_energy = lepton_visible_energy + rand.Gaus(0, smearing_percentage) * lepton_visible_energy;
-    // clamp to 0
-    smeared_lepton_visible_energy = std::max(smeared_lepton_visible_energy, 0.);
-
-    visible_E += smeared_lepton_visible_energy; 
+  // only add in extra here if identified "lepton" is actually a lepton
+  if (calculator.lepton_index >= 0 && (abs(mctrack_list[calculator.lepton_index].PdgCode()) == 13 || abs(mctrack_list[calculator.lepton_index].PdgCode()) == 11)) {
+    visible_E += smearLeptonEnergy(mctrack_list[calculator.lepton_index], calculator);
   }
-  // if lepton pdgid is set, add its mass back into the visible energy
-  if (calculator.lepton_pdgid != 0) visible_E += PDGMass(calculator.lepton_pdgid) / 1000.;
 
   return visible_E;
+}
+
+double smearLeptonEnergy(const sim::MCTrack &mct, const VisibleEnergyCalculator &calculator) {
+  // setup distortion
+  TRandom rand;
+
+  double smearing_percentage;
+  if (calculator.lepton_contained) {
+    smearing_percentage = calculator.lepton_energy_distortion_contained;
+  } else {
+    double A = calculator.lepton_energy_distortion_leaving_A;
+    double B = calculator.lepton_energy_distortion_leaving_B;
+    smearing_percentage = -A * TMath::Log(B * calculator.lepton_contained_length);
+  }
+  // smear visible energy
+  double lepton_visible_energy = (mct.Start().E()) / 1000.; /* MeV to GeV */
+  double smeared_lepton_visible_energy = rand.Gaus(lepton_visible_energy, smearing_percentage * lepton_visible_energy);
+  // clamp to 0
+  smeared_lepton_visible_energy = std::max(smeared_lepton_visible_energy, 0.);
+
+  return smeared_lepton_visible_energy;
 }
 
 // define global static const PDGTable to be used by helper functions

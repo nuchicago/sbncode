@@ -120,6 +120,7 @@ struct VisibleEnergyCalculator {
       // (%) = -A * Log(B * L)  where L is the lepton contained length
   double lepton_energy_distortion_leaving_B; //!< Parameter in function to calculate primary lepton energy resolution.
       // (%) = -A * Log(B * L)  where L is the lepton contained length
+  int lepton_index; //!< Index of lepton in the mctrack object
   bool lepton_contained; //!< True if primary lepton's track is contained within TPC.
   double lepton_contained_length; //!< Length of section of primary lepton's track that is contained within the TPC.
 
@@ -144,11 +145,20 @@ struct VisibleEnergyCalculator {
  * \param mctrack_list Vector of MCTrack objects in the gallery event.
  * \param mcshower_list Vector of MCShower objects in the gallery event.
  * \param calculator Struct containing values to be used in energy calculation
+ * \param smeared_lepton_energy lepton energy to be used in calculation -- will default to smearLeptonEnergy(mctruth, calculator) if not set
  *
  * \return Visble energy in GeV.
  * */
 double visibleEnergy(const simb::MCTruth &mctruth, const std::vector<sim::MCTrack> &mctrack_list, const std::vector<sim::MCShower> &mcshower_list,  
     const VisibleEnergyCalculator &calculator=VisibleEnergyCalculator(), bool include_showers=true);
+
+/** Get the smeared energy from a lepton.
+ * \param mctrack The MCTrack object corresponding to the lepton
+ * \param calculator Struct containing values to be used in energy calculation
+ *
+ * */
+double smearLeptonEnergy(const sim::MCTrack &mct, const VisibleEnergyCalculator &calculator=VisibleEnergyCalculator());
+
   }  // namespace SBNOsc
 }  // namespace ana
 

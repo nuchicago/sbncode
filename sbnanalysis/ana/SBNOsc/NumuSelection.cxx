@@ -52,6 +52,7 @@ void NumuSelection::Initialize(Json::Value* config) {
       _config.fiducial_volumes.emplace_back(FV["xmin"].asDouble(), FV["ymin"].asDouble(), FV["zmin"].asDouble(), FV["xmax"].asDouble(), FV["ymax"].asDouble(), FV["zmax"].asDouble());
     }
     _config.doFVCut = (*config)["NumuSelection"].get("doFVcut", true).asBool();
+    _config.trajPointLength = (*config)["NumuSelection"].get("trajPointLength", false).asBool();
     _config.vertexDistanceCut = (*config)["NumuSelection"].get("vertexDistance", -1).asDouble();
     _config.minLengthContainedTrack = (*config)["NumuSelection"].get("minLengthContainedTrack", -1).asDouble();
     _config.minLengthExitingTrack = (*config)["NumuSelection"].get("minLengthExitingTrack", -1).asDouble();
@@ -152,12 +153,7 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     // build the interaction
     Event::Interaction interaction = TruthReco(mctruth);
 
-    // Get selection-specific info
-    //
-    // Start with the interaction stuff
-    NuMuInteraction intInfo = interactionInfo(ev, mctruth);
-
-    // setup visible energy
+    // setup energy calculations
     VisibleEnergyCalculator calculator;
     calculator.lepton_pdgid = 13;
     calculator.track_threshold =  _config.trackVisibleEnergyThreshold;
@@ -166,9 +162,13 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
     calculator.lepton_energy_distortion_contained = _config.leptonEnergyDistortionContained;
     calculator.lepton_energy_distortion_leaving_A = _config.leptonEnergyDistortionLeavingA;
     calculator.lepton_energy_distortion_leaving_B = _config.leptonEnergyDistortionLeavingB;
-    calculator.lepton_contained = intInfo.t_is_contained;
-    calculator.lepton_contained_length = intInfo.t_contained_length;
-    
+
+    // Get selection-specific info
+    //
+    // Start with the interaction stuff
+    // This also sets the lepton variables in the calculator
+    NuMuInteraction intInfo = interactionInfo(ev, mctruth, calculator);
+
     double visible_energy = visibleEnergy(mctruth, mctracks, mcshowers, calculator, false);
 
     Event::RecoInteraction reco_interaction(interaction, i);
@@ -213,18 +213,20 @@ bool NumuSelection::ProcessEvent(const gallery::Event& ev, std::vector<Event::Re
   return selected;
 }
 
-NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &track) {
+// get information associated with track
+NumuSelection::TrackInfo NumuSelection::trackInfo(const sim::MCTrack &track) {
   double contained_length = 0;
   double length = 0;
   // If the interaction is outside the active volume, then g4 won't generate positions for the track.
   // So size == 0 => outside FV
   //
-  // If size != 0, then we have to check fiducial volume
-  bool contained_in_FV = track.size() > 0;
-  int pdgid = track.PdgCode(); 
+  // If size != 0, then we have to check active volume
+  bool contained_in_AV = track.size() > 0;
 
-  // Get the length and determine if any point leaves the fiducial volume
-  if (track.size() != 0) {
+  // Get the length and determine if any point leaves the active volume
+  //
+  // Use every trajectory point if configured and if the MCTrack has trajectory points
+  if (track.size() != 0 && _config.trajPointLength) {
     TLorentzVector pos = track.Start().Position();
     // get the active volume that the start position is in
     int active_volume_index = -1;
@@ -244,7 +246,7 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
     
     for (int i = 1; i < track.size(); i++) {
       // update if track is contained
-      if (contained_in_FV) contained_in_FV = containedInFV(pos.Vect());
+      if (contained_in_AV) contained_in_AV = containedInAV(pos.Vect());
       
       // update length
       contained_length += containedLength(track[i].Position().Vect(), pos.Vect(), volumes);
@@ -255,13 +257,15 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
   }
   // If active volume is misconfigured, then tracks may be generated w/out points.
   // Optionally, we can accept them.
-  else if (_config.acceptShakyTracks) {
+  //
+  // Also, use this method if configured
+  else if (_config.acceptShakyTracks || !_config.trajPointLength) {
     contained_length = containedLength(track.Start().Position().Vect(), track.End().Position().Vect(), _config.active_volumes);
     length = (track.Start().Position().Vect() - track.End().Position().Vect()).Mag();
-    contained_in_FV = containedInFV(track.Start().Position().Vect()) && containedInFV(track.End().Position().Vect());
+    contained_in_AV = containedInAV(track.Start().Position().Vect()) && containedInAV(track.End().Position().Vect());
 
     //std::cout << "WARNING: SHAKY TRACK." << std::endl;
-    //std::cout << "CONTAINED IN FV: " << contained_in_FV << std::endl;
+    //std::cout << "CONTAINED IN FV: " << contained_in_AV << std::endl;
     //std::cout << "CONTAINED LENGTH: " << contained_length << std::endl; 
     //std::cout << "LENGTH: " << length << std::endl;
     //
@@ -270,11 +274,10 @@ NumuSelection::NuMuInteraction NumuSelection::trackInfo(const sim::MCTrack &trac
     //std::cout << "START: " << start.X() << " " << start.Y() << " " << start.Z() << std::endl;
     //std::cout << "END: " << end.X() << " " << end.Y() << " " << end.Z() << std::endl;
   }
-  
-  return NumuSelection::NuMuInteraction({contained_in_FV, contained_length, length, pdgid});
+  return NumuSelection::TrackInfo({contained_in_AV, contained_length, length});
 }
 
-NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Event &ev, const simb::MCTruth &mctruth) {
+NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Event &ev, const simb::MCTruth &mctruth, VisibleEnergyCalculator &calculator) {
   // get handle to tracks and showers
   auto const& mctrack_list = \
     *ev.getValidHandle<std::vector<sim::MCTrack> >(fMCTrackTag);
@@ -312,32 +315,60 @@ NumuSelection::NuMuInteraction NumuSelection::interactionInfo(const gallery::Eve
   auto const& mcparticle_list = \
     *ev.getValidHandle<std::vector<simb::MCParticle>>(fMCParticleTag);
 
-  // Get the length and determine if any point leaves the fiducial volume
+  // Get the length and determine if any point leaves the active volume
   //
   // get lepton track
+  // if multiple, get the one with the highest energy
   int track_ind = -1;
   for (int i = 0; i < mctrack_list.size(); i++) {
     if (isFromNuVertex(mctruth, mctrack_list[i]) && abs(mctrack_list[i].PdgCode()) == 13 && mctrack_list[i].Process() == "primary") {
-      track_ind = i;
-      break;
+      if (track_ind == -1 || mctrack_list[track_ind].Start().E() < mctrack_list[i].Start().E()) {
+        track_ind = i;
+      }
     }
   } 
   // if there's no lepton, look for a pi+ that can "fake" a muon 
-  // if there's multiple, get the longest one
+  // if there's multiple, get the one with the highest energy
   if (track_ind == -1) {
     double track_contained_length = -1;
     for (int i = 0; i < mctrack_list.size(); i++) {
       if (isFromNuVertex(mctruth, mctrack_list[i]) && abs(mctrack_list[i].PdgCode()) == 211 && mctrack_list[i].Process() == "primary") {
-        double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 
-        if (track_contained_length < 0 || this_contained_length > track_contained_length) {
+        if (track_ind == -1 || mctrack_list[track_ind].Start().E() < mctrack_list[i].Start().E()) {
           track_ind = i;
-          track_contained_length = this_contained_length;
         }
+        //double this_contained_length = trackInfo(mctrack_list[i]).t_contained_length; 
+        //if (track_contained_length < 0 || this_contained_length > track_contained_length) {
+        //  track_ind = i;
+        // track_contained_length = this_contained_length;
+        //}
       }
     }
   }
 
-  return (track_ind != -1) ? trackInfo(mctrack_list[track_ind]) : NumuSelection::NuMuInteraction({false, -1, -1, -1});
+  // if there's no track, return nonsense
+  if (track_ind == -1) {
+    // set calculator variables
+    calculator.lepton_contained = false;
+    calculator.lepton_contained_length = -1;
+    calculator.lepton_index = -1;
+    return NumuSelection::NuMuInteraction({false, -1, -1, -1, -1, -1});
+  }
+  // otherwise get the track info and energy info
+  else {
+    // get track info for our lepton
+    NumuSelection::TrackInfo t_info = trackInfo(mctrack_list[track_ind]);
+
+    // set calculator variables
+    calculator.lepton_contained = t_info.t_is_contained; 
+    calculator.lepton_contained_length = t_info.t_contained_length;
+    calculator.lepton_index = track_ind;
+
+    // smear the energy
+    double smeared_energy = smearLeptonEnergy(mctrack_list[track_ind], calculator);
+    // truth kinetic energy
+    double truth_energy = (mctrack_list[track_ind].Start().E()) / 1000.; /* MeV -> GeV */
+    return NumuSelection::NuMuInteraction({t_info.t_is_contained, t_info.t_contained_length, t_info.t_length, mctrack_list[track_ind].PdgCode(), truth_energy, smeared_energy});
+  }
 }
 
 std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Event& ev, const simb::MCTruth& mctruth, 
@@ -399,6 +430,14 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
 
   // retrun list of cuts
   return {pass_kMEC, pass_AV && pass_kMEC, pass_valid_track && pass_kMEC && pass_AV, pass_valid_track && pass_kMEC && pass_FV, pass_valid_track && pass_kMEC && pass_FV && pass_min_length};
+}
+
+bool NumuSelection::containedInAV(const TVector3 &v) {
+  geoalgo::Point_t p(v); 
+  for (auto const& AV: _config.active_volumes) {
+    if (AV.Contain(p)) return true;
+  }
+  return false;
 }
 
 bool NumuSelection::containedInFV(const TVector3 &v) {
