@@ -102,6 +102,7 @@ protected:
     double leptonEnergyDistortionLeavingB; //!< Parameter to be used in the energy distortion of primary lepton for visible energy calculation. 
       // (%) = -A * Log(B * L)  where L is the lepton contained length
     bool cutKMEC; //!< Whether to remove MEC events (useful for studying difference w.r.t. proposal)
+    bool onlyKMEC; //!< Whether to remove all non-MEC events
   };
 
   /** Histograms made for output */

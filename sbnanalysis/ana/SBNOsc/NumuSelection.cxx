@@ -65,6 +65,7 @@ void NumuSelection::Initialize(Json::Value* config) {
     _config.acceptShakyTracks = (*config)["NumuSelection"].get("acceptShakyTracks", false).asBool();
     _config.verbose = (*config)["NumuSelection"].get("verbose", false).asBool();
     _config.cutKMEC = (*config)["NumuSelection"].get("cutKMEC", false).asBool();
+    _config.onlyKMEC = (*config)["NumuSelection"].get("onlyKMEC", false).asBool();
   }
 
   // Setup histo's for root output
@@ -426,7 +427,7 @@ std::array<bool, NumuSelection::nCuts> NumuSelection::Select(const gallery::Even
   }
 
   // STUDY KMEC: remove MEC events
-  bool pass_kMEC = !(_config.cutKMEC && nu.Mode() == simb::kMEC);
+  bool pass_kMEC = !(_config.cutKMEC && nu.Mode() == simb::kMEC) && !(_config.onlyKMEC && nu.Mode() != simb::kMEC);
 
   // retrun list of cuts
   return {pass_kMEC, pass_AV && pass_kMEC, pass_valid_track && pass_kMEC && pass_AV, pass_valid_track && pass_kMEC && pass_FV, pass_valid_track && pass_kMEC && pass_FV && pass_min_length};
