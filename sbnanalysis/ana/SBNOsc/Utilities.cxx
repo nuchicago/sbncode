@@ -144,11 +144,13 @@ double containedLength(const TVector3 &v0, const TVector3 &v1, const std::vector
         length += (intersections.at(0).ToTLorentzVector().Vect() - intersections.at(1).ToTLorentzVector().Vect()).Mag();
         continue;
       }
-      else if (intersections.size() != 1)  assert(false); // bad
-      
-      // get TVector at intersection point
-      TVector3 int_tv(intersections.at(0).ToTLorentzVector().Vect());
-      length += ( box.Contain(p0) ? (v0 - int_tv).Mag() : (v1 - int_tv).Mag() ); 
+      // "Correct"/ideal case -- 1 intersection point
+      else if (intersections.size() == 1) {
+        // get TVector at intersection point
+        TVector3 int_tv(intersections.at(0).ToTLorentzVector().Vect());
+        length += ( box.Contain(p0) ? (v0 - int_tv).Mag() : (v1 - int_tv).Mag() ); 
+      }
+      else assert(false); // bad
     }
     // none contained -- either must have zero or two intersections
     if (n_contained == 0) {
