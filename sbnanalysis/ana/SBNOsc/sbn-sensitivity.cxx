@@ -43,8 +43,9 @@ int main(int argc, char* argv[]) {
             bins.push_back(binlim.asDouble());
         }
         int scale_sample = sample.get("scalesample", 0).asInt();
+        bool isnu = sample.get("isnu", false).asBool();
         
-        samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc, bins, scale_sample));
+        samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc, bins, scale_sample, isnu));
         
     }
     

@@ -29,11 +29,12 @@ namespace SBNOsc {
 class EventSample {
     
     public:
+    
         /** Constructors. */
         EventSample();
         EventSample(TTree* _tree, float scaleFactor) : tree(_tree), fScaleFactor(scaleFactor) {}
         EventSample(std::vector<std::string> filenames, float fScaleFactor);
-        EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample);
+        EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample, bool isnu);
         
         TFile* file;                //!< File containing the tree
         TTree* tree;                //!< Event tree
@@ -42,6 +43,7 @@ class EventSample {
         std::string fDesc;          //!< (Very concise) Description of sample
         std::vector <double> fBins; //!< Energy bin limits
         int fScaleSample;           //!< Scale to this sample (shape+rate chisq)?
+        bool fIsNu;                 //!< Is this sample a neutrino sample
     
 };
 
@@ -49,8 +51,14 @@ class EventSample {
 class Covariance {
     
     public:
-        Covariance(std::vector<EventSample> samples, char *configFileName);
-        //SavePNGs(std::string directory);
+        
+        // Functions
+        
+        Covariance(std::vector <EventSample> samples, char *configFileName);
+        
+        void Calculate(std::vector <EventSample> samples);
+        
+        // Output
         
         TH2D *cov, *fcov, *corr;                // Covariance, fractional covariance and correlation
                                                 // matrices.
@@ -60,6 +68,8 @@ class Covariance {
     
     private:
     
+        // Configuration parameters
+        
         std::string fWeightKey;
         int fNumAltUnis;
         
@@ -70,7 +80,18 @@ class Covariance {
         std::map <std::string, float> fScaleTargets;
         
         std::string fOutputDirectory;
-        int fSavePDFs;
+        
+        bool fSignalOnly;
+        
+        // Internal functions
+        
+        std::vector <int> GetSampleBins(std::vector <EventSample> samples);
+        std::vector <double> GetUniWeights(std::map <std::string, std::vector <double> > weights, int n_unis);
+        
+        // Vector of neutrino counts
+        
+        std::vector <std::vector <double> > nu_counts;
+        std::vector <double> bkg_counts;
         
         
     

@@ -42,15 +42,34 @@ EventSample::EventSample(std::vector<std::string> filenames, float scaleFactor) 
 };
     
 // My own constructor that deals with the extra public members I added.
-EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc), fBins(bins), fScaleSample(scale_sample) {
+EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample, bool isnu) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc), fBins(bins), fScaleSample(scale_sample), fIsNu(isnu) {
 
     // Tree
     tree = (TTree*) file->Get("sbnana");
 
 };
 
-// Function that gets scale factors (weights) for different universes
-std::vector <double> get_uni_weights(std::map <std::string, std::vector <double> > weights, int n_unis) {
+// Gets bin 'boundaries' between each separate sample
+GetSampleBins(std::vector<EventSample> samples) {
+    
+    int num_bins = 0;
+    std::vector <int> sample_bins;
+    
+    for (auto sample : samples) {
+        
+        sample_bins.push_back(num_bins);
+        num_bins += sample.fBins.size() - 1;
+        
+    }
+    
+    sample_bins.push_back(num_bins);
+    
+    return sample_bins;
+    
+}    
+    
+// Gets scale factors (weights) for different universes
+GetUniWeights(std::map <std::string, std::vector <double> > weights, int n_unis) {
     
     // Tentative format: universe u scale factor is the product of the u-th entries on each vector 
     // inside the map. For vectors with less than u entries, use the (u - vec_size)-th entry
@@ -83,110 +102,10 @@ std::vector <double> get_uni_weights(std::map <std::string, std::vector <double>
     
 }
 
-// Function that gets plotting order (SBND-ICARUS-MicroBooNE and, within each det, nue-numu-rest)
-std::vector <std::string> get_plot_order(std::vector<EventSample> samples) {
-    
-    // Create map of samples: detector -> description
-    std::map <std::string, std::vector <std::string> > sample_descs;
-    std::vector <std::string> all_descs, all_dets;
-    for (int s = 0; s < samples.size(); s++) {
-        
-        // If this is a new sample detector, make new key and add detector 
-        if (sample_descs.find(samples[s].fDet) == sample_descs.end()) {
-        
-            sample_descs.insert({samples[s].fDet, {samples[s].fDesc}});
-        
-        // Else, add detector to existing key
-        } else {
-            
-            sample_descs[samples[s].fDet].push_back(samples[s].fDesc);
-        
-        }
-        
-        // If new sample description, add to vector
-        if (std::find(all_descs.begin(), all_descs.end(), samples[s].fDesc) == all_descs.end()) {
-            all_descs.push_back(samples[s].fDesc);
-        }
-        
-        // If new sample detector, add to vector
-        if (std::find(all_dets.begin(), all_dets.end(), samples[s].fDet) == all_dets.end()) {
-            all_dets.push_back(samples[s].fDet);
-        }
-        
-    }
-    
-    // Get order descriptions will be plotted in (nue, numu, rest)
-    std::vector <std::string> desc_order;
-    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{e}") != all_descs.end()) {
-        desc_order.push_back("#nu_{e}");
-    }
-    if (std::find(all_descs.begin(), all_descs.end(), "#nu_{#mu}") != all_descs.end()) {
-        desc_order.push_back("#nu_{#mu}");
-    }
-    for (int d = 0; d < all_descs.size(); d++) {
-        if (all_descs[d] != "#nu_{e}" && all_descs[d] != "#nu_{#mu}") {
-            desc_order.push_back(all_descs[d]);
-        }
-    }
-    
-    // Get order detectors will be plotted in
-    std::vector <std::string> det_order;
-    if (std::find(all_dets.begin(), all_dets.end(), "SBND") != all_dets.end()) {
-        det_order.push_back("SBND");
-    }
-    if (std::find(all_dets.begin(), all_dets.end(), "ICARUS") != all_dets.end()) {
-        det_order.push_back("ICARUS");
-    }
-    if (std::find(all_dets.begin(), all_dets.end(), "MicroBooNE") != all_dets.end()) {
-        det_order.push_back("MicroBooNE");
-    }
-    
-    // Get actual order all samples will be plotted in 
-    // (this method allows for uneven samples (eg. SBND-nue and ICARUS-numu and no others))
-    std::vector <std::string> plot_order;
-    for (std::string det : all_dets) {
-        for (std::string desc : all_descs) {
-            
-            if (std::find(sample_descs[det].begin(), sample_descs[det].end(), desc) != sample_descs[det].end()) {
-                plot_order.push_back(det+"_"+desc);
-            }
-            
-        }
-    }
-    
-    return plot_order;
-    
-}
-
-// Order dets in sample SBND-MicroBooNE-ICARUS
-std::vector <std::string> get_dets_inorder(std::vector<EventSample> samples) {
-    
-    std::vector <std::string> dets, dets_inorder;
-    
-    for (EventSample sample : samples) {
-        if (std::find(dets.begin(), dets.end(), sample.fDet) == dets.end()) {
-            dets.push_back(sample.fDet);
-        }
-    }
-    
-    if (std::find(dets.begin(), dets.end(), "SBND") != dets.end()) {
-        dets_inorder.push_back("SBND");
-    }
-    if (std::find(dets.begin(), dets.end(), "MicroBooNE") != dets.end()) {
-        dets_inorder.push_back("MicroBooNE");
-    }
-    if (std::find(dets.begin(), dets.end(), "ICARUS") != dets.end()) {
-        dets_inorder.push_back("ICARUS");
-    }
-    
-    return dets_inorder;
-    
-}
-
 Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
-    //// Getting parameters from config file
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// Gets parameters from config file
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // Get configuration file parameters
     Json::Value* config = core::LoadConfig(configFileName);
@@ -222,45 +141,28 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             }
         }
         
+        // Use only signal events in cov?
+        fSignalOnly = (*config)["Covariance"].get("SignalOnly", 7).asBool();
+        
         // more documentation is at: https://open-source-parsers.github.io/jsoncpp-docs/doxygen/index.html#_example
     
     }
     
     std::cout << "Got all parameters from the configuration file." << std::endl;
     
+}
+
+Calculate(std::vector<EventSample> samples) {
     
-    //// Get counts on each (base and alternative) universe
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// Geta counts for each (base and alternative) universe
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
-    // Some stuff related to binning and plotting
+    // Bin 'boundaries'
+    std::vector <int> sample_bins = GetSampleBins(samples);
+    int num_bins = sample_bins[sample_bins.size()-1];
     
-        // Number of bins needed in big histogram (for covariance)
-        // And bin 'boundaries' between each separate sample
-    int num_bins = 0;
-    std::vector <int> sample_bins;
-    for (auto sample : samples) {
-        
-        sample_bins.push_back(num_bins);
-        num_bins += sample.fBins.size() - 1;
-        
-    }
-    sample_bins.push_back(num_bins);
-    
-    // Large (meaningless x-axis) histograms for cov
-    std::vector <TH1D*> count_hists = {new TH1D("base", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
-    
-    for (int u = 0; u < fNumAltUnis; u++) {
-        
-        std::string name = "alt" + std::to_string(u+1), 
-                    title = "Alt. Uni. " + std::to_string(u+1) + " Counts; Bin; Counts";
-        
-        count_hists.push_back(new TH1D(name.c_str(), title.c_str(), num_bins, 0, num_bins));
-    
-    }
-    
-    // Vectors to hold nice histograms
-    std::vector <TH1D*> numu_cts(fScaleTargets.size(), new TH1D()), numu_bkg(fScaleTargets.size(), new TH1D()),
-                        nue_cts(fScaleTargets.size(), new TH1D()), nue_bkg(fScaleTargets.size(), new TH1D());
+    // Vector to hold counts in all 'universes'
+    for (int u = 0; u < fNumAltUnis; u++) nu_counts.push_back({});
     
     // Get counts
     std::cout << std::endl << "Getting counts for each sample..." << std::endl;
@@ -283,6 +185,9 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0]));
             
         }
+        
+            // Background counts
+        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), title.c_str(), sample.fBins.size()-1, &sample.fBins[0]);
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -313,13 +218,14 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
                 int isCC = event->truth[truth_ind].neutrino.iscc;
                 double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
                 
-                // Add to base count histogram
+                // Add to base and bkg count histogram
                 temp_count_hists[0]->Fill(nuE, wgt);
+                if (sample.fIsNu && !isCC) temp_bkg_counts->Fill(nuE, wgt);
                 
                 // Get weights for each alternative universe
                 std::vector <double> uweights;
                 if (fWeightKey == "GetWeights") {
-                    uweights = get_uni_weights(event->truth[truth_ind].weights, fNumAltUnis);
+                    uweights = GetUniWeights(event->truth[truth_ind].weights, fNumAltUnis);
                 } else if (fWeightKey == "Flux") {
                     std::map <std::string, std::vector<double> > tempweights;
                     for (auto it : event->truth[truth_ind].weights) {
@@ -344,46 +250,24 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
             }
         }
         
-        // Rescale to desired POT
+        // Add to vector and scale to desired POT
         for (int h = 0; h < temp_count_hists.size(); h++) {
-            temp_count_hists[h]->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
-        }
-        
-        // Pass onto the big histograms
-            // base and alt uni counts
-        for (int h = 0; h < temp_count_hists.size(); h++) {
-            
             for (int bin = 0; bin < temp_count_hists[h]->GetNbinsX(); bin++) {
-                count_hists[h]->SetBinContent(1+sample_bins[o]+bin, temp_count_hists[h]->GetBinContent(1+bin));
+
+                double scaled_counts = temp_count_hists[h]->GetBinContent(1+bin) * fScaleTargets[sample.fDet] / sample.fScaleFactor;
+                nu_counts[h].push_back(scaled_counts);
+                
+                if (h == 0) {
+                    double scaled_bkg_counts = temp_bkg_hist->GetBinContent(1+bin) * fScaleTargets[sample.fDet] / sample.fScaleFactor;
+                    bkg_counts.push_back(scaled_bkg_counts);
+                }
+            
             }
-            
         }
-        
-        /*
-        // Add numu and nue hists to vectors
-        if (sample.fDesc == "#nu_{#mu}" ) {
-            
-            numu_bkg[detind] = temp_bkg_counts;
-            numu_bkg[detind]->SetName((sample.fDet+"_numu_bkg").c_str());
-            
-            numu_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
-            numu_cts[detind]->SetName((sample.fDet+"_numu_cts").c_str());
-            
-        } else if (sample.fDesc == "#nu_{e}") {
-            
-            nue_bkg[detind] = temp_bkg_counts;
-            nue_bkg[detind]->SetName((sample.fDet+"_nue_bkg").c_str());
-            
-            nue_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
-            nue_cts[detind]->SetName((sample.fDet+"_nue_cts").c_str());
-            
-        }
-        */
         
         o++;
         
     }
-    
     
     //// Get covariances, fractional covariances and correlation coefficients
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -446,21 +330,61 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     std::cout << std::endl << "  Got covs." << std::endl;
     
+}
+
+/*
+    
+Covariance::Counts() {
+    
+    // Taken from within the big loop. Still mentions bkg_counts. How to handle that?
+    // 1. Loop over events again?
+    // 2. Make Calculate also count background counts in each bin? This would also work with
+    //    Gray's desire to have covariance be calculated only with signal counts.
+    
+    // Do number 2 then this will only need to take in nu_counts and a bkg_counts that Calculate will store as a private object. Then do the below.
+    
+    // Vectors to hold nice histograms
+    std::vector <TH1D*> numu_cts(fScaleTargets.size(), new TH1D()), numu_bkg(fScaleTargets.size(), new TH1D()),
+                        nue_cts(fScaleTargets.size(), new TH1D()), nue_bkg(fScaleTargets.size(), new TH1D());
+    
+    Some loop {
+    
+        // Add numu and nue hists to vectors
+        if (sample.fDesc == "#nu_{#mu}" ) {
+            
+            numu_bkg[detind] = temp_bkg_counts;
+            numu_bkg[detind]->SetName((sample.fDet+"_numu_bkg").c_str());
+            
+            numu_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
+            numu_cts[detind]->SetName((sample.fDet+"_numu_cts").c_str());
+            
+        } else if (sample.fDesc == "#nu_{e}") {
+            
+            nue_bkg[detind] = temp_bkg_counts;
+            nue_bkg[detind]->SetName((sample.fDet+"_nue_bkg").c_str());
+            
+            nue_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
+            nue_cts[detind]->SetName((sample.fDet+"_nue_cts").c_str());
+            
+        }
+        
+    }
+    
     
     //// Output relevant objects
     //// ~~~~~~~~~~~~~~~~~~~~~~~
     
-    /*
     numu_counts = numu_cts;
     numu_bkgs = numu_bkg;
     if (nue_appearance) {
         nue_counts = nue_cts;
         nue_bkgs = nue_bkg;
     }
-    */
     
     
 }
+    
+*/
 
 }   // namespace SBNOsc
 }   // namespace ana

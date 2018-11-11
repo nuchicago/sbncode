@@ -284,8 +284,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
                 double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDists[sample.fDet] + dz)*(fDetDists[sample.fDet] + dz) );
                 
                 // Fill bkg and nu histograms
-                bool isnu = (sample.fDesc.find("#nu") != std::string::npos);
-                if (isnu && isCC) {
+                if (sample.fIsNu && isCC) {
                     temp_nu_counts->Fill(true_nuE, nuE, dist, wgt);
                 } else {
                     temp_bkg_counts->Fill(nuE, wgt);
