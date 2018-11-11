@@ -42,31 +42,12 @@ EventSample::EventSample(std::vector<std::string> filenames, float scaleFactor) 
 };
     
 // My own constructor that deals with the extra public members I added.
-EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample, bool isnu) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc), fBins(bins), fScaleSample(scale_sample), fIsNu(isnu) {
+EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::string Desc, std::vector <double> bins, int scale_sample, std::string nutype) : file(_file), fScaleFactor(ScaleFactor), fDet(Det), fDesc(Desc), fBins(bins), fScaleSample(scale_sample), fNuType(nutype) {
 
     // Tree
     tree = (TTree*) file->Get("sbnana");
 
-};
-
-// Gets bin 'boundaries' between each separate sample
-GetSampleBins(std::vector<EventSample> samples) {
-    
-    int num_bins = 0;
-    std::vector <int> sample_bins;
-    
-    for (auto sample : samples) {
-        
-        sample_bins.push_back(num_bins);
-        num_bins += sample.fBins.size() - 1;
-        
-    }
-    
-    sample_bins.push_back(num_bins);
-    
-    return sample_bins;
-    
-}    
+};   
     
 // Gets scale factors (weights) for different universes
 GetUniWeights(std::map <std::string, std::vector <double> > weights, int n_unis) {
@@ -112,9 +93,6 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     if (config != NULL) {
         
-        // Output directory
-        fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
-        
         // Weight and universe stuff
         fWeightKey = (*config)["Covariance"].get("WeightKey", "").asString();
         if (fWeightKey == "GetWeights" || fWeightKey == "Flux" || fWeightKey == "Cross-Section") {
@@ -148,18 +126,24 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
     }
     
+    ev_samples = samples;
+    
     std::cout << "Got all parameters from the configuration file." << std::endl;
     
 }
 
-Calculate(std::vector<EventSample> samples) {
+ScanEvents() {
     
     //// Geta counts for each (base and alternative) universe
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // Bin 'boundaries'
-    std::vector <int> sample_bins = GetSampleBins(samples);
-    int num_bins = sample_bins[sample_bins.size()-1];
+    num_bins = 0;
+    for (auto sample : samples) {
+        sample_bins.push_back(num_bins);
+        num_bins += sample.fBins.size() - 1;   
+    }
+    sample_bins.push_back(num_bins);
     
     // Vector to hold counts in all 'universes'
     for (int u = 0; u < fNumAltUnis; u++) nu_counts.push_back({});
@@ -168,7 +152,7 @@ Calculate(std::vector<EventSample> samples) {
     std::cout << std::endl << "Getting counts for each sample..." << std::endl;
     
     int o = 0;
-    for (auto sample : samples) {
+    for (auto sample : ev_samples) {
         
         // What sample did we get?
         std::cout << "Doing " << sample.fDesc << " sample in " << sample.fDet << std::endl;
@@ -220,31 +204,38 @@ Calculate(std::vector<EventSample> samples) {
                 
                 // Add to base and bkg count histogram
                 temp_count_hists[0]->Fill(nuE, wgt);
-                if (sample.fIsNu && !isCC) temp_bkg_counts->Fill(nuE, wgt);
-                
-                // Get weights for each alternative universe
-                std::vector <double> uweights;
-                if (fWeightKey == "GetWeights") {
-                    uweights = GetUniWeights(event->truth[truth_ind].weights, fNumAltUnis);
-                } else if (fWeightKey == "Flux") {
-                    std::map <std::string, std::vector<double> > tempweights;
-                    for (auto it : event->truth[truth_ind].weights) {
-                        if (it.first.find("genie") > it.first.size()) tempweights.insert(it);
-                    }
-                    uweights = get_uni_weights(tempweights, fNumAltUnis);
-                } else if (fWeightKey == "Cross-Section") {
-                    std::map <std::string, std::vector<double> > tempweights;
-                    for (auto it : event->truth[truth_ind].weights) {
-                        if (it.first.find("genie") <= it.first.size()) tempweights.insert(it);
-                    }
-                    uweights = get_uni_weights(tempweights, fNumAltUnis);
-                } else {
-                    uweights = event->truth[truth_ind].weights[fWeightKey];
+                if ((sample.fNuType == "numu" || sample.fNuType == "nue") && !isCC) {
+                    temp_bkg_counts->Fill(nuE, wgt);
                 }
                 
-                // Fill alternative universe histograms
-                for (int u = 0; u < uweights.size(); u++) {
-                    temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
+                if (fSignalOnly && 
+                    ((sample.fNuType == "numu" || sample.fNuType == "nue") || isCC)) {
+                    
+                    // Get weights for each alternative universe
+                    std::vector <double> uweights;
+                    if (fWeightKey == "GetWeights") {
+                        uweights = GetUniWeights(event->truth[truth_ind].weights, fNumAltUnis);
+                    } else if (fWeightKey == "Flux") {
+                        std::map <std::string, std::vector<double> > tempweights;
+                        for (auto it : event->truth[truth_ind].weights) {
+                            if (it.first.find("genie") > it.first.size()) tempweights.insert(it);
+                        }
+                        uweights = get_uni_weights(tempweights, fNumAltUnis);
+                    } else if (fWeightKey == "Cross-Section") {
+                        std::map <std::string, std::vector<double> > tempweights;
+                        for (auto it : event->truth[truth_ind].weights) {
+                            if (it.first.find("genie") <= it.first.size()) tempweights.insert(it);
+                        }
+                        uweights = get_uni_weights(tempweights, fNumAltUnis);
+                    } else {
+                        uweights = event->truth[truth_ind].weights[fWeightKey];
+                    }
+
+                    // Fill alternative universe histograms
+                    for (int u = 0; u < uweights.size(); u++) {
+                        temp_count_hists[u+1]->Fill(nuE, wgt*uweights[u]);
+                    }
+                    
                 }
                 
             }
@@ -269,11 +260,22 @@ Calculate(std::vector<EventSample> samples) {
         
     }
     
+}
+
+GetCovs() {
+    
     //// Get covariances, fractional covariances and correlation coefficients
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     std::cout << std::endl << "Getting covs..." << std::endl;
     
+    // Plot data
+    std::vector <double> cov_counts = nu_counts[0];
+    if (fSignalOnly) {
+        for (int i = 0; i < cov_counts.size(); i++) cov_counts[i] -= bkg_counts[i];
+    }
+    
+    // Plot name
     std::string pre_title = "";
     if (fWeightKey != "GetWeights") pre_title = fWeightKey + " ";
     
@@ -286,13 +288,12 @@ Calculate(std::vector<EventSample> samples) {
             
             double covij = 0;
             for (int u = 0; u < fNumAltUnis; u++) {
-                covij += (count_hists[0]->GetBinContent(i+1) - count_hists[u+1]->GetBinContent(i+1)) * 
-                         (count_hists[0]->GetBinContent(j+1) - count_hists[u+1]->GetBinContent(j+1));
+                covij += (cov_counts[i] - nu_counts[u+1][i]) * (cov_counts[j] - nu_counts[u+1][j]);
             }
             covij /= fNumAltUnis;
             cov->SetBinContent(i+1, j+1, covij);
             
-            double fcovij = covij / (count_hists[0]->GetBinContent(i+1) * count_hists[0]->GetBinContent(j+1));
+            double fcovij = covij / (cov_counts[i] * cov_counts[j]);
             fcov->SetBinContent(i+1, j+1, fcovij);
             
         }
@@ -312,10 +313,10 @@ Calculate(std::vector<EventSample> samples) {
     
     // Add bin labels
     std::vector <TH2D*> hists = {cov, fcov, corr};
-    for (int o = 0; o < samples.size(); o++) {
+    for (int o = 0; o < ev_samples.size(); o++) {
 
         // Get label and position
-        std::string label = samples[o].fDet + " " + samples[o].fDesc;
+        std::string label = ev_samples[o].fDet + " " + ev_samples[o].fDesc;
         int bin = (sample_bins[o] + sample_bins[o+1])/2;
 
         // Set label
@@ -331,60 +332,87 @@ Calculate(std::vector<EventSample> samples) {
     std::cout << std::endl << "  Got covs." << std::endl;
     
 }
-
-/*
     
-Covariance::Counts() {
-    
-    // Taken from within the big loop. Still mentions bkg_counts. How to handle that?
-    // 1. Loop over events again?
-    // 2. Make Calculate also count background counts in each bin? This would also work with
-    //    Gray's desire to have covariance be calculated only with signal counts.
-    
-    // Do number 2 then this will only need to take in nu_counts and a bkg_counts that Calculate will store as a private object. Then do the below.
+GetCounts() {
     
     // Vectors to hold nice histograms
     std::vector <TH1D*> numu_cts(fScaleTargets.size(), new TH1D()), numu_bkg(fScaleTargets.size(), new TH1D()),
                         nue_cts(fScaleTargets.size(), new TH1D()), nue_bkg(fScaleTargets.size(), new TH1D());
     
-    Some loop {
+    // Loop
+    int numu_ind = 0, nue_ind = 0, sample_ind = 0;
+    for (auto sample: ev_samples) {
+        
+        if (sample.fNuType == "numu") {
+            
+            numu_bkg[numu_ind] = new TH1D((sample.fDet+"_numu_bkg").c_str(), "",
+                                          sample.fBins.size() - 1, &sample.fBins[0]);
+            numu_cts[numu_ind] = new TH1D((sample.fDet+"_numu_cts").c_str(), "",
+                                          sample.fBins.size() - 1, &sample.fBins[0]);
+            
+            for (int o = sample_bins[sample_ind]; o < sample_bins[sample_ind+1]; o++) {
+                
+                numu_bkg[numu_ind]->SetBinContent(bkg_counts[o]);
+                numu_cts[numu_ind]->SetBinContent(nu_counts[o] - bkg_counts[o]);
+                
+            }
+            
+            numu_ind++;
+            
+        } else if (sample.fNuType == "nue") {
+            
+            nue_bkg[nue_ind] = new TH1D((sample.fDet+"_nue_bkg").c_str(), "",
+                                        sample.fBins.size() - 1, &sample.fBins[0]);
+            nue_cts[nue_ind] = new TH1D((sample.fDet+"_nue_cts").c_str(), "",
+                                        sample.fBins.size() - 1, &sample.fBins[0]);
+            
+            for (int o = sample_bins[sample_ind]; o < sample_bins[sample_ind+1]; o++) {
+                
+                nue_bkg[nue_ind]->SetBinContent(bkg_counts[o]);
+                nue_cts[nue_ind]->SetBinContent(nu_counts[o] - bkg_counts[o]);
+                
+            }
+            
+            nue_ind++;
+            
+        }
+        
+        sample_ind++;
+        
+    }
     
-        // Add numu and nue hists to vectors
-        if (sample.fDesc == "#nu_{#mu}" ) {
-            
-            numu_bkg[detind] = temp_bkg_counts;
-            numu_bkg[detind]->SetName((sample.fDet+"_numu_bkg").c_str());
-            
-            numu_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
-            numu_cts[detind]->SetName((sample.fDet+"_numu_cts").c_str());
-            
-        } else if (sample.fDesc == "#nu_{e}") {
-            
-            nue_bkg[detind] = temp_bkg_counts;
-            nue_bkg[detind]->SetName((sample.fDet+"_nue_bkg").c_str());
-            
-            nue_cts[detind] = (TH1D*) temp_nu_counts->ProjectionY();
-            nue_cts[detind]->SetName((sample.fDet+"_nue_cts").c_str());
-            
+    // Output relevant objects
+    numu_counts = numu_cts; numu_bkgs = numu_bkg;
+    nue_counts = nue_cts; nue_bkgs = nue_bkg;
+    
+}
+
+Write(std::string directory) {
+    
+    // Write Covariances
+    TFile* covfile = TFile::Open((directory + "cov.root").c_str(), "recreate");
+    assert(covfile && covfile->IsOpen());
+    
+    cov.cov->Write();
+    cov.fcov->Write();
+    cov.corr->Write();
+    
+    // Write Counts
+    if (numu_counts.size() + nue_counts.size() > 0) {
+        
+        TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
+        assert(countfile && countfile->IsOpen());
+
+        std::vector <std::vector <TH1D*> > hist_vecs = {cov.numu_counts, cov.numu_bkgs};
+        if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.push_back(cov.nue_bkgs); }
+
+        for (std::vector <TH1D*> hist_vec : hist_vecs) {
+            for (TH1D* hist : hist_vec) hist->Write();
         }
         
     }
     
-    
-    //// Output relevant objects
-    //// ~~~~~~~~~~~~~~~~~~~~~~~
-    
-    numu_counts = numu_cts;
-    numu_bkgs = numu_bkg;
-    if (nue_appearance) {
-        nue_counts = nue_cts;
-        nue_bkgs = nue_bkg;
-    }
-    
-    
 }
-    
-*/
 
 }   // namespace SBNOsc
 }   // namespace ana

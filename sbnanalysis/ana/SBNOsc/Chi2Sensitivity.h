@@ -20,13 +20,21 @@ class Chi2Sensitivity {
     
     public:
         
+        // Functions
+        
         Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName);
         Chi2Sensitivity(std::vector<EventSample> samples, Covariance cov, char *configFileName);
+        
+        void ScanEvents(), GetChi2(), GetContours(), Write(std::string directory);
+        
+        // Output
         
         TGraph2D *chisqplot;
         TGraph *contour_90pct, *contour_3sigma, *contour_5sigma;
     
     private:
+        
+        // From config file
         
         std::string fEnergyType;
         
@@ -48,6 +56,21 @@ class Chi2Sensitivity {
         
         std::string fOutputDirectory;
         int fSavePDFs;
+        
+        // Internal
+        
+        Covariance covar;
+        std::vector <EventSample> ev_samples;
+        
+        int num_bins;
+        std::vector <int> sample_bins, sample_dist_bins;
+    
+        int num_dist_bins;
+        std::vector <double> dist_bins, sample_dist_bins;
+    
+        std::vector <double> trueEs;
+        
+        std::vector <std::vector <double> > chisq_diffs;
     
 };
 

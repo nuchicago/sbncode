@@ -27,6 +27,10 @@ int main(int argc, char* argv[]) {
     Json::Value* config = core::LoadConfig(configFileName);
     assert(config);
     
+    // Output directory
+    std::string fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
+    
+    // Samples
     std::vector <ana::SBNOsc::EventSample> samples;
     
     for (auto sample : (*config)["EventSamples"]) {
@@ -36,43 +40,38 @@ int main(int argc, char* argv[]) {
         std::string det = sample["det"].asString(),
                         desc = sample["desc"].asString();
         std::vector <double> bins = {};
-        for (auto binlim : sample["binlims"][desc]) {
+        
+        for (auto binlim : sample["binlims"]) {
             bins.push_back(binlim.asDouble());
         }
         int scale_sample = sample.get("scalesample", 0).asInt();
+        std::string nutype = sample.get("nutype", "").asString();
         
-        samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc, bins, scale_sample));
+        samples.push_back(ana::SBNOsc::EventSample(file, scalefactor, det, desc, bins, scale_sample, nutype));
         
     }
     
     assert(!samples.empty());
     
     
-    //// Get covariances and write outputs to ROOT file(s)
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //// Get covariances
+    //// ~~~~~~~~~~~~~~~
+    
+    std::cout << std::endl << "Starting covariance procedure..." << std::endl << std::endl;
     
     ana::SBNOsc::Covariance cov(samples, configFileName);
     
-    std::string directory = (*config).get("OutputDirectory", "./").asString();
-
-    TFile* newfile = TFile::Open((directory + "cov_output.root").c_str(), "recreate");
-    assert(newfile && newfile->IsOpen());
+    cov.ScanEvents();
+    cov.GetCovs();
+    cov.GetCounts();
+    cov.Write(fOutputDirectory);
     
-    cov.cov->Write();
-    cov.fcov->Write();
-    cov.corr->Write();
     
-    // Write counts to file
-    TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
-    assert(countfile && countfile->IsOpen());
+    //// Save plots
+    //// ~~~~~~~~~~
     
-    std::vector <std::vector <TH1D*> > hist_vecs = {cov.numu_counts, cov.numu_bkgs};
-    if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.push_back(cov.nue_bkgs); }
-    
-    for (std::vector <TH1D*> hist_vec : hist_vecs) {
-        for (TH1D* hist : hist_vec) hist->Write();
-    }
-    
+    int SavePDFs = (*config).get("SavePDFs", 0).asInt();
+    if (SavePDFs == 1) /* call python function from here... */;
     
     
     return 0;

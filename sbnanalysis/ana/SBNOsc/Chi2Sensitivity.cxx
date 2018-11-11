@@ -24,7 +24,7 @@
 #include <core/Event.hh>
 
 namespace ana {
-  namespace SBNOsc {
+namespace SBNOsc {
 
 // Oscillation function
 double numu_to_numu(double x, double sin, double dm2) {
@@ -50,30 +50,6 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configF
       
 // Personal preference (more explicit about what is used)...
 Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance cov, char *configFileName) {
-    
-    /*
-        Inputs: 
-        From (Covariance::Covariance) cov, we'll use the following arributes:
-            - cov         , the covariance matrix as a TH2D*;
-            - bkg_counts  , a TH1D* containing the CV counts of non-oscillating particles
-            - nu_counts   , a TH3D* containing the CV counts of oscillating particles, by
-                            true E (x-axis), reconstructed E (y) and distance from target (z)
-            - CV_counts   , a TH1D* containing the CV counts;
-            - energies    , a vector <double> with the energies corresponding 
-                            to the bin centers in the three count hists above;
-            - sample_order, a vector <string> with the samples plotted in the count hists above;
-            - sample_bins , a vector <int> with the bins in the count hists above that separate the
-                            samples described in sample_order;
-            - trueEs      , a vector containing the true energy value for each bin of nu_counts;
-            - sample_dist_bins, a vector containing the distance bins separating different samples;
-            - dist_bins   , a vector containing the distance value for each bin of nu_counts.
-                            
-        From the config file:
-            - fNumDm2     , number of points in dm2 dimension of (dm2, sin2(2theta)) phase space,
-            - fLogDm2Lims , limits of the dm2 dimension of the phase space, in log units,
-            - fNumSin     , number of points in sin dimension of phase space,
-            - fLogSinLims , limits of the sin dimension of the phase space, in log units.
-    */
     
     //// Get parameters from config file
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,6 +118,13 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     
     }
     
+    covar = cov;
+    ev_samples = samples;
+    
+}
+
+ScanEvents() {
+    
     //// Get neutrino counts from samples
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
@@ -149,13 +132,10 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     
         // Number of bins needed in big histogram (for covariance)
         // And bin 'boundaries' between each separate sample
-    int num_bins = 0;
-    std::vector <int> sample_bins;
-    for (auto sample : samples) {
-        
+    num_bins = 0;
+    for (auto sample : ev_samples) {
         sample_bins.push_back(num_bins);
         num_bins += sample.fBins.size() - 1;
-        
     }
     sample_bins.push_back(num_bins);
     
@@ -177,9 +157,9 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     
     }
     
-    int num_dist_bins = 0;
-    std::vector <double> dist_bins = {}, sample_dist_bins = {0};
-    for (auto sample : samples) {
+    num_dist_bins = 0;
+    sample_dist_bins = {0};
+    for (auto sample : ev_samples) {
         
         for (auto it : dist_bin_nums) {
             if (sample.fDet == it.first) {
@@ -198,29 +178,31 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
         
     }
     
-    // Large (meaningless x-axis) histograms for cov
-    TH1D *CV_counts = {new TH1D("CV", "Base Uni. Counts; Bin; Counts", num_bins, 0, num_bins)};
+    // Vectors to store event counts
+    std::vector <double> CV_counts, bkg_counts;
+    std::vector <std::vector <std::vector <double> > > nu_counts = {};
     
-    // Large (meaningless x-axis) histograms (one 3d) for oscillation calculations later on
-    TH1D *bkg_counts = new TH1D("Background", "Background Counts; Reconstructed Energy Bin; Counts", num_bins, 0, num_bins);
-    
-    TH3D *nu_counts = new TH3D("Neutrinos", "Neutrino Counts; True Energy Bin; Reconstructed Energy Bin; Distance Bin", fNumTrueEBins*samples.size(), 0, fNumTrueEBins*samples.size(), num_bins, 0, num_bins, num_dist_bins, 0, num_dist_bins);
-    
+    for (int t = 0; t < fNumTrueEBins*ev_samples.size(); t++) {
+        nu_counts.push_back({});
+        for (int r = 0; r < num_bins; r++) {
+            nu_counts[t].push_back({});
+            for (int d = 0; d < num_dist_bins; d++) nu_counts[t][r].push_back(0);
+        }
+    }
     
     // Get counts
     std::cout << std::endl << "Getting counts for each sample..." << std::endl;
     
-    std::vector <double> energies = {}, trueEs = {};;
+    std::vector <double> energies = {};
     int o = 0;
-    for (auto sample : samples) {
+    for (auto sample : ev_samples) {
         
         // What sample did we get?
         std::cout << "Doing " << sample.fDesc << " sample in " << sample.fDet << std::endl;
         
         // Initialise temp hists to store counts
             // Base
-        std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
-        TH1D *temp_CV_counts = {new TH1D((sample.fDet+"tempCV").c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0])};
+        TH1D *temp_CV_counts = {new TH1D((sample.fDet+"tempCV").c_str(), "", sample.fBins.size() - 1, &sample.fBins[0])};
         
             // Bkg
         TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", sample.fBins.size() - 1, &sample.fBins[0]);
@@ -294,31 +276,28 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
         }
         
         // Rescale to desired POT
-        temp_CV_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
-        temp_bkg_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
-        temp_nu_counts->Scale(fScaleTargets[sample.fDet] / sample.fScaleFactor);
+        double scale_factor = fScaleTargets[sample.fDet] / sample.fScaleFactor;
         
         
         // Pass onto the big histograms and get energies
         for (int bin = 0; bin < temp_CV_counts->GetNbinsX(); bin++) {
             
-            CV_counts->SetBinContent(1+sample_bins[o]+bin, temp_CV_counts->GetBinContent(1+bin));
-            energies.push_back(temp_CV_counts->GetBinCenter(bin+1));
+            CV_counts.push_back(temp_CV_counts->GetBinContent(1+bin) * scale_factor);
+            energies.push_back(temp_CV_counts->GetBinCenter(1+bin));
             
         }
         
         for (int rb = 0; rb < temp_nu_counts->GetNbinsY(); rb++) {
             
             // bkg_counts
-            bkg_counts->SetBinContent(1+sample_bins[o]+rb, temp_bkg_counts->GetBinContent(1+rb));
+            bkg_counts.push_back(temp_bkg_counts->GetBinContent(1+rb) * scale_factor);
             
             // nu_counts
             for (int tb = 0; tb < temp_nu_counts->GetNbinsX(); tb++) {
                 for (int db = 0; db < temp_nu_counts->GetNbinsZ(); db++) {
                     
-                    nu_counts->SetBinContent(1 + o*fNumTrueEBins + tb, 1 + sample_bins[o] + rb, 
-                                             1 + sample_dist_bins[o] + db, 
-                                             temp_nu_counts->GetBinContent(1+tb, 1+rb, 1+db));
+                    nu_counts[o*fNumTrueEBins + tb][sample_bins[o] + rb][sample_dist_bins[o] + db] = 
+                        temp_nu_counts->GetBinContent(1+tb, 1+rb, 1+db) * scale_factor;
                     
                 }
             }
@@ -335,6 +314,9 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
         
     }
     
+}
+
+GetChi2() {
     
     //// Invert Error Matrix
     //// ~~~~~~~~~~~~~~~~~~~
@@ -342,12 +324,12 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     std::cout << std::endl << "Inverting full error matrix, E_{ij}..." << std::endl;
     
     // Create error (statistical and systematic) matrix
-    TMatrixDSym E_mat(cov.cov->GetNbinsX());
+    TMatrixDSym E_mat(covar.cov->GetNbinsX());
     
-    for (int i = 0; i < cov.cov->GetNbinsX(); i++) {
-        for (int j = 0; j < cov.cov->GetNbinsY(); j++) {
+    for (int i = 0; i < covar.cov->GetNbinsX(); i++) {
+        for (int j = 0; j < covar.cov->GetNbinsY(); j++) {
             
-            E_mat[i][j] = cov.cov->GetBinContent(i+1, j+1);
+            E_mat[i][j] = covar.cov->GetBinContent(i+1, j+1);
             if (i == j) { E_mat[i][i] += CV_counts->GetBinContent(i+1); }
             
         }
@@ -371,8 +353,8 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     
     // Nue appearance or numu disappearance?
     int nue_appearance = 0;
-    for (auto sample : samples) {
-        if (sample.fDesc == "#nu_{e}") {
+    for (auto sample : ev_samples) {
+        if (sample.fNuType == "nue") {
             nue_appearance = 1;
             break;
         }
@@ -380,13 +362,13 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     
     // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
     std::vector <int> oscillate(CV_counts->GetNbinsX(), 0);
-    for (int i = 0; i < samples.size(); i++) {
+    for (int i = 0; i < ev_samples.size(); i++) {
         
-        if (samples[i].fDesc == "#nu_{#mu}") {
+        if (ev_samples[i].fDesc == "#nu_{#mu}") {
             for (int j = sample_bins[i]; j < sample_bins[i+1]; j++) {
                 oscillate[j] = 1;
             }
-        } else if (samples[i].fDesc == "#nu_{e}") {
+        } else if (ev_samples[i].fDesc == "#nu_{e}") {
             for (int j = sample_bins[i]; j < sample_bins[i+1]; j++) {
                 oscillate[j] = 2;
             }
@@ -395,7 +377,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     }
     
     // Num true energy bins in each sample
-    int num_trueE_bins = trueEs.size()/samples.size();
+    int num_trueE_bins = trueEs.size()/ev_samples.size();
     
     // Phase space
     std::vector <double> sin2theta, dm2;
@@ -431,9 +413,9 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     TH1D *osc_counts = new TH1D("temposc", "", bkg_counts->GetNbinsX(), 0, bkg_counts->GetNbinsX());
     for (int i = 0; i < fNumSin; i++){
         for (int j = 0; j < fNumDm2; j++) {
-    
-            std::cout << "i = " << i << ", j = " << j << std::endl;
-       
+            
+            if (j % 50 == 0) std::cout << "i = " << i << ", j = " << j << std::endl;
+            
             /*
             // Progress counter
             if (j == 0) {
@@ -446,7 +428,7 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
             */
             
             // Fill hist that holds oscillated counts
-            for (int o = 0; o < samples.size(); o++) { // For limits on bin loops inside:
+            for (int o = 0; o < ev_samples.size(); o++) { // For limits on bin loops inside:
                 
                 for (int rb = sample_bins[o]; rb < sample_bins[o+1]; rb++) {
                     
@@ -475,18 +457,18 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
             if (fShapeOnly == 1) /* checks if configured */ {
                 
                 int fit_sample_index = 0;
-                for (auto sample : samples) {
+                for (auto sample : ev_samples) {
                     if (sample.fScaleSample == 1) break;
                     fit_sample_index++;
                 }
-                assert(fit_sample_index != samples.size());
+                assert(fit_sample_index != ev_samples.size());
                 
                 // Histogram of scale factors (only part with scaled sample will be used)
                 TH1D *scale_hist = new TH1D("tempscale", "", bkg_counts->GetNbinsX(), 0, bkg_counts->GetNbinsX());
                 scale_hist->Divide(CV_counts, osc_counts);
                 
                 // Update each value in osc_counts histogram
-                for (int o = 0; o < samples.size(); o++) {
+                for (int o = 0; o < ev_samples.size(); o++) {
                     for (int rb = sample_bins[o]; rb < sample_bins[o+1]; rb++) {
                         
                         // Get corresponding bin in the scaled sample histogram
@@ -545,13 +527,16 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     }
     
     // Get differences
-    std::vector <std::vector <double> > chisq_diffs = chisq;
+    chisq_diffs = chisq;
     for (int i = 0; i < fNumSin; i++) {
         for (int j = 0; j < fNumDm2; j++) {
             chisq_diffs[i][j] -= minchisq;
         }
     }
     
+}
+
+GetContours() {
     
     //// Get contours
     //// ~~~~~~~~~~~~
@@ -644,8 +629,21 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
     contour_3sigma = graphs[1];
     contour_5sigma = graphs[2];
     
+}
+
+Write(std::string directory) {
+    
+    // Wite to file
+    TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
+    assert(chi2file && chi2file->IsOpen());
+    
+    chi2.contour_90pct->SetName("90pct"); chi2.contour_90pct->Write();
+    chi2.contour_3sigma->SetName("3sigma"); chi2.contour_3sigma->Write();
+    chi2.contour_5sigma->SetName("5sigma"); chi2.contour_5sigma->Write();
+    
+    chi2.chisqplot->SetName("chisq"); chi2.chisqplot->Write();
     
 }
 
-  }  // namespace SBNOsc
+}  // namespace SBNOsc
 }  // namespace ana
