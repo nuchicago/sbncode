@@ -43,7 +43,7 @@ class EventSample {
         std::string fDesc;          //!< (Very concise) Description of sample
         std::vector <double> fBins; //!< Energy bin limits
         int fScaleSample;           //!< Scale to this sample (shape+rate chisq)?
-        bool fNuType;               //!< Is this sample a neutrino sample
+        std::string fNuType;        //!< Is this sample a neutrino sample
     
 };
 
@@ -80,10 +80,6 @@ class Covariance {
         std::map <std::string, float> fScaleTargets;
         
         bool fSignalOnly;
-        
-        // Internal functions
-        
-        std::vector <double> GetUniWeights(std::map <std::string, std::vector <double> > weights, int n_unis);
         
         // Stored objects
         

@@ -39,15 +39,15 @@ double numu_to_nue(double x, double sin, double dm2) {
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
 }
-
+/*
 Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName) {
     
-    Covariance cov(samples, configFileName);
+    Covariance::Covariance cov(samples, configFileName);
     
     // ...
     
 }
-      
+*/     
 // Personal preference (more explicit about what is used)...
 Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance cov, char *configFileName) {
     

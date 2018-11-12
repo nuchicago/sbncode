@@ -22,8 +22,8 @@ class Chi2Sensitivity {
         
         // Functions
         
-        Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName);
-        Chi2Sensitivity(std::vector<EventSample> samples, Covariance cov, char *configFileName);
+        Chi2Sensitivity(std::vector <EventSample> samples, char *configFileName);
+        Chi2Sensitivity(std::vector <EventSample> samples, Covariance cov, char *configFileName);
         
         void ScanEvents(), GetChi2(), GetContours(), Write(std::string directory);
         
@@ -63,7 +63,7 @@ class Chi2Sensitivity {
         std::vector <EventSample> ev_samples;
         
         int num_bins;
-        std::vector <int> sample_bins, sample_dist_bins;
+        std::vector <int> sample_bins;
     
         int num_dist_bins;
         std::vector <double> dist_bins, sample_dist_bins;

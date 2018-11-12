@@ -50,7 +50,7 @@ EventSample::EventSample(TFile* _file, float ScaleFactor, std::string Det, std::
 };   
     
 // Gets scale factors (weights) for different universes
-GetUniWeights(std::map <std::string, std::vector <double> > weights, int n_unis) {
+std::vector <double> GetUniWeights(std::map <std::string, std::vector <double> > weights, int n_unis) {
     
     // Tentative format: universe u scale factor is the product of the u-th entries on each vector 
     // inside the map. For vectors with less than u entries, use the (u - vec_size)-th entry
@@ -132,14 +132,14 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
     
 }
 
-ScanEvents() {
+void Covariance::ScanEvents() {
     
     //// Geta counts for each (base and alternative) universe
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     
     // Bin 'boundaries'
     num_bins = 0;
-    for (auto sample : samples) {
+    for (auto sample : ev_samples) {
         sample_bins.push_back(num_bins);
         num_bins += sample.fBins.size() - 1;   
     }
@@ -159,19 +159,18 @@ ScanEvents() {
         
         // Initialise temp hists to store counts
             // Base
-        std::string title = sample.fDet+"; Reconstructed Energy (GeV); Counts";
-        std::vector <TH1D*> temp_count_hists = {new TH1D((sample.fDet+"tempbase").c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0])};
+        std::vector <TH1D*> temp_count_hists = {new TH1D((sample.fDet+"tempbase").c_str(), "", sample.fBins.size() - 1, &sample.fBins[0])};
         
             // Alt unis
         for (int u = 0; u < fNumAltUnis; u++) {
             
             std::string name = sample.fDet + "tempalt" + std::to_string(u+1);
-            temp_count_hists.push_back(new TH1D(name.c_str(), title.c_str(), sample.fBins.size() - 1, &sample.fBins[0]));
+            temp_count_hists.push_back(new TH1D(name.c_str(), "", sample.fBins.size() - 1, &sample.fBins[0]));
             
         }
         
             // Background counts
-        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), title.c_str(), sample.fBins.size()-1, &sample.fBins[0]);
+        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", sample.fBins.size()-1, &sample.fBins[0]);
         
         // Loop over neutrinos (events in tree)
         Event *event = new Event;
@@ -220,13 +219,13 @@ ScanEvents() {
                         for (auto it : event->truth[truth_ind].weights) {
                             if (it.first.find("genie") > it.first.size()) tempweights.insert(it);
                         }
-                        uweights = get_uni_weights(tempweights, fNumAltUnis);
+                        uweights = GetUniWeights(tempweights, fNumAltUnis);
                     } else if (fWeightKey == "Cross-Section") {
                         std::map <std::string, std::vector<double> > tempweights;
                         for (auto it : event->truth[truth_ind].weights) {
                             if (it.first.find("genie") <= it.first.size()) tempweights.insert(it);
                         }
-                        uweights = get_uni_weights(tempweights, fNumAltUnis);
+                        uweights = GetUniWeights(tempweights, fNumAltUnis);
                     } else {
                         uweights = event->truth[truth_ind].weights[fWeightKey];
                     }
@@ -249,7 +248,7 @@ ScanEvents() {
                 nu_counts[h].push_back(scaled_counts);
                 
                 if (h == 0) {
-                    double scaled_bkg_counts = temp_bkg_hist->GetBinContent(1+bin) * fScaleTargets[sample.fDet] / sample.fScaleFactor;
+                    double scaled_bkg_counts = temp_bkg_counts->GetBinContent(1+bin) * fScaleTargets[sample.fDet] / sample.fScaleFactor;
                     bkg_counts.push_back(scaled_bkg_counts);
                 }
             
@@ -262,7 +261,7 @@ ScanEvents() {
     
 }
 
-GetCovs() {
+void Covariance::GetCovs() {
     
     //// Get covariances, fractional covariances and correlation coefficients
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -333,9 +332,9 @@ GetCovs() {
     
 }
     
-GetCounts() {
+void Covariance::GetCounts() {
     
-    // Vectors to hold nice histograms
+/*    // Vectors to hold nice histograms
     std::vector <TH1D*> numu_cts(fScaleTargets.size(), new TH1D()), numu_bkg(fScaleTargets.size(), new TH1D()),
                         nue_cts(fScaleTargets.size(), new TH1D()), nue_bkg(fScaleTargets.size(), new TH1D());
     
@@ -352,8 +351,8 @@ GetCounts() {
             
             for (int o = sample_bins[sample_ind]; o < sample_bins[sample_ind+1]; o++) {
                 
-                numu_bkg[numu_ind]->SetBinContent(bkg_counts[o]);
-                numu_cts[numu_ind]->SetBinContent(nu_counts[o] - bkg_counts[o]);
+                numu_bkg[numu_ind]->SetBinContent(1+o, bkg_counts[o]);
+                numu_cts[numu_ind]->SetBinContent(1+o, nu_counts[o] - bkg_counts[o]);
                 
             }
             
@@ -368,8 +367,8 @@ GetCounts() {
             
             for (int o = sample_bins[sample_ind]; o < sample_bins[sample_ind+1]; o++) {
                 
-                nue_bkg[nue_ind]->SetBinContent(bkg_counts[o]);
-                nue_cts[nue_ind]->SetBinContent(nu_counts[o] - bkg_counts[o]);
+                nue_bkg[nue_ind]->SetBinContent(1+o, bkg_counts[o]);
+                nue_cts[nue_ind]->SetBinContent(1+o, nu_counts[o] - bkg_counts[o]);
                 
             }
             
@@ -384,34 +383,34 @@ GetCounts() {
     // Output relevant objects
     numu_counts = numu_cts; numu_bkgs = numu_bkg;
     nue_counts = nue_cts; nue_bkgs = nue_bkg;
-    
+*/    
 }
 
-Write(std::string directory) {
+void Covariance::Write(std::string directory) {
     
     // Write Covariances
     TFile* covfile = TFile::Open((directory + "cov.root").c_str(), "recreate");
     assert(covfile && covfile->IsOpen());
     
-    cov.cov->Write();
-    cov.fcov->Write();
-    cov.corr->Write();
-    
+    cov->Write();
+    fcov->Write();
+    corr->Write();
+/*    
     // Write Counts
     if (numu_counts.size() + nue_counts.size() > 0) {
         
         TFile* countfile = TFile::Open((directory + "counts.root").c_str(), "recreate");
         assert(countfile && countfile->IsOpen());
 
-        std::vector <std::vector <TH1D*> > hist_vecs = {cov.numu_counts, cov.numu_bkgs};
-        if (cov.nue_counts.size() > 0) { hist_vecs.push_back(cov.nue_counts); hist_vecs.push_back(cov.nue_bkgs); }
+        std::vector <std::vector <TH1D*> > hist_vecs = {numu_counts, numu_bkgs};
+        if (nue_counts.size() > 0) { hist_vecs.push_back(nue_counts); hist_vecs.push_back(nue_bkgs); }
 
         for (std::vector <TH1D*> hist_vec : hist_vecs) {
             for (TH1D* hist : hist_vec) hist->Write();
         }
         
     }
-    
+*/    
 }
 
 }   // namespace SBNOsc
