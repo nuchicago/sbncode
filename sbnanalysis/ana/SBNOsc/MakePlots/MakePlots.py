@@ -367,11 +367,11 @@ if __name__ == "__main__":
     if args.dm2list: dm2_chi2_slice(args)
     if args.sinlist: sin_chi2_slice(args)
     
-    if parser.parse_args().compare: 
-        compare_w_proposal(parser_parse_args())
-        with open('filename') as f:
-            for line in f:
-                data = [float(x) for x in line.split(",")]
+    #if parser.parse_args().compare: 
+    #    compare_w_proposal(parser_parse_args())
+    #    with open('filename') as f:
+    #        for line in f:
+    #            data = [float(x) for x in line.split(",")]
 
 
 

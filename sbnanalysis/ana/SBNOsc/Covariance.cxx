@@ -214,6 +214,8 @@ Covariance::Covariance(std::vector<EventSample> samples, char *configFileName) {
           for (auto const& keyName: configWeightKey) {
             fWeightKeys.push_back(keyName.asString());
           }
+          // if it's a list, then we need the number ofuniverses to be set
+          fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", -7).asInt();
         }
         else {
           std::string WeightKey = configWeightKey.asString();
@@ -648,10 +650,17 @@ std::cout << std::endl << std::endl << std::endl << std::endl;
                 covij += (count_hists[0]->GetBinContent(i+1) - count_hists[u+1]->GetBinContent(i+1)) * 
                          (count_hists[0]->GetBinContent(j+1) - count_hists[u+1]->GetBinContent(j+1));
             }
-            covij /= fNumAltUnis;
+            if (fNumAltUnis != 0) {
+              covij /= fNumAltUnis; 
+            }
             cov->SetBinContent(i+1, j+1, covij);
             
-            double fcovij = covij / (count_hists[0]->GetBinContent(i+1) * count_hists[0]->GetBinContent(j+1));
+            // handle case where covariance is 0
+            double fcovij;
+            if (count_hists[0]->GetBinContent(i+1) * count_hists[0]->GetBinContent(j+1) < 1e-6) {
+                fcovij = 0.;
+            }
+            fcovij = covij / (count_hists[0]->GetBinContent(i+1) * count_hists[0]->GetBinContent(j+1));
             fcov->SetBinContent(i+1, j+1, fcovij);
             
         }
@@ -663,7 +672,12 @@ std::cout << std::endl << std::endl << std::endl << std::endl;
     for (int i = 0; i < cov->GetNbinsX(); i++) {
         for (int j = 0; j < cov->GetNbinsY(); j++) {
             
-            double corrij = cov->GetBinContent(i+1, j+1) / TMath::Sqrt(cov->GetBinContent(i+1, i+1) * cov->GetBinContent(j+1, j+1));
+            // handle case where covariance is 0
+            double corrij;
+            if (cov->GetBinContent(i+1, i+1) * cov->GetBinContent(j+1, j+1) < 1e-6)  {
+                corrij = 0.;
+            }
+            corrij = cov->GetBinContent(i+1, j+1) / TMath::Sqrt(cov->GetBinContent(i+1, i+1) * cov->GetBinContent(j+1, j+1));
             corr->SetBinContent(i+1, j+1, corrij);
             
         }
