@@ -40,7 +40,7 @@ target_link_libraries(
   ${ROOT_LIBRARIES}
 )
 
-add_library(sbnanalysis_Processor SHARED ProcessorBase.cxx SelectionBase.cxx ProcessorBlock.cxx Loader.cxx)
+add_library(sbnanalysis_Processor SHARED ProcessorBase.cxx SelectionBase.cxx ProcessorBlock.cxx Loader.cxx PostProcessorBase.cxx)
 target_link_libraries(
   sbnanalysis_Processor
   sbnanalysis_Event
@@ -65,6 +65,17 @@ add_custom_command(TARGET sbnanalysis_Event POST_BUILD
 add_executable(sbn sbn.cxx)
 target_link_libraries(
   sbn
+  sbnanalysis_Processor
+  #sbnanalysis_Event
+  jsoncpp
+  ${LARSIM_BASE_LIBRARY}
+  ${LARSIM_BASE_DICT}
+  ${ROOT_LIBRARIES}
+)
+
+add_executable(sbn-postprocess sbn-postprocess.cxx)
+target_link_libraries(
+  sbn-postprocess
   sbnanalysis_Processor
   #sbnanalysis_Event
   jsoncpp
