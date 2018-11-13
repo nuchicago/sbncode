@@ -87,6 +87,7 @@ target_link_libraries(
 install(TARGETS sbnanalysis_Event DESTINATION lib)
 install(TARGETS sbnanalysis_Processor DESTINATION lib)
 install(TARGETS sbn DESTINATION bin)
+install(TARGETS sbn-postprocess DESTINATION bin)
 
 if (DEFINED SBNANA_COMPILED_PROCESSOR)
   set(STATICEXE SBNProcessor_${SBNANA_COMPILED_PROCESSOR})
