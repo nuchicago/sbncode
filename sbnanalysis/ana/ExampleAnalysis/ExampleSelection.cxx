@@ -77,4 +77,3 @@ bool ExampleSelection::ProcessEvent(const gallery::Event& ev, const std::vector<
 
 // This line must be included for all selections!
 DECLARE_SBN_PROCESSOR(ana::ExampleAnalysis::ExampleSelection)
-

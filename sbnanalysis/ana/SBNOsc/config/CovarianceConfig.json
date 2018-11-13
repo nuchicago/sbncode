@@ -1,0 +1,164 @@
+{
+    "OutputDirectory": "/sbnd/data/users/gavarela/selection/new/cov_output/",
+    "SavePDFs": 1,
+    
+    "EventSamples": [
+        
+        {
+            
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_gavarela_sample/output_SBNOsc_NumuSelection_Proposal_SBND.root",
+            "desc": "#nu_{#mu}",
+            "det": "SBND",
+            "scalefactor": 298742200000000000.000000,
+            "binlims": [ 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0 ],
+            "scalesample": 1,
+            "nutype": "numu"
+        
+        },
+        
+        {
+            
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/uboone_oldFlux_sample/output_SBNOsc_NumuSelection_Proposal_Uboone.root",
+            "desc": "#nu_{#mu}",
+            "det": "MicroBooNE",
+            "scalefactor": 19780727000000000000.000000,
+            "binlims": [ 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0 ],
+            "nutype": "numu"
+            
+        },
+        
+        {
+            
+            "path": "/sbnd/app/users/gputnam/SBNCode/dev/srcs/sbncode/sbnanalysis/ana/SBNOsc/gputnam_icarus_sample/output_SBNOsc_NumuSelection_Proposal_Icarus.root",
+            "desc": "#nu_{#mu}",
+            "det": "ICARUS",
+            "scalefactor": 2472774000000000000.000000,
+            "binlims": [ 0.2, 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0 ],
+            "nutype": "numu"
+            
+        }
+        
+    ],
+    
+    
+    "Covariance": {
+        "NumAltUnis": 1000,
+        "WeightKey": [
+	  "expskin_FluxUnisim",
+	  "genie_DISAth_Genie",
+	  "genie_DISBth_Genie",
+	  "genie_DISCv1u_Genie",
+	  "genie_DISCv2u_Genie",
+	  "genie_FermiGasModelKf_Genie",
+	  "genie_FermiGasModelSf_Genie",
+	  "genie_FormZone_Genie",
+	  "genie_IntraNukeNabs_Genie",
+	  "genie_IntraNukeNcex_Genie",
+	  "genie_IntraNukeNel_Genie",
+	  "genie_IntraNukeNinel_Genie",
+	  "genie_IntraNukeNmfp_Genie",
+	  "genie_IntraNukeNpi_Genie",
+	  "genie_IntraNukePIabs_Genie",
+	  "genie_IntraNukePIcex_Genie",
+	  "genie_IntraNukePIel_Genie",
+	  "genie_IntraNukePIinel_Genie",
+	  "genie_IntraNukePImfp_Genie",
+	  "genie_IntraNukePIpi_Genie",
+	  "genie_NC_Genie",
+	  "genie_NonResRvbarp1pi_Genie",
+	  "genie_NonResRvbarp2pi_Genie",
+	  "genie_NonResRvp1pi_Genie",
+	  "genie_NonResRvp2pi_Genie",
+	  "genie_ResDecayEta_Genie",
+	  "genie_ResDecayGamma_Genie",
+	  "genie_ResDecayTheta_Genie",
+	  "genie_ccresAxial_Genie",
+	  "genie_ccresVector_Genie",
+	  "genie_cohMA_Genie",
+	  "genie_cohR0_Genie",
+	  "genie_ncelAxial_Genie",
+	  "genie_ncelEta_Genie",
+	  "genie_ncresAxial_Genie",
+	  "genie_ncresVector_Genie",
+	  "genie_qema_Genie",
+	  "horncurrent_FluxUnisim",
+	  "kminus_PrimaryHadronNormalization",
+	  "kplus_PrimaryHadronFeynmanScaling",
+	  "kzero_PrimaryHadronSanfordWang",
+	  "nucleoninexsec_FluxUnisim",
+	  "nucleonqexsec_FluxUnisim",
+	  "nucleontotxsec_FluxUnisim",
+	  "piminus_PrimaryHadronSWCentralSplineVariation",
+	  "pioninexsec_FluxUnisim",
+	  "pionqexsec_FluxUnisim",
+	  "piontotxsec_FluxUnisim",
+	  "piplus_PrimaryHadronSWCentralSplineVariation"
+         ],
+        
+        "EnergyType": "Reco",
+        
+        "SelectionEfficiency": 0.8,
+        "RejectionEfficiency": 0,
+        
+        "ScaleTargets": {
+            
+            "SBND": 6.6e20,
+            "MicroBooNE": 1.32e21,
+            "ICARUS": 6.6e20
+            
+        },
+        
+        "ShapeOnly": true
+    
+    },
+    
+    "Sensitivity": {
+        
+        "ShapeOnly": 1,
+        
+        "TrueELims": [ 0.0, 7.0 ],
+        "NumTrueEBins": 140,
+        
+        "NumDistanceBinsPerMeter": 10,
+        "DetectorDimensions": [
+            
+            {
+                
+                "Detector": "SBND",
+                "Distance": 0.11,
+                "X": [ -190.9, 190.9 ],
+                "Y": [ -185, 185 ],
+                "Z": [ 15, 415 ]
+                
+            },
+            
+            {
+                
+                "Detector": "MicroBooNE",
+                "Distance": 0.47,
+                "X": [ 13.45, 239.8 ],
+                "Y": [ -100.53, 102.47 ],
+                "Z": [ 15.1, 956.9 ]
+                
+            },
+            
+            {
+                
+                "Detector": "ICARUS",
+                "Distance": 0.6,
+                "X": [ -356.24, 356.24 ],
+                "Y": [ -158.41, 128.41 ],
+                "Z": [ -894.950652, 799.950652]
+                
+            }
+            
+        ],
+        
+        "NumDm2": 300,
+        "LogDm2Lims": [ -2.0, 2.0 ],
+        "NumSin": 300,
+        "LogSinLims": [ -3.0, 0.0 ]
+        
+    }
+    
+}

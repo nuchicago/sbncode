@@ -81,4 +81,3 @@ protected:
 }  // namespace ana
 
 #endif  // __sbnanalysis_ana_ExampleAnalysis_ExampleSelection__
-
