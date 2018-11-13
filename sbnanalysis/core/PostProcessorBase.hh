@@ -42,6 +42,13 @@ public:
   /** run */
   void Run(std::vector<std::string> filelist);
 
+  /**
+   * Perform user-level initialization.
+   *
+   * \param config A configuration, as a JSON object.
+   */
+  virtual void Initialize(Json::Value* config=NULL) = 0;
+
 protected:
 
   /**
@@ -59,13 +66,6 @@ protected:
    * \param config A configuration, as a JSON filename.
    */
   virtual void Initialize(char* config=NULL);
-
-  /**
-   * Perform user-level initialization.
-   *
-   * \param config A configuration, as a JSON object.
-   */
-  virtual void Initialize(Json::Value* config=NULL) = 0;
 
   /** Perform user-level finalization. */
   virtual void Finalize() {}

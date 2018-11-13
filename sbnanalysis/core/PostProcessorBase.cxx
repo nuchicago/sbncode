@@ -9,7 +9,7 @@
 
 namespace core {
 
-PostProcessorBase::PostProcessorBase() {}
+PostProcessorBase::PostProcessorBase(): fEvent(NULL) {}
 
 
 PostProcessorBase::~PostProcessorBase() {}
@@ -30,7 +30,7 @@ void PostProcessorBase::Run(std::vector<std::string> inputFiles) {
 
     // set Event
     fEventTree = (TTree *) f.Get("sbnana");
-    fEventTree->SetBranchAddress("events", fEvent);
+    fEventTree->SetBranchAddress("events", &fEvent);
     FileSetup(fEventTree);
 
     // process all events
