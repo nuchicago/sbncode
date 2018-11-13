@@ -81,7 +81,7 @@ protected:
 #define DECLARE_SBN_POSTPROCESSOR(classname) extern "C" { \
 core::PostProcessorBase* CreatePostProcessorObject() { return new classname; } \
 void DestroyPostProcessorObject(core::PostProcessorBase* o) { delete o; } \
-struct core::export_table_postprocessor exports = { CreatePostProcessorObject, DestroyPostProcessorObject };}
+struct core::export_table_postprocess exports = { CreatePostProcessorObject, DestroyPostProcessorObject };}
 
 #endif  // __sbnanalysis_core_PostProcessorBase__
 
