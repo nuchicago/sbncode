@@ -299,6 +299,8 @@ TMatrixDSym Covariance::CovarianceMatrix() {
     }
 }
     
-
 }   // namespace SBNOsc
 }   // namespace ana
+
+DECLARE_SBN_POSTPROCESSOR(ana::SBNOsc::Covariance);
+

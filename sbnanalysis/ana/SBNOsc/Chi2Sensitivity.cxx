@@ -88,9 +88,6 @@ std::vector<double> Chi2Sensitivity::EventSample::Background() const {
     return ret;
 }
 
-// Constructor
-Chi2Sensitivity::Chi2Sensitivity() {}
-
 // Initialize
 void Chi2Sensitivity::Initialize(Json::Value *config) {
     //// Get parameters from config file
@@ -490,3 +487,6 @@ void Chi2Sensitivity::Write() {
 
 }  // namespace SBNOsc
 }  // namespace ana
+
+DECLARE_SBN_POSTPROCESSOR(ana::SBNOsc::Chi2Sensitivity);
+

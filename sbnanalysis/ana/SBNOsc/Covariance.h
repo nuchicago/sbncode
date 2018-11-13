@@ -30,7 +30,7 @@ namespace SBNOsc {
 class Covariance: public core::PostProcessorBase {
     public:
         // Constructor
-        Covariance();
+        Covariance() {}
 
         // implementing PostProcessor
         void FileCleanup(TTree *eventTree);

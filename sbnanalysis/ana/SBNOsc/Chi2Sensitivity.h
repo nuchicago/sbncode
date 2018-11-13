@@ -18,12 +18,12 @@
 namespace ana {
 namespace SBNOsc {
 
-class Chi2Sensitivity {
+class Chi2Sensitivity: public core::PostProcessorBase {
     
     public:
         
         // Constructor
-        Chi2Sensitivity();
+        Chi2Sensitivity() {}
         // Implement post-processor
         void Initialize(Json::Value *config);
         void ProcessEvent(const Event *event);
