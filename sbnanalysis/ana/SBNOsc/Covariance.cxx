@@ -199,10 +199,14 @@ void Covariance::GetCovs() {
                     // save values
                     cov->SetBinContent(cov_i + 1, cov_j + 1, cov_value);
                     fcov->SetBinContent(cov_i + 1, cov_j + 1, fcov_value);
+                    // update covariance position
+                    cov_j ++;
                 }
-                cov_j ++;
             }   
+	    // update covariance position
             cov_i ++;
+            // reset j
+            cov_j = 0;
         }
     } 
 
@@ -297,6 +301,7 @@ TMatrixDSym Covariance::CovarianceMatrix() {
             }
         }
     }
+    return E_mat;
 }
     
 }   // namespace SBNOsc
