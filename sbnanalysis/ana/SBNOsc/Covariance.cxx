@@ -88,7 +88,7 @@ void Covariance::Initialize(Json::Value *config) {
         
         // Further selection and rejection 'efficiencies'
         fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", 1.0).asDouble();
-        fRejectionEfficiency = (*config)["Covariance"].get("RejectionEfficiency", 0.0).asDouble();
+        fBackgroundRejection = (*config)["Covariance"].get("BackgroundRejection", 0.0).asDouble();
         
         // get event samples
         Json::Value configEventSamples = (*config)["EventSamples"];
@@ -124,7 +124,7 @@ void Covariance::ProcessEvent(const Event *event) {
     
         // Apply selection (or rejection) efficiencies
         int isCC = event->truth[truth_ind].neutrino.iscc;
-        double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
+        double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fBackgroundRejection);
         // apply scaling from fScaleFactor
         wgt *= fEventSamples[fSampleIndex].fScaleFactor;
     

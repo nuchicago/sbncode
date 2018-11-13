@@ -71,7 +71,7 @@ class Covariance: public core::PostProcessorBase {
         std::string fEnergyType;
         
         double fSelectionEfficiency;
-        double fRejectionEfficiency;
+        double fBackgroundRejection;
         std::string fOutputFile;
 
         bool fSaveCentralValue;

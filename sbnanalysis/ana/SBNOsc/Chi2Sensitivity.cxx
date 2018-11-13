@@ -105,22 +105,12 @@ void Chi2Sensitivity::Initialize(Json::Value *config) {
         
         // Further selection and rejection 'efficiencies'
         fSelectionEfficiency = (*config)["Sensitivity"].get("SelectionEfficiency", 1.0).asDouble();
-        fRejectionEfficiency = (*config)["Sensitivity"].get("RejectionEfficiency", 0.0).asDouble();
+        fBackgroundRejection = (*config)["Sensitivity"].get("BackgroundRejection", 0.0).asDouble();
         
         // Event Samples
         for (auto const &json: (*config)["EventSamples"]) {
             fEventSamples.emplace_back(json);
         }
-
-        // True energy binnin
-        fTrueELims = {};
-        for (auto binlim : (*config)["Sensitivity"]["TrueELims"]) {
-            fTrueELims.push_back(binlim.asDouble());
-        }
-        fNumTrueEBins = (*config)["Sensitivity"].get("NumTrueEBins", -1).asInt();
-
-        // distance binning
-        fNumDistBinsPerMeter = (*config)["Sensitivity"].get("NumDistanceBinsPerMeter", -1).asInt();
 
         // Phase space parameters
         fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
@@ -132,6 +122,18 @@ void Chi2Sensitivity::Initialize(Json::Value *config) {
         fLogSinLims = {};
         for (auto binlim : (*config)["Sensitivity"]["LogSinLims"]) {
             fLogSinLims.push_back(binlim.asDouble());
+        }
+
+
+        // whether to save stuff
+        fSavePDFs = (*config)["Sensitivity"].get("SavePDFs", true).asBool();
+        fSaveSignal = (*config)["Sensitivity"].get("SaveSignal", true).asBool();
+        fSaveBackground = (*config)["Sensitivity"].get("SaveBackground", true).asBool();
+        if ((*config)["Sensitivity"].isMember("SaveOscillations") &&
+            (*config)["Sensitivity"]["SaveOscillations"].isArray()) {
+            for (auto const &osc_pair: (*config)["Sensitivity"]["SaveOscillations"]) {
+              fSaveOscillations.push_back({osc_pair[0].asDouble(), osc_pair[1].asDouble()});
+            }
         }
     }
     // start at 0th event sample
@@ -229,7 +231,7 @@ void Chi2Sensitivity::ProcessEvent(const Event *event) {
     
         // Apply selection (or rejection) efficiencies
         int isCC = event->truth[truth_ind].neutrino.iscc;
-        double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
+        double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fBackgroundRejection);
         // and scale weight
         wgt *= fEventSamples[fSampleIndex].fScaleFactor;
     
@@ -476,11 +478,39 @@ void Chi2Sensitivity::Write() {
     TFile* chi2file = TFile::Open(fOutputFile.c_str(), "recreate");
     assert(chi2file && chi2file->IsOpen());
     
-    contour_90pct->SetName("90pct"); contour_90pct->Write();
-    contour_3sigma->SetName("3sigma"); contour_3sigma->Write();
-    contour_5sigma->SetName("5sigma"); contour_5sigma->Write();
-    
-    chisqplot->SetName("chisq"); chisqplot->Write();
+    if (fSavePDFs) {
+	contour_90pct->SetName("90pct"); contour_90pct->Write();
+	contour_3sigma->SetName("3sigma"); contour_3sigma->Write();
+	contour_5sigma->SetName("5sigma"); contour_5sigma->Write();
+	
+	chisqplot->SetName("chisq"); chisqplot->Write();
+    }
+
+    // save histos
+    if (fSaveBackground) {
+        for (auto const &sample: fEventSamples) {
+            sample.fBkgCounts->Write();
+        }
+    }
+
+    if (fSaveSignal) {
+        for (auto const &sample: fEventSamples) {
+            sample.fSignalCounts->Write();
+        }
+    }
+
+    for (auto const &osc_vals: fSaveOscillations) {
+        for (auto const &sample: fEventSamples) {
+            std::string name = sample.fName + " sin2th: " + std::to_string(osc_vals[0]) + " dm2: " + std::to_string(osc_vals[1]);
+            TH1D *hist = new TH1D(name.c_str(), name.c_str(), sample.fBins.size(), &sample.fBins[0]);
+            std::vector<double> oscillated = sample.Oscillate(osc_vals[0], osc_vals[1]);
+            for (unsigned i = 0; i < oscillated.size(); i++) {
+                hist->SetBinContent(i+1, oscillated[i]);
+            }
+            hist->Write();
+        }
+    }
+
     chi2file->Close();
     
 }

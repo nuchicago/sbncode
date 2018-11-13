@@ -35,6 +35,8 @@ class Chi2Sensitivity: public core::PostProcessorBase {
         void GetChi2();
         void GetContours();
         void Write();
+
+        TH1D *Oscillate(double sinth, double dm2);
         
         // Output
         
@@ -76,19 +78,18 @@ class Chi2Sensitivity: public core::PostProcessorBase {
         // From config file
         std::string fEnergyType;
         
-        double fSelectionEfficiency, fRejectionEfficiency;
-        
-        int fNumDistBinsPerMeter;
-        
-        std::vector <double> fTrueELims;
-        int fNumTrueEBins;
+        double fSelectionEfficiency, fBackgroundRejection;
         
         int fNumDm2;
         int fNumSin;
         std::vector <double> fLogDm2Lims, fLogSinLims;
         
         std::string fOutputFile;
+        // whether to save stuff
         int fSavePDFs;
+        bool fSaveSignal;
+        bool fSaveBackground;
+        std::vector<std::array<double, 2>> fSaveOscillations;
 
         // index into sample
         unsigned fSampleIndex;
@@ -102,15 +103,7 @@ class Chi2Sensitivity: public core::PostProcessorBase {
         std::vector<double> sin2theta;
         std::vector<double> dm2;
 
-        int num_bins;
-        std::vector <int> sample_bins;
-    
-        int num_dist_bins;
-        std::vector <double> dist_bins, sample_dist_bins;
-    
-        std::vector <double> trueEs;
-        
-        std::vector <std::vector <double> > chisq_diffs;
+        std::vector <std::vector <double> > chisq_diffs; //!< Container for chi2 values
     
 };
 
