@@ -296,18 +296,22 @@ void Chi2Sensitivity::GetChi2() {
     double minchisq = 1e99;
     std::vector <double> chisq_dm2(fNumDm2, 0);
     std::vector <std::vector <double> > chisq(fNumSin, chisq_dm2);
+
+    std::vector<double> signal; // non-oscillated signal
+    // push all event samples into the vector
+    for (auto const &sample: fEventSamples) {
+	// flatten the signal
+	std::vector<double> this_signal = sample.Signal();
+	signal.insert(signal.end(), this_signal.begin(), this_signal.end());
+    }
+
     for (int j = 0; j < fNumDm2; j++) {
-        std::vector<double> signal; // non-oscillated signal
         std::vector<std::vector<double>> oscillated; // oscilalted signal at sin2==1
 
         // push all event samples into the vector
         for (auto const &sample: fEventSamples) {
             // oscillate each event sample w/ sin == 1
             oscillated.push_back(sample.Oscillate(1., dm2[j]));
-
-            // flatten the signal
-            std::vector<double> this_signal = sample.Signal();
-            signal.insert(signal.end(), this_signal.begin(), this_signal.end());
         }
 
         // oscillated signal for general sin2 (set in loop below)
@@ -328,8 +332,19 @@ void Chi2Sensitivity::GetChi2() {
                     }
                     // numu -> numu
                     else if (fEventSamples[sample_ind].fOscType == 2) {
-                        sin2_oscillated[count_ind] = signal[count_ind] - 
-                            sin2theta[i] * (signal[count_ind] - oscillated[sample_ind][bin_ind]);
+                        // These two formulas are equivalent:
+                        // 1.
+                        // sin2_oscillated[count_ind] = signal[count_ind] - 
+                        //     sin2theta[i] * (signal[count_ind] - oscillated[sample_ind][bin_ind]);
+                        // 2.
+                        // sin2_oscillated[count_ind] = signal[count_ind] * (1 - sin2theta[i]) +
+                        //     sin2theta[i] * oscillated[sample_ind][bin_ind];
+                        //     
+                        // Use the second one b.c. it reduces possible floating point error
+
+                        sin2_oscillated[count_ind] = signal[count_ind] * (1 - sin2theta[i]) +
+                             sin2theta[i] * oscillated[sample_ind][bin_ind];
+
                     }
 
                     // update count ind
