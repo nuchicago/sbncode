@@ -36,29 +36,6 @@ target_link_libraries(sbnanalysis_SBNOsc_NumuSelection
 )
 target_link_libraries(sbnanalysis_SBNOsc_Chi2Sensitivity sbnanalysis_SBNOsc_Covariance)
 
-# Build executables
-add_executable(sbn-cov sbn-cov.cxx)
-target_link_libraries(
-  sbn-cov
-  sbnanalysis_Processor
-  jsoncpp
-  sbnanalysis_SBNOsc_Covariance
-  sbnanalysis_Event
-  ${ROOT_LIBRARIES}
-)
-
-add_executable(sbn-sensitivity sbn-sensitivity.cxx)
-target_link_libraries(
-  sbn-sensitivity
-  jsoncpp
-  sbnanalysis_SBNOsc_Chi2Sensitivity
-  sbnanalysis_Processor
-  sbnanalysis_SBNOsc_Covariance
-  sbnanalysis_Event
-  ${ROOT_LIBRARIES}
-)
-
-
 # Install all libraries to the main "lib" directory
 install(TARGETS sbnanalysis_SBNOsc_Utilities DESTINATION lib)
 install(TARGETS sbnanalysis_SBNOsc_NueSelection DESTINATION lib)
@@ -67,7 +44,3 @@ install(TARGETS sbnanalysis_SBNOsc_Covariance DESTINATION lib)
 install(TARGETS sbnanalysis_SBNOsc_Chi2Sensitivity DESTINATION lib)
 
 install(TARGETS sbnanalysis_SBNOsc_classes DESTINATION lib)
-
-install(TARGETS sbn-cov DESTINATION bin/sbnosc)
-install(TARGETS sbn-sensitivity DESTINATION bin/sbnosc)
-

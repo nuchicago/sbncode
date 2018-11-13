@@ -5,6 +5,8 @@
  * \file Chi2Sensitivity.h
  */
 
+#include "core/PostProcessorBase.hh"
+
 #include "Covariance.h"
 
 #include <vector>
@@ -20,15 +22,19 @@ class Chi2Sensitivity {
     
     public:
         
-        // Functions
-        
-        Chi2Sensitivity(std::vector <EventSample> samples, char *configFileName);
-        Chi2Sensitivity(std::vector <EventSample> samples, Covariance cov, char *configFileName);
-        
-        void ScanEvents();
+        // Constructor
+        Chi2Sensitivity();
+        // Implement post-processor
+        void Initialize(Json::Value *config);
+        void ProcessEvent(const Event *event);
+        void FileCleanup(TTree *eventTree);
+
+        void Finalize() { fCovariance.Finalize(); GetChi2(); GetContours(); Write(); }
+
+        // API Functions
         void GetChi2();
         void GetContours();
-        void Write(std::string directory);
+        void Write();
         
         // Output
         
@@ -36,35 +42,66 @@ class Chi2Sensitivity {
         TGraph *contour_90pct, *contour_3sigma, *contour_5sigma;
     
     private:
+        // struct for additional config on event sample detectors
+        class EventSample {
+          public:
+            // Constructor
+            EventSample(const Json::Value &config);
+            // Oscillate Signal counts into 1D Histogram
+            std::vector<double> Oscillate(double sinth, double dm2) const;
+            // Get Vector of Signal counts
+            std::vector<double> Signal() const;
+            // Get vector of Background counts
+            std::vector<double> Background() const;
+ 
+            // Config
+            std::string fName;
+            double fDistance; //!< Distance in km
+            std::array<double, 2> fXlim; //!< Detector size in cm
+            std::array<double, 2> fYlim; //!< Detector size in cm
+            std::array<double, 2> fZlim; //!< Detector size in cm
+            double fScaleFactor; //!< Factor for POT (etc.) scaling   
+            int fOscType; //!< Oscilaltion type: 0 == None, 1 == numu -> nue, 2 == numu -> numu
+
+            // Storage
+            TH1D *fBkgCounts; //!< Background count Histogram
+            TH3D *fSignalCounts; //!< Signal Count Histogram 
+  
+            // bins
+            std::vector<double> fBins; //!< Reco Energy bin limits
+            std::vector<double> fTrueEBins; //!< True energy bin limits
+            std::vector<double> fDistBins; //!< Distance bin limits 
+        };
         
         // From config file
-        
         std::string fEnergyType;
         
         double fSelectionEfficiency, fRejectionEfficiency;
         
         int fNumDistBinsPerMeter;
-        std::map <std::string, float> fDetDists;
-        std::map <std::string, std::vector <std::vector <double > > > fDetDims;
         
         std::vector <double> fTrueELims;
         int fNumTrueEBins;
         
-        std::map <std::string, float> fScaleTargets;
-        
-        int fNumDm2, fNumSin;
+        int fNumDm2;
+        int fNumSin;
         std::vector <double> fLogDm2Lims, fLogSinLims;
         
-        int fShapeOnly;
-        
-        std::string fOutputDirectory;
+        std::string fOutputFile;
         int fSavePDFs;
+
+        // index into sample
+        unsigned fSampleIndex;
         
-        // Internal
+        // keep internal covariance
+        Covariance fCovariance;
+        // keep own Event Samples
+        std::vector<EventSample> fEventSamples;
         
-        Covariance covar;
-        std::vector <EventSample> ev_samples;
-        
+        // containers for sin2theta and dm values
+        std::vector<double> sin2theta;
+        std::vector<double> dm2;
+
         int num_bins;
         std::vector <int> sample_bins;
     

@@ -39,68 +39,92 @@ double numu_to_nue(double x, double sin, double dm2) {
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
 }
-/*
-Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, char *configFileName) {
-    
-    Covariance::Covariance cov(samples, configFileName);
-    
-    // ...
-    
-}
-*/     
-// Personal preference (more explicit about what is used)...
-Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance cov, char *configFileName) {
-    
-    //// Get parameters from config file
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    Json::Value* config = core::LoadConfig(configFileName);
-    
-    if (config != NULL) {
-        
-        // Output directory
-        fOutputDirectory = (*config).get("OutputDirectory", "./").asString();
-        
-        // Type of energy
-        fEnergyType = (*config)["Covariance"].get("EnergyType", "").asString();
-        
-        // Further selection and rejection 'efficiencies'
-        fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", -1e99).asDouble();
-        fRejectionEfficiency = (*config)["Covariance"].get("RejectionEfficiency", -1e99).asDouble();
-        
-        // True energy binning
-        fTrueELims = {};
-        for (auto binlim : (*config)["Covariance"]["TrueELims"]) {
-            fTrueELims.push_back(binlim.asDouble());
-        }
-        fNumTrueEBins = (*config)["Covariance"].get("NumTrueEBins", -1).asInt();
-        
-        // Detector dimensions and distances
-        fNumDistBinsPerMeter = (*config)["Covariance"].get("NumDistanceBinsPerMeter", -1).asInt();
-        fDetDists = {}; fDetDims = {};
-        for (auto det : (*config)["Covariance"]["DetectorDimensions"]) {
-            
-            std::string detname = det["Detector"].asString();
-            
-            std::vector <std::vector <double > > xyz_lims = {{}, {}, {}};
-            for (auto lim : det["X"]) xyz_lims[0].push_back(lim.asDouble());
-            for (auto lim : det["Y"]) xyz_lims[1].push_back(lim.asDouble());
-            for (auto lim : det["Z"]) xyz_lims[2].push_back(lim.asDouble());
-            
-            fDetDims.insert({detname, xyz_lims});
 
-            float distance = det["Distance"].asFloat();
-            fDetDists.insert({detname, distance});
-            
-        }
-        
-        // Exposure normalisation
-        for (auto sample : samples) {
-            if (fScaleTargets.find(sample.fDet) == fScaleTargets.end()) {
-                fScaleTargets.insert({sample.fDet, (*config)["Covariance"]["ScaleTargets"].get(sample.fDet, -1).asFloat()});
+// Oscillate Event counts
+std::vector<double> Chi2Sensitivity::EventSample::Oscillate(double sinth, double dm2) const {
+    // return histogram binned by reco energy
+    std::vector<double> ret(fBkgCounts->GetNbinsX(), 0);
+    // iterate over signal bins
+    for (unsigned Ebin = 0; Ebin < fSignalCounts->GetNbinsY(); Ebin++) {
+        for (unsigned Dbin = 0; Dbin < fSignalCounts->GetNbinsZ(); Dbin++) {
+            double energy = (fTrueEBins[Ebin] + fTrueEBins[Ebin+1]) / 2.;
+            double distance = (fDistBins[Dbin] + fDistBins[Dbin+1]) / 2.;
+            for (unsigned bin = 0; bin < fSignalCounts->GetNbinsX(); bin++) {
+                double counts = fSignalCounts->GetBinContent(bin+1, Ebin+1, Dbin+1); 
+
+                if (fOscType == 1) counts *= numu_to_nue(distance/energy, sinth, dm2); 
+                else if (fOscType == 2) counts *= numu_to_numu(distance/energy, sinth, dm2);
+
+                ret[bin] += counts;  
             }
         }
-               
+    }
+
+    return ret;
+}
+// Signal Event counts
+std::vector<double> Chi2Sensitivity::EventSample::Signal() const {
+    // return histogram binned by reco energy
+    std::vector<double> ret(fBkgCounts->GetNbinsX(), 0);
+    // iterate over signal bins
+    for (unsigned Ebin = 0; Ebin < fSignalCounts->GetNbinsY(); Ebin++) {
+        for (unsigned Dbin = 0; Dbin < fSignalCounts->GetNbinsZ(); Dbin++) {
+            for (unsigned bin = 0; bin < fSignalCounts->GetNbinsX(); bin++) {
+                double counts = fSignalCounts->GetBinContent(bin+1, Ebin+1, Dbin+1); 
+                ret[bin] += counts;  
+            }
+        }
+    }
+
+    return ret;
+}
+
+// return vector of background counts
+std::vector<double> Chi2Sensitivity::EventSample::Background() const {
+    std::vector<double> ret(fBkgCounts->GetNbinsX(), 0);
+    for (unsigned bin = 0; bin < fBkgCounts->GetNbinsX(); bin++) {
+        ret[bin] = fBkgCounts->GetBinContent(bin+1);
+    }
+    return ret;
+}
+
+// Constructor
+Chi2Sensitivity::Chi2Sensitivity() {}
+
+// Initialize
+void Chi2Sensitivity::Initialize(Json::Value *config) {
+    //// Get parameters from config file
+    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (config != NULL) {
+
+        // initialize covariance
+        fCovariance.Initialize(config);
+        
+        // Output directory
+        fOutputFile = (*config)["Sensitivity"].get("OutputFile", "").asString();
+        
+        // Get energy from covariance
+        fEnergyType = (*config)["Sensitivity"].get("EnergyType", "").asString(); 
+        
+        // Further selection and rejection 'efficiencies'
+        fSelectionEfficiency = (*config)["Sensitivity"].get("SelectionEfficiency", 1.0).asDouble();
+        fRejectionEfficiency = (*config)["Sensitivity"].get("RejectionEfficiency", 0.0).asDouble();
+        
+        // Event Samples
+        for (auto const &json: (*config)["EventSamples"]) {
+            fEventSamples.emplace_back(json);
+        }
+
+        // True energy binnin
+        fTrueELims = {};
+        for (auto binlim : (*config)["Sensitivity"]["TrueELims"]) {
+            fTrueELims.push_back(binlim.asDouble());
+        }
+        fNumTrueEBins = (*config)["Sensitivity"].get("NumTrueEBins", -1).asInt();
+
+        // distance binning
+        fNumDistBinsPerMeter = (*config)["Sensitivity"].get("NumDistanceBinsPerMeter", -1).asInt();
+
         // Phase space parameters
         fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
         fLogDm2Lims = {};
@@ -112,208 +136,127 @@ Chi2Sensitivity::Chi2Sensitivity(std::vector<EventSample> samples, Covariance co
         for (auto binlim : (*config)["Sensitivity"]["LogSinLims"]) {
             fLogSinLims.push_back(binlim.asDouble());
         }
-        
-        // Shape-only chisq?
-        fShapeOnly = (*config)["Sensitivity"].get("ShapeOnly", 0).asInt();
-    
     }
-    
-    covar = std::move(cov);
-    ev_samples = samples;
-    
+    // start at 0th event sample
+    fSampleIndex = 0;
 }
 
-void Chi2Sensitivity::ScanEvents() {
-    
-    //// Get neutrino counts from samples
-    //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    
-    // Some stuff related to binning and plotting
-    
-        // Number of bins needed in big histogram (for covariance)
-        // And bin 'boundaries' between each separate sample
-    num_bins = 0;
-    for (auto sample : ev_samples) {
-        sample_bins.push_back(num_bins);
-        num_bins += sample.fBins.size() - 1;
-    }
-    sample_bins.push_back(num_bins);
-    
-        // Number of distance bins needed in 3D histogram of true CC interactions
-    std::map <std::string, std::vector <double> > dist_bin_lims;
-    std::map <std::string, int> dist_bin_nums;
-    for (auto it : fDetDims) {
-        
-        double min_dist, max_dist; 
-        min_dist = fDetDists[it.first];
- 
-        float xlen = (it.second[0][1] - it.second[0][0])/100000 /* cm -> km */,
-              ylen = (it.second[1][1] - it.second[1][0])/100000 /* cm -> km */,
-              zlen = (it.second[2][1] - it.second[2][0])/100000 /* cm -> km */;
-        max_dist = TMath::Sqrt( xlen*xlen + ylen*ylen + (min_dist+zlen)*(min_dist+zlen) );
+Chi2Sensitivity::EventSample::EventSample(const Json::Value &config) {
+    // scaling stuff
+    fName = config.get("name", "").asString();
+    fScaleFactor = config.get("scalefactor", 0.).asDouble(); 
 
-        dist_bin_lims.insert({it.first, {min_dist, max_dist}});
-        dist_bin_nums.insert({it.first, (max_dist - min_dist)*(fNumDistBinsPerMeter*1000 /* 1/m -> 1/km */)});
-    
+    // setup detector stuff
+    fDistance = config.get("Distance", "").asDouble();
+    fXlim[0] = config["DetX"][0].asDouble();
+    fXlim[1] = config["DetX"][1].asDouble();
+    fYlim[0] = config["DetY"][0].asDouble();
+    fYlim[1] = config["DetY"][1].asDouble();
+    fZlim[0] = config["DetZ"][0].asDouble();
+    fZlim[1] = config["DetZ"][1].asDouble();
+
+    // oscillation type
+    fOscType = config.get("OscType", 0).asInt();
+
+    // bins of things
+    //
+    // Reco energy
+    Json::Value bins = config.get("binlims", "");
+    for (auto const& bin: bins) {
+        fBins.push_back(bin.asDouble());
     }
-    
-    num_dist_bins = 0;
-    sample_dist_bins = {0};
-    for (auto sample : ev_samples) {
-        
-        for (auto it : dist_bin_nums) {
-            if (sample.fDet == it.first) {
-                
-                num_dist_bins += it.second;
-                sample_dist_bins.push_back(sample_dist_bins[sample_dist_bins.size()-1] + it.second);
-                
-                for (int i = 0; i < it.second + 1; i++) {
-                    dist_bins.push_back(dist_bin_lims[it.first][0] + i*(dist_bin_lims[it.first][1] - dist_bin_lims[it.first][0])/(it.second));
-                }
-                
-                break;
-                
-            }
-        }
-        
+
+    // True energy
+    double minTrueE = config["TrueELims"][0].asDouble();
+    double maxTrueE = config["TrueELims"][1].asDouble();
+    int numTrueEBinLimits = config.get("numTrueEBins", 1).asInt() + 1;
+    double trueE_binwidth = (maxTrueE - minTrueE) / numTrueEBinLimits;
+    for (int i = 0; i < numTrueEBinLimits; i ++) {
+        fTrueEBins.push_back(minTrueE + i * trueE_binwidth);
     }
+
+    // distance
+    //
+    // Take distance along z-axis as limits
+    int numBinsPerMeter = config.get("NumDistanceBinsPerMeter", 1).asInt(); 
+    double numBinsPerCM = numBinsPerMeter * 0.01; // unit conversion
+    unsigned n_bins = (unsigned) (fZlim[1] - fZlim[0]) / numBinsPerCM; 
+    unsigned n_limits = n_bins + 1;
+    double dist_binwidth = (fZlim[1] - fZlim[0]) / n_limits;
+    for (unsigned i = 0; i < n_limits; i++) {
+        fDistBins.push_back(fDistance + (fZlim[0] + i * dist_binwidth) / 100000. /* cm -> km */);
+    }
+
+    // setup histograms
+    fBkgCounts = new TH1D((fName + " Background").c_str(), (fName + " Background").c_str(), fBins.size(), &fBins[0]);
+    fSignalCounts = new TH3D((fName + " Signal").c_str(), (fName + " Signal").c_str(), 
+        fBins.size(), &fBins[0], fTrueEBins.size(), &fTrueEBins[0], fDistBins.size(), &fDistBins[0]);
+
+}
+
+void Chi2Sensitivity::FileCleanup(TTree *eventTree) {
+    // cleanup for Covariance
+    fCovariance.FileCleanup(eventTree);
+
+    // onto the next sample
+    fSampleIndex ++;
+}
+            
+void Chi2Sensitivity::ProcessEvent(const Event *event) {
+    // have the covariance process the event
+    fCovariance.ProcessEvent(event);
+
+    // Iterate over each interaction in the event
+    for (int n = 0; n < event->reco.size(); n++) {
+        unsigned truth_ind = event->reco[n].truth_index;
     
-    // Vectors to store event counts
-    std::vector <double> CV_counts, bkg_counts;
-    std::vector <std::vector <std::vector <double> > > nu_counts = {};
+        // Get energy
+        double nuE, true_nuE = event->reco[n].truth.neutrino.energy;
+        if (fEnergyType == "CCQE") {
+            nuE = event->truth[truth_ind].neutrino.eccqe;
+        } else if (fEnergyType == "True") {
+            nuE = true_nuE;
+        } else if (fEnergyType == "Reco") {
+            nuE = event->reco[n].reco_energy;
+        }
     
-    for (int t = 0; t < fNumTrueEBins*ev_samples.size(); t++) {
-        nu_counts.push_back({});
-        for (int r = 0; r < num_bins; r++) {
-            nu_counts[t].push_back({});
-            for (int d = 0; d < num_dist_bins; d++) nu_counts[t][r].push_back(0);
+        // check if energy is within bounds
+        if (nuE < fEventSamples[fSampleIndex].fBins[0] || nuE > fEventSamples[fSampleIndex].fBins[fEventSamples[fSampleIndex].fBins.size()-1]) {
+            continue;
+        } 
+        else if (nuE < fEventSamples[fSampleIndex].fTrueEBins[0] || 
+            nuE > fEventSamples[fSampleIndex].fTrueEBins[fEventSamples[fSampleIndex].fTrueEBins.size()-1]) {
+            std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
+            continue;
+        }
+    
+        // Apply selection (or rejection) efficiencies
+        int isCC = event->truth[truth_ind].neutrino.iscc;
+        double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
+        // and scale weight
+        wgt *= fEventSamples[fSampleIndex].fScaleFactor;
+    
+        // Get distance travelled along z in km
+        double dist = fEventSamples[fSampleIndex].fDistance + 
+            (event->truth[truth_ind].neutrino.position.Z() - fEventSamples[fSampleIndex].fZlim[0])/100000. /* cm -> km */;
+        
+        // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
+        //double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
+        //dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
+        //dz = (event->truth[truth_ind].neutrino.position.Z() - fDetDims[sample.fDet][2][0]) / 100000 /* cm -> km */;
+        //double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDists[sample.fDet] + dz)*(fDetDists[sample.fDet] + dz) );
+
+        // fill in hitograms
+        //
+        // Signal
+        if (isCC) {
+            fEventSamples[fSampleIndex].fSignalCounts->Fill(nuE, true_nuE, dist, wgt);
+        }
+        // background
+        else {
+            fEventSamples[fSampleIndex].fBkgCounts->Fill(nuE, wgt);
         }
     }
-    
-    // Get counts
-    std::cout << std::endl << "Getting counts for each sample..." << std::endl;
-    
-    std::vector <double> energies = {};
-    int o = 0;
-    for (auto sample : ev_samples) {
-        
-        // What sample did we get?
-        std::cout << "Doing " << sample.fDesc << " sample in " << sample.fDet << std::endl;
-        
-        // Initialise temp hists to store counts
-            // Base
-        TH1D *temp_CV_counts = {new TH1D((sample.fDet+"tempCV").c_str(), "", sample.fBins.size() - 1, &sample.fBins[0])};
-        
-            // Bkg
-        TH1D *temp_bkg_counts = new TH1D((sample.fDet+"tempbkg").c_str(), "", sample.fBins.size() - 1, &sample.fBins[0]);
-        
-            // Neutrinos
-        std::vector <double> temp_trueE_bins = {};
-        for (int i = 0; i < fNumTrueEBins + 1; i++) {
-            temp_trueE_bins.push_back(fTrueELims[0] + i*(fTrueELims[1]-fTrueELims[0])/(fNumTrueEBins));\
-        }
-        
-        std::vector <double> temp_dist_bins = {};
-        for (int i = 0; i < dist_bin_nums[sample.fDet]+1; i++) {
-            temp_dist_bins.push_back(dist_bin_lims[sample.fDet][0] + i*(dist_bin_lims[sample.fDet][1]-dist_bin_lims[sample.fDet][0])/(dist_bin_nums[sample.fDet]));
-        }
-        
-        TH3D *temp_nu_counts = new TH3D((sample.fDet+"tempnu").c_str(), "", fNumTrueEBins, &temp_trueE_bins[0], sample.fBins.size() - 1, &sample.fBins[0], dist_bin_nums[sample.fDet], &temp_dist_bins[0]);
-        
-        // Loop over neutrinos (events in tree)
-        Event *event = new Event;
-        sample.tree->SetBranchAddress("events", &event);
-        
-        int nucount = 0;
-        for (int e = 0; e < sample.tree->GetEntries(); e++) {
-            
-            sample.tree->GetEntry(e);
-            
-            for (int n = 0; n < event->reco.size(); n++) {
-                
-                nucount++;
-                
-                unsigned truth_ind = event->reco[n].truth_index;
-                
-                // Get energy
-                double nuE, true_nuE = event->reco[n].truth.neutrino.energy;
-                if (fEnergyType == "CCQE") {
-                    nuE = event->truth[truth_ind].neutrino.eccqe;
-                } else if (fEnergyType == "True") {
-                    nuE = true_nuE;
-                } else if (fEnergyType == "Reco") {
-                    nuE = event->reco[n].reco_energy;
-                }
-                
-                if (nuE < sample.fBins[0] || nuE > sample.fBins[sample.fBins.size()-1]) {
-                    continue;
-                } else if (true_nuE < fTrueELims[0] || true_nuE > fTrueELims[1]) {
-                    std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
-                    continue;
-                }
-                
-                // Apply selection (or rejection) efficiencies
-                int isCC = event->truth[truth_ind].neutrino.iscc;
-                double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fRejectionEfficiency);
-                
-                // Add to base count histogram
-                temp_CV_counts->Fill(nuE, wgt);
-                
-                // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
-                double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
-                       dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
-                       dz = (event->truth[truth_ind].neutrino.position.Z() - fDetDims[sample.fDet][2][0]) / 100000 /* cm -> km */;
-                double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDists[sample.fDet] + dz)*(fDetDists[sample.fDet] + dz) );
-                
-                // Fill bkg and nu histograms
-                if (isCC) {
-                    temp_nu_counts->Fill(true_nuE, nuE, dist, wgt);
-                } else {
-                    temp_bkg_counts->Fill(nuE, wgt);
-                }
-                
-            }
-        }
-        
-        // Rescale to desired POT
-        double scale_factor = fScaleTargets[sample.fDet] / sample.fScaleFactor;
-        
-        
-        // Pass onto the big histograms and get energies
-        for (int bin = 0; bin < temp_CV_counts->GetNbinsX(); bin++) {
-            
-            CV_counts.push_back(temp_CV_counts->GetBinContent(1+bin) * scale_factor);
-            energies.push_back(temp_CV_counts->GetBinCenter(1+bin));
-            
-        }
-        
-        for (int rb = 0; rb < temp_nu_counts->GetNbinsY(); rb++) {
-            
-            // bkg_counts
-            bkg_counts.push_back(temp_bkg_counts->GetBinContent(1+rb) * scale_factor);
-            
-            // nu_counts
-            for (int tb = 0; tb < temp_nu_counts->GetNbinsX(); tb++) {
-                for (int db = 0; db < temp_nu_counts->GetNbinsZ(); db++) {
-                    
-                    nu_counts[o*fNumTrueEBins + tb][sample_bins[o] + rb][sample_dist_bins[o] + db] = 
-                        temp_nu_counts->GetBinContent(1+tb, 1+rb, 1+db) * scale_factor;
-                    
-                }
-            }
-            
-        }
-        
-        // Fill out a vector with the true energies
-        double trueE_binwidth = (fTrueELims[1] - fTrueELims[0])/fNumTrueEBins;
-        for (int i = 0; i < fNumTrueEBins; i++) {
-            trueEs.push_back(fTrueELims[0] + (i+0.5)*trueE_binwidth);
-        }
-        
-        o++;
-        
-    }
-    
 }
 
 void Chi2Sensitivity::GetChi2() {
@@ -324,17 +267,9 @@ void Chi2Sensitivity::GetChi2() {
     std::cout << std::endl << "Inverting full error matrix, E_{ij}..." << std::endl;
     
     // Create error (statistical and systematic) matrix
-    TMatrixDSym E_mat(covar.cov->GetNbinsX());
-    
-    for (int i = 0; i < covar.cov->GetNbinsX(); i++) {
-        for (int j = 0; j < covar.cov->GetNbinsY(); j++) {
-            
-            E_mat[i][j] = covar.cov->GetBinContent(i+1, j+1);
-            if (i == j) { E_mat[i][i] += CV_counts->GetBinContent(i+1); }
-            
-        }
-    }
-    
+    //
+    // Take covariance matrix from Covariance calculator
+    TMatrixDSym E_mat = fCovariance.CovarianceMatrix();
     // Invert it
     TMatrixD E_inv = E_mat.Invert();
         // Find a way to stop code if the matrix doesn't invert! 
@@ -346,163 +281,70 @@ void Chi2Sensitivity::GetChi2() {
     //// Get chi squareds
     //// ~~~~~~~~~~~~~~~~
     
-    /*
-       Note: If the samples given contain nues, the program will automatically assume that we're looking at nue appearance. Else, numu disappearance.
-       In both cases, the numu sample is the oscillated one, though with different interpretations of the angle theta.
-    */
-    
-    // Nue appearance or numu disappearance?
-    int nue_appearance = 0;
-    for (auto sample : ev_samples) {
-        if (sample.fNuType == "nue") {
-            nue_appearance = 1;
-            break;
-        }
-    }
-    
-    // Should we oscillate this index/bin? 0 = no, 1 = numu, 2 = nue.
-    std::vector <int> oscillate(CV_counts->GetNbinsX(), 0);
-    for (int i = 0; i < ev_samples.size(); i++) {
-        
-        if (ev_samples[i].fDesc == "#nu_{#mu}") {
-            for (int j = sample_bins[i]; j < sample_bins[i+1]; j++) {
-                oscillate[j] = 1;
-            }
-        } else if (ev_samples[i].fDesc == "#nu_{e}") {
-            for (int j = sample_bins[i]; j < sample_bins[i+1]; j++) {
-                oscillate[j] = 2;
-            }
-        }
-        
-    }
-    
-    // Num true energy bins in each sample
-    int num_trueE_bins = trueEs.size()/ev_samples.size();
-    
-    // Phase space
-    std::vector <double> sin2theta, dm2;
+    // Phase space of oscillation parameters
     for (int i = 0; i < fNumSin; i++) {
         sin2theta.push_back(TMath::Power(10, fLogSinLims[0] + i*(fLogSinLims[1] - fLogSinLims[0])/(fNumSin-1)));
     }
     for (int j = 0; j < fNumDm2; j++) {
         dm2.push_back(TMath::Power(10, fLogDm2Lims[0] + j*(fLogDm2Lims[1] - fLogDm2Lims[0])/(fNumDm2-1)));
     }
-    
-    
-    
-    //// TO-DO:
-    
-    // Transfer matrices b/w near and far detectors
-    // TMatrixD ... 
-    
-    //
-    //
-    //   generate transfer matrices
-    //
-    //
-    
-    
-    
+
     // Loop over phase space calculating Chisq
     clock_t startchi = clock();
     std::cout << std::endl << "Calculating chi squareds..." << std::endl;
     
     double minchisq = 1e99;
-    std::vector <double> chisq_builder(fNumDm2, 0);
-    std::vector <std::vector <double> > chisq(fNumSin, chisq_builder);
-    TH1D *osc_counts = new TH1D("temposc", "", bkg_counts->GetNbinsX(), 0, bkg_counts->GetNbinsX());
-    for (int i = 0; i < fNumSin; i++){
-        for (int j = 0; j < fNumDm2; j++) {
-            
-            if (j % 50 == 0) std::cout << "i = " << i << ", j = " << j << std::endl;
-            
-            /*
-            // Progress counter
-            if (j == 0) {
-                std::cout << "\r\r\r\r\r\r\r\r\r\r\r";
-                int tempi = (int)( (float)(i-1)/fNumSin*100 );
-                while (tempi > 0) { tempi /= 10; std::cout << "\r"; }
-                std::cout << "Progress: " << (int)( (float)i/fNumSin*100 ) << "%";
-                if (i == fNumSin-1) std::cout << "\r\r\r\r\r\r\r\r\r\r\r\r" << "Progress: 100%" << std::endl;
-            }
-            */
-            
-            // Fill hist that holds oscillated counts
-            for (int o = 0; o < ev_samples.size(); o++) { // For limits on bin loops inside:
-                
-                for (int rb = sample_bins[o]; rb < sample_bins[o+1]; rb++) {
-                    
-                    double dosc_counts_rb = 0;
-                    for (int tb = o*num_trueE_bins; tb < (o+1)*num_trueE_bins; tb++) {
-                        for (int db = sample_dist_bins[o]; db < sample_dist_bins[o+1]; db++) {
+    std::vector <double> chisq_dm2(fNumDm2, 0);
+    std::vector <std::vector <double> > chisq(fNumSin, chisq_dm2);
+    for (int j = 0; j < fNumDm2; j++) {
+        std::vector<double> signal; // non-oscillated signal
+        std::vector<std::vector<double>> oscillated; // oscilalted signal at sin2==1
 
-                            // Numus
-                            if (oscillate[rb] == 1) {
-                                dosc_counts_rb += nu_counts->GetBinContent(1+tb, 1+rb, 1+db) * numu_to_numu(dist_bins[db]/trueEs[tb], sin2theta[i], dm2[j]);
-                            // Nues
-                            } else if (oscillate[rb] == 2) {
-                                // For the future...
-                            }
-                            
-                        }
+        // push all event samples into the vector
+        for (auto const &sample: fEventSamples) {
+            // oscillate each event sample w/ sin == 1
+            oscillated.push_back(sample.Oscillate(1., dm2[j]));
+
+            // flatten the signal
+            std::vector<double> this_signal = sample.Signal();
+            signal.insert(signal.end(), this_signal.begin(), this_signal.end());
+        }
+
+        // oscillated signal for general sin2 (set in loop below)
+        std::vector<double> sin2_oscillated(signal.size(), 0);
+
+        for (int i = 0; i < fNumSin; i++) {
+            // Scale the oscillated samples based on the sin2 value and flatten them
+            unsigned count_ind = 0;
+            for (unsigned sample_ind = 0; sample_ind < oscillated.size(); sample_ind++) {
+                for (unsigned bin_ind = 0; bin_ind < oscillated[sample_ind].size(); bin_ind++) {
+                    // No oscillation
+                    if (fEventSamples[sample_ind].fOscType == 0) {
+                        sin2_oscillated[count_ind] = signal[count_ind];
                     }
-                    
-                    osc_counts->SetBinContent(1+rb, bkg_counts->GetBinContent(1+rb) + dosc_counts_rb);
-                    
-                }
-                
-            }
-            
-            // If configured to, scale bins based on distribution in given detector for "shape-only" chi2
-            if (fShapeOnly == 1) /* checks if configured */ {
-                
-                int fit_sample_index = 0;
-                for (auto sample : ev_samples) {
-                    if (sample.fScaleSample == 1) break;
-                    fit_sample_index++;
-                }
-                assert(fit_sample_index != ev_samples.size());
-                
-                // Histogram of scale factors (only part with scaled sample will be used)
-                TH1D *scale_hist = new TH1D("tempscale", "", bkg_counts->GetNbinsX(), 0, bkg_counts->GetNbinsX());
-                scale_hist->Divide(CV_counts, osc_counts);
-                
-                // Update each value in osc_counts histogram
-                //
-                // NOTE: This assumes a diagonal transfer matrix -- we may want to change this later to do something more sophisticated
-                for (int o = 0; o < ev_samples.size(); o++) {
-                    for (int rb = sample_bins[o]; rb < sample_bins[o+1]; rb++) {
-                        
-                        // Get corresponding bin in the scaled sample histogram
-                        int scale_bin = (rb - sample_bins[o]) + sample_bins[fit_sample_index];
-                        
-                        // Scale accordingly
-                        double this_count = osc_counts->GetBinContent(1+rb);
-                        double scaled_this_count = scale_hist->GetBinContent(1+scale_bin) * this_count;
-                        osc_counts->SetBinContent(1+rb, scaled_this_count);
-                        
+                    // numu -> nue
+                    else if (fEventSamples[sample_ind].fOscType == 1) {
+                        sin2_oscillated[count_ind] = sin2theta[i] * oscillated[sample_ind][bin_ind];
                     }
-                }
-                
-                scale_hist->Delete();
-                
+                    // numu -> numu
+                    else if (fEventSamples[sample_ind].fOscType == 2) {
+                        sin2_oscillated[count_ind] = signal[count_ind] - 
+                            sin2theta[i] * (signal[count_ind] - oscillated[sample_ind][bin_ind]);
+                    }
+
+                    // update count ind
+                    count_ind ++;
+                } 
             }
-	    
-            // Calculate chisq
-            for (int k = 0; k < CV_counts->GetNbinsX(); k++) {
-                for (int l = 0; l < CV_counts->GetNbinsX(); l++) {
-                    
-                    double dchisqij = 0;
+            assert(count_ind == signal.size());
 
-                    dchisqij += (CV_counts->GetBinContent(k+1) - osc_counts->GetBinContent(k+1));
-                    dchisqij *= E_inv[k][l];
-                    dchisqij *= (CV_counts->GetBinContent(l+1) - osc_counts->GetBinContent(l+1));
-
-                    chisq[i][j] += dchisqij;
-
+            // Calculate chisq for sin2th = 1
+            for (int k = 0; k < signal.size(); k++) {
+                for (int l = 0; l < signal.size(); l++) {
+                    chisq[i][j] += (signal[k] - sin2_oscillated[k]) * (signal[l] - sin2_oscillated[l]) * E_inv[k][l];
                 }
             }
-            
+
             // Check if min chisq
             if (chisq[i][j] < minchisq) {
                 minchisq = chisq[i][j];
@@ -631,17 +473,18 @@ void Chi2Sensitivity::GetContours() {
     
 }
 
-void Chi2Sensitivity::Write(std::string directory) {
+void Chi2Sensitivity::Write() {
     
     // Wite to file
-    TFile* chi2file = TFile::Open((directory + "chi2.root").c_str(), "recreate");
+    TFile* chi2file = TFile::Open(fOutputFile.c_str(), "recreate");
     assert(chi2file && chi2file->IsOpen());
     
-    chi2.contour_90pct->SetName("90pct"); chi2.contour_90pct->Write();
-    chi2.contour_3sigma->SetName("3sigma"); chi2.contour_3sigma->Write();
-    chi2.contour_5sigma->SetName("5sigma"); chi2.contour_5sigma->Write();
+    contour_90pct->SetName("90pct"); contour_90pct->Write();
+    contour_3sigma->SetName("3sigma"); contour_3sigma->Write();
+    contour_5sigma->SetName("5sigma"); contour_5sigma->Write();
     
-    chi2.chisqplot->SetName("chisq"); chi2.chisqplot->Write();
+    chisqplot->SetName("chisq"); chisqplot->Write();
+    chi2file->Close();
     
 }
 
