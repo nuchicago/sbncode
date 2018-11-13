@@ -37,12 +37,12 @@ Covariance::EventSample::EventSample(const Json::Value &config, unsigned nUniver
 
     // setup histograms
     std::string cv_title = fName + " Central Value";
-    fCentralValue = new TH1D(cv_title.c_str(), cv_title.c_str(), fBins.size(), &fBins[0]);
+    fCentralValue = new TH1D(cv_title.c_str(), cv_title.c_str(), fBins.size() - 1, &fBins[0]);
 
     for (unsigned i = 0; i < nUniverses; i++) {
       std::string uni_title = fName + " Universe " + std::to_string(i);
       fUniverses.push_back(
-        new TH1D(uni_title.c_str(), uni_title.c_str(), fBins.size(), &fBins[0])
+        new TH1D(uni_title.c_str(), uni_title.c_str(), fBins.size() - 1, &fBins[0])
       );
     }
 
@@ -71,37 +71,37 @@ std::vector <double> GetUniWeights(std::map <std::string, std::vector <double> >
 
 
 void Covariance::Initialize(Json::Value *config) {
-    if (config != NULL) {
-        // Weight and universe stuff
-        // WeightKey can either be the name of a single weight, or a name signifying a list of weights,
-        // or a list of weights to be oscillated
-
-        Json::Value configWeightKey = (*config)["Covariance"].get("WeightKey", ""); 
-        for (auto const& keyName: configWeightKey) {
-          fWeightKeys.push_back(keyName.asString());
-        }
-        // number of universes to be used
-        fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", 0).asInt();
-        
-        // Type of energy
-        fEnergyType = (*config)["Covariance"].get("EnergyType", "").asString();
-        
-        // Further selection and rejection 'efficiencies'
-        fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", 1.0).asDouble();
-        fBackgroundRejection = (*config)["Covariance"].get("BackgroundRejection", 0.0).asDouble();
-        
-        // get event samples
-        Json::Value configEventSamples = (*config)["EventSamples"];
-        for (auto const& sample: configEventSamples) {
-          fEventSamples.emplace_back(sample, fNumAltUnis);
-        }
-
-        // set output directory
-        fOutputFile = (*config)["Covariance"].get("OutputFile", "").asString();
-        // whether to save things
-        fSaveCentralValue = (*config)["Covariance"].get("SaveCentralValue", false).asBool();
-        fSaveUniverses = (*config)["Covariance"].get("SaveUniverses", false).asBool();
+    // must have config
+    assert(config != NULL);
+    // Weight and universe stuff
+    // WeightKey can either be the name of a single weight, or a name signifying a list of weights,
+    // or a list of weights to be oscillated
+    
+    Json::Value configWeightKey = (*config)["Covariance"].get("WeightKey", ""); 
+    for (auto const& keyName: configWeightKey) {
+        fWeightKeys.push_back(keyName.asString());
     }
+    // number of universes to be used
+    fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", 0).asInt();
+    
+    // Type of energy
+    fEnergyType = (*config)["Covariance"].get("EnergyType", "").asString();
+    
+    // Further selection and rejection 'efficiencies'
+    fSelectionEfficiency = (*config)["Covariance"].get("SelectionEfficiency", 1.0).asDouble();
+    fBackgroundRejection = (*config)["Covariance"].get("BackgroundRejection", 0.0).asDouble();
+    
+    // get event samples
+    Json::Value configEventSamples = (*config)["EventSamples"];
+    for (auto const& sample: configEventSamples) {
+        fEventSamples.emplace_back(sample, fNumAltUnis);
+    }
+    
+    // set output directory
+    fOutputFile = (*config)["Covariance"].get("OutputFile", "").asString();
+    // whether to save things
+    fSaveCentralValue = (*config)["Covariance"].get("SaveCentralValue", false).asBool();
+    fSaveUniverses = (*config)["Covariance"].get("SaveUniverses", false).asBool();
     // start out at the zeroth sample
     fSampleIndex = 0;
 }

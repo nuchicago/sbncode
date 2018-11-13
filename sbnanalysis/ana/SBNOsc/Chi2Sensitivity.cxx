@@ -92,48 +92,49 @@ std::vector<double> Chi2Sensitivity::EventSample::Background() const {
 void Chi2Sensitivity::Initialize(Json::Value *config) {
     //// Get parameters from config file
     //// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (config != NULL) {
 
-        // initialize covariance
-        fCovariance.Initialize(config);
-        
-        // Output directory
-        fOutputFile = (*config)["Sensitivity"].get("OutputFile", "").asString();
-        
-        // Get energy from covariance
-        fEnergyType = (*config)["Sensitivity"].get("EnergyType", "").asString(); 
-        
-        // Further selection and rejection 'efficiencies'
-        fSelectionEfficiency = (*config)["Sensitivity"].get("SelectionEfficiency", 1.0).asDouble();
-        fBackgroundRejection = (*config)["Sensitivity"].get("BackgroundRejection", 0.0).asDouble();
-        
-        // Event Samples
-        for (auto const &json: (*config)["EventSamples"]) {
-            fEventSamples.emplace_back(json);
-        }
+    // must have config
+    assert(config != NULL);
 
-        // Phase space parameters
-        fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
-        fLogDm2Lims = {};
-        for (auto binlim : (*config)["Sensitivity"]["LogDm2Lims"]) {
-            fLogDm2Lims.push_back(binlim.asDouble());
-        }
-        fNumSin = (*config)["Sensitivity"].get("NumSin", -1).asInt();
-        fLogSinLims = {};
-        for (auto binlim : (*config)["Sensitivity"]["LogSinLims"]) {
-            fLogSinLims.push_back(binlim.asDouble());
-        }
-
-
-        // whether to save stuff
-        fSavePDFs = (*config)["Sensitivity"].get("SavePDFs", true).asBool();
-        fSaveSignal = (*config)["Sensitivity"].get("SaveSignal", true).asBool();
-        fSaveBackground = (*config)["Sensitivity"].get("SaveBackground", true).asBool();
-        if ((*config)["Sensitivity"].isMember("SaveOscillations") &&
-            (*config)["Sensitivity"]["SaveOscillations"].isArray()) {
-            for (auto const &osc_pair: (*config)["Sensitivity"]["SaveOscillations"]) {
-              fSaveOscillations.push_back({osc_pair[0].asDouble(), osc_pair[1].asDouble()});
-            }
+    // initialize covariance
+    fCovariance.Initialize(config);
+    
+    // Output directory
+    fOutputFile = (*config)["Sensitivity"].get("OutputFile", "").asString();
+    
+    // Get energy from covariance
+    fEnergyType = (*config)["Sensitivity"].get("EnergyType", "").asString(); 
+    
+    // Further selection and rejection 'efficiencies'
+    fSelectionEfficiency = (*config)["Sensitivity"].get("SelectionEfficiency", 1.0).asDouble();
+    fBackgroundRejection = (*config)["Sensitivity"].get("BackgroundRejection", 0.0).asDouble();
+    
+    // Event Samples
+    for (auto const &json: (*config)["EventSamples"]) {
+        fEventSamples.emplace_back(json);
+    }
+    
+    // Phase space parameters
+    fNumDm2 = (*config)["Sensitivity"].get("NumDm2", -1).asInt();
+    fLogDm2Lims = {};
+    for (auto binlim : (*config)["Sensitivity"]["LogDm2Lims"]) {
+        fLogDm2Lims.push_back(binlim.asDouble());
+    }
+    fNumSin = (*config)["Sensitivity"].get("NumSin", -1).asInt();
+    fLogSinLims = {};
+    for (auto binlim : (*config)["Sensitivity"]["LogSinLims"]) {
+        fLogSinLims.push_back(binlim.asDouble());
+    }
+    
+    
+    // whether to save stuff
+    fSavePDFs = (*config)["Sensitivity"].get("SavePDFs", true).asBool();
+    fSaveSignal = (*config)["Sensitivity"].get("SaveSignal", true).asBool();
+    fSaveBackground = (*config)["Sensitivity"].get("SaveBackground", true).asBool();
+    if ((*config)["Sensitivity"].isMember("SaveOscillations") &&
+        (*config)["Sensitivity"]["SaveOscillations"].isArray()) {
+        for (auto const &osc_pair: (*config)["Sensitivity"]["SaveOscillations"]) {
+            fSaveOscillations.push_back({osc_pair[0].asDouble(), osc_pair[1].asDouble()});
         }
     }
     // start at 0th event sample
@@ -168,7 +169,7 @@ Chi2Sensitivity::EventSample::EventSample(const Json::Value &config) {
     // True energy
     double minTrueE = config["TrueELims"][0].asDouble();
     double maxTrueE = config["TrueELims"][1].asDouble();
-    int numTrueEBinLimits = config.get("numTrueEBins", 1).asInt() + 1;
+    int numTrueEBinLimits = config.get("NumTrueEBins", 1).asInt() + 1;
     double trueE_binwidth = (maxTrueE - minTrueE) / numTrueEBinLimits;
     for (int i = 0; i < numTrueEBinLimits; i ++) {
         fTrueEBins.push_back(minTrueE + i * trueE_binwidth);
@@ -187,9 +188,9 @@ Chi2Sensitivity::EventSample::EventSample(const Json::Value &config) {
     }
 
     // setup histograms
-    fBkgCounts = new TH1D((fName + " Background").c_str(), (fName + " Background").c_str(), fBins.size(), &fBins[0]);
+    fBkgCounts = new TH1D((fName + " Background").c_str(), (fName + " Background").c_str(), fBins.size() - 1, &fBins[0]);
     fSignalCounts = new TH3D((fName + " Signal").c_str(), (fName + " Signal").c_str(), 
-        fBins.size(), &fBins[0], fTrueEBins.size(), &fTrueEBins[0], fDistBins.size(), &fDistBins[0]);
+        fBins.size() - 1, &fBins[0], fTrueEBins.size() - 1, &fTrueEBins[0], fDistBins.size() - 1, &fDistBins[0]);
 
 }
 
