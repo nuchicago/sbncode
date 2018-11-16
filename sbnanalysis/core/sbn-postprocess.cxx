@@ -78,8 +78,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Configuring... " << std::endl;
   core::export_table_postprocess *exp = core::LoadPostProcessor(post_processor);
   core::PostProcessorBase *proc = exp->create();
-  Json::Value *config = core::LoadConfig(config_name);
-  proc->Initialize(config);
+  proc->Initialize(config_name);
   // Run
   std::cout << "Running... " << std::endl;
   proc->Run(filenames);
