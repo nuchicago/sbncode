@@ -155,6 +155,14 @@ void Chi2Sensitivity::Initialize(Json::Value *config) {
             fSaveOscillations.push_back({osc_pair[0].asDouble(), osc_pair[1].asDouble()});
         }
     }
+    // uniformly applied weights
+    if ((*config)["Sensitivity"].isMember("UniformWeights") &&
+        (*config)["Sensitivity"]["UniformWeights"].isArray()) {
+        for (auto const &key: (*config)["Sensitivity"]["UniformWeights"]) {
+            fUniformWeights.push_back(key.asString());
+        }
+    }
+
     // start at 0th event sample
     fSampleIndex = 0;
 }
@@ -229,7 +237,8 @@ void Chi2Sensitivity::ProcessEvent(const Event *event) {
         unsigned truth_ind = event->reco[n].truth_index;
     
         // Get energy
-        double nuE, true_nuE = event->reco[n].truth.neutrino.energy;
+        double nuE = 0;
+        double true_nuE = event->reco[n].truth.neutrino.energy;
         if (fEnergyType == "CCQE") {
             nuE = event->truth[truth_ind].neutrino.eccqe;
         } else if (fEnergyType == "True") {
@@ -253,6 +262,10 @@ void Chi2Sensitivity::ProcessEvent(const Event *event) {
         double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fBackgroundRejection);
         // and scale weight
         wgt *= fEventSamples[fSampleIndex].fScaleFactor;
+        // apply uniform weights
+        for (auto const &key: fUniformWeights) {
+            wgt *= event->truth[truth_ind].weights.at(key)[0];
+        }
     
         // Get distance travelled along z in km
         double dist = fEventSamples[fSampleIndex].fDistance + 

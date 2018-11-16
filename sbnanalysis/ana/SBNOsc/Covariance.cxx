@@ -50,7 +50,7 @@ Covariance::EventSample::EventSample(const Json::Value &config, unsigned nUniver
 
 
 // Gets scale factors (weights) for different universes
-std::vector <double> GetUniWeights(std::map <std::string, std::vector <double> > weights, std::vector<std::string> keys, int n_unis) {
+std::vector <double> GetUniWeights(const std::map <std::string, std::vector <double> > &weights, const std::vector<std::string> &keys, int n_unis) {
     
     // Tentative format: universe u scale factor is the product of the u-th entries on each vector 
     // inside the map. For vectors with less than u entries, use the (u - vec_size)-th entry
@@ -60,7 +60,7 @@ std::vector <double> GetUniWeights(std::map <std::string, std::vector <double> >
     for (int u = 0; u < n_unis; u++) {
         double weight = 1.;
         for (auto const &key: keys) {
-            std::vector<double>& this_weights = weights[key];
+            const std::vector<double>& this_weights = weights.at(key);
             int wind = u % this_weights.size();
             weight *= this_weights.at(wind);
         }
@@ -81,6 +81,15 @@ void Covariance::Initialize(Json::Value *config) {
     for (auto const& keyName: configWeightKey) {
         fWeightKeys.push_back(keyName.asString());
     }
+
+    // uniformly applied weights
+    if ((*config)["Sensitivity"].isMember("UniformWeights") &&
+        (*config)["Sensitivity"]["UniformWeights"].isArray()) {
+        for (auto const &key: (*config)["Sensitivity"]["UniformWeights"]) {
+            fUniformWeights.push_back(key.asString());
+        }
+    }
+
     // number of universes to be used
     fNumAltUnis = (*config)["Covariance"].get("NumAltUnis", 0).asInt();
     
@@ -127,6 +136,10 @@ void Covariance::ProcessEvent(const Event *event) {
         double wgt = isCC*(fSelectionEfficiency) + (1-isCC)*(1 - fBackgroundRejection);
         // apply scaling from fScaleFactor
         wgt *= fEventSamples[fSampleIndex].fScaleFactor;
+        // apply uniform weights
+        for (auto const &key: fUniformWeights) {
+            wgt *= event->truth[truth_ind].weights.at(key)[0];
+        }
     
         // Get weights for each alternative universe
         std::vector <double> uweights = GetUniWeights(event->truth[truth_ind].weights, fWeightKeys, fNumAltUnis);
