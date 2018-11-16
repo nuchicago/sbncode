@@ -20,18 +20,23 @@
 #include <TTree.h>
 #include <TCanvas.h>
 #include <TMath.h>
+#include <Math/Integrator.h>
 #include <TCanvas.h>
 #include <core/Event.hh>
 
 namespace ana {
 namespace SBNOsc {
 
+double osc_factor_L_integrated(double energy, double l_min, double l_max, double dm2) {
+    double f = 1.27 * dm2;
+    return (energy / (4 * f)) * (TMath::Sin(2 * f * l_min / energy) - TMath::Sin(2 * f * l_max / energy));
+}
+
 // Oscillation function
 double numu_to_numu(double x, double sin, double dm2) {
     
     // x is L/E, sin is sin^2(2theta) and dm2 is delta m^2
     return 1 - sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
-    
 }
 
 double numu_to_nue(double x, double sin, double dm2) {
@@ -40,20 +45,33 @@ double numu_to_nue(double x, double sin, double dm2) {
     return sin * TMath::Power(TMath::Sin(1.27 * dm2 * x), 2);
 }
 
+double NumuOscillate(ROOT::Math::IntegratorOneDim &integrator, double l_min, double l_max, double e_min, double e_max, double dm2, double sinth) {
+    auto integrand = [l_min, l_max, dm2](double energy) { return osc_factor_L_integrated(energy, l_min, l_max, dm2); };
+    double integral = integrator.Integral(integrand, e_min, e_max);
+    double factor = (1. / 2. ) + integral / ( (l_max - l_min)*(e_max - e_min));
+    return 1 - sinth * factor;
+}
+
+
 // Oscillate Event counts
 std::vector<double> Chi2Sensitivity::EventSample::Oscillate(double sinth, double dm2) const {
+    ROOT::Math::IntegratorOneDim integrator;
     // return histogram binned by reco energy
     std::vector<double> ret(fBkgCounts->GetNbinsX(), 0);
     // iterate over signal bins
     for (unsigned Ebin = 0; Ebin < fSignalCounts->GetNbinsY(); Ebin++) {
+        double energy = (fTrueEBins[Ebin] + fTrueEBins[Ebin+1]) / 2.;
         for (unsigned Dbin = 0; Dbin < fSignalCounts->GetNbinsZ(); Dbin++) {
-            double energy = (fTrueEBins[Ebin] + fTrueEBins[Ebin+1]) / 2.;
             double distance = (fDistBins[Dbin] + fDistBins[Dbin+1]) / 2.;
             for (unsigned bin = 0; bin < fSignalCounts->GetNbinsX(); bin++) {
                 double counts = fSignalCounts->GetBinContent(bin+1, Ebin+1, Dbin+1); 
 
-                if (fOscType == 1) counts *= numu_to_nue(distance/energy, sinth, dm2); 
-                else if (fOscType == 2) counts *= numu_to_numu(distance/energy, sinth, dm2);
+                if (fOscType == 1) {
+                    counts *= numu_to_nue(distance/energy, sinth, dm2); 
+                }
+                else if (fOscType == 2) {
+                    counts *= NumuOscillate(integrator, fDistBins[Dbin], fDistBins[Dbin+1], fTrueEBins[Ebin], fTrueEBins[Ebin+1], dm2, sinth);
+                }
 
                 ret[bin] += counts;  
             }
