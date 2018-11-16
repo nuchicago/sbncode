@@ -83,6 +83,7 @@ class Chi2Sensitivity: public core::PostProcessorBase {
         int fNumDm2;
         int fNumSin;
         std::vector <double> fLogDm2Lims, fLogSinLims;
+        std::vector<std::string> fUniformWeights;
         
         std::string fOutputFile;
         // whether to save stuff

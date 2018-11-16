@@ -206,11 +206,11 @@ Chi2Sensitivity::EventSample::EventSample(const Json::Value &config) {
     // Take distance along z-axis as limits
     int numBinsPerMeter = config.get("NumDistanceBinsPerMeter", 1).asInt(); 
     double numBinsPerCM = numBinsPerMeter * 0.01; // unit conversion
-    unsigned n_bins = (unsigned) (fZlim[1] - fZlim[0]) / numBinsPerCM; 
+    unsigned n_bins = (unsigned) ((fZlim[1] - fZlim[0]) * numBinsPerCM) + 1; /* round up to be on the safe side */ 
     unsigned n_limits = n_bins + 1;
-    double dist_binwidth = (fZlim[1] - fZlim[0]) / n_limits;
+    double dist_binwidth = 1./numBinsPerCM;
     for (unsigned i = 0; i < n_limits; i++) {
-        fDistBins.push_back(fDistance + (fZlim[0] + i * dist_binwidth) / 100000. /* cm -> km */);
+        fDistBins.push_back(fDistance + (i * dist_binwidth) / 100000. /* cm -> km */);
     }
 
     // setup histograms
@@ -246,6 +246,18 @@ void Chi2Sensitivity::ProcessEvent(const Event *event) {
         } else if (fEnergyType == "Reco") {
             nuE = event->reco[n].reco_energy;
         }
+
+        // Get distance travelled along z in km
+        // (To reproduce proposal)
+        double dist = fEventSamples[fSampleIndex].fDistance + 
+            (event->truth[truth_ind].neutrino.position.Z() - fEventSamples[fSampleIndex].fZlim[0])/100000. /* cm -> km */;
+        
+        // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
+        //double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
+        //dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
+        //dz = (event->truth[truth_ind].neutrino.position.Z() - fDetDims[sample.fDet][2][0]) / 100000 /* cm -> km */;
+        //double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDists[sample.fDet] + dz)*(fDetDists[sample.fDet] + dz) );
+
     
         // check if energy is within bounds
         if (nuE < fEventSamples[fSampleIndex].fBins[0] || nuE > fEventSamples[fSampleIndex].fBins[fEventSamples[fSampleIndex].fBins.size()-1]) {
@@ -254,6 +266,13 @@ void Chi2Sensitivity::ProcessEvent(const Event *event) {
         else if (nuE < fEventSamples[fSampleIndex].fTrueEBins[0] || 
             nuE > fEventSamples[fSampleIndex].fTrueEBins[fEventSamples[fSampleIndex].fTrueEBins.size()-1]) {
             std::cout << std::endl << "NUE IN RANGE, TRUE E NOT!!!   nuE = " << nuE << " and true_nuE = " << true_nuE << std::endl;
+            continue;
+        }
+        else if (dist < fEventSamples[fSampleIndex].fDistBins[0] ||
+            dist > fEventSamples[fSampleIndex].fDistBins[fEventSamples[fSampleIndex].fDistBins.size() -1]) {
+            std::cout << std::endl << "NUE IN RANGE, DISTANCE NOT!! nuE = " << nuE << " and distance = " << dist << std::endl;
+            std::cout << "DIST MIN: " << fEventSamples[fSampleIndex].fDistBins[0] << std::endl;
+            std::cout << "DIST MAX: " << fEventSamples[fSampleIndex].fDistBins[fEventSamples[fSampleIndex].fDistBins.size() -1] << std::endl;
             continue;
         }
     
@@ -267,16 +286,6 @@ void Chi2Sensitivity::ProcessEvent(const Event *event) {
             wgt *= event->truth[truth_ind].weights.at(key)[0];
         }
     
-        // Get distance travelled along z in km
-        double dist = fEventSamples[fSampleIndex].fDistance + 
-            (event->truth[truth_ind].neutrino.position.Z() - fEventSamples[fSampleIndex].fZlim[0])/100000. /* cm -> km */;
-        
-        // Get distance travelled (assuming nu started at (x, y, z) = (0, 0, min_det_zdim - det_dist))
-        //double dx = (event->truth[truth_ind].neutrino.position.X() - (fDetDims[sample.fDet][0][1] + fDetDims[sample.fDet][0][0])/2) / 100000 /* cm -> km */,
-        //dy = (event->truth[truth_ind].neutrino.position.Y() - (fDetDims[sample.fDet][1][1] + fDetDims[sample.fDet][1][0])/2) / 100000 /* cm -> km */,
-        //dz = (event->truth[truth_ind].neutrino.position.Z() - fDetDims[sample.fDet][2][0]) / 100000 /* cm -> km */;
-        //double dist = TMath::Sqrt( dx*dx + dy*dy + (fDetDists[sample.fDet] + dz)*(fDetDists[sample.fDet] + dz) );
-
         // fill in hitograms
         //
         // Signal
@@ -549,7 +558,7 @@ void Chi2Sensitivity::Write() {
     for (auto const &osc_vals: fSaveOscillations) {
         for (auto const &sample: fEventSamples) {
             std::string name = sample.fName + " sin2th: " + std::to_string(osc_vals[0]) + " dm2: " + std::to_string(osc_vals[1]);
-            TH1D *hist = new TH1D(name.c_str(), name.c_str(), sample.fBins.size(), &sample.fBins[0]);
+            TH1D *hist = new TH1D(name.c_str(), name.c_str(), sample.fBins.size()-1, &sample.fBins[0]);
             std::vector<double> oscillated = sample.Oscillate(osc_vals[0], osc_vals[1]);
             for (unsigned i = 0; i < oscillated.size(); i++) {
                 hist->SetBinContent(i+1, oscillated[i]);
