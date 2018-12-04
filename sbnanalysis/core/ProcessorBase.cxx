@@ -12,11 +12,13 @@
 #include "json/json.h"
 #include "Event.hh"
 #include "Loader.hh"
+#include "util/Interaction.hh"
 #include "ProcessorBase.hh"
 
 namespace core {
 
-ProcessorBase::ProcessorBase() : fEventIndex(0), fOutputFilename("output.root") {}
+ProcessorBase::ProcessorBase()
+    : fEventIndex(0), fOutputFilename("output.root") {}
 
 
 ProcessorBase::~ProcessorBase() {}
@@ -28,7 +30,9 @@ void ProcessorBase::FillTree() {
 }
 
 void ProcessorBase::EventCleanup() {
-  fEvent->interactions.clear();
+  fEvent->metadata.Init();
+  fEvent->truth.clear();
+  fEvent->reco.clear();
 }
 
 
@@ -46,13 +50,37 @@ void ProcessorBase::Setup(char* config) {
 
 void ProcessorBase::Setup(Json::Value* config) {
   // Load configuration parameters
-  fTruthTag = { "generator" };
-  fWeightTag = { "eventweight" };
-
+  //
+  // With configuration file provided
   if (config) {
     fTruthTag = { config->get("MCTruthTag", "generator").asString() };
-    fWeightTag = { config->get("MCWeightTag", "eventweight").asString() };
+    fMCTrackTag = { config->get("MCTrackTag", "mcreco").asString() };
+    fMCShowerTag = { config->get("MCShowerTag", "mcreco").asString() };
+    fMCParticleTag = { config->get("MCParticleTag", "largeant").asString() };
     fOutputFilename = config->get("OutputFile", "output.root").asString();
+
+    // get the weights (can supply multiple producers)
+    Json::Value weight_tag_config = config->get("MCWeightTags", "eventweight");
+    // supply single value
+    if (weight_tag_config.isString()) {
+      fWeightTags = { { weight_tag_config.asString() } };
+    }
+    // supply multiple values
+    else {
+      for (const Json::Value &str: weight_tag_config) {
+        fWeightTags.emplace_back(str.asString());
+      }
+    }
+  }
+  // Default -- no config file provided
+  else {
+    fTruthTag = { "generator" };
+    fWeightTags = {{ "eventweight" }};
+    
+    fMCTrackTag = {"mcreco"};
+    fMCShowerTag = {"mcreco"};
+    fMCParticleTag = {"largeant"};
+    fOutputFilename = "output.root";
   }
 
   // Open the output file and create the standard event tree
@@ -61,6 +89,7 @@ void ProcessorBase::Setup(Json::Value* config) {
   fTree->AutoSave("overwrite");
   fEvent = new Event();
   fTree->Branch("events", &fEvent);
+  fReco = &fEvent->reco;
 }
 
 
@@ -76,17 +105,22 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
   // Get MCTruth information
   auto const& mctruths = \
     *ev.getValidHandle<std::vector<simb::MCTruth> >(fTruthTag);
-  
+
   gallery::Handle<std::vector<simb::GTruth> > gtruths_handle;
   ev.getByLabel(fTruthTag,gtruths_handle);
   bool genie_truth_is_valid = gtruths_handle.isValid();
 
   // Get MCEventWeight information
-  gallery::Handle<std::vector<evwgh::MCEventWeight> > wgh;
-  bool hasWeights = ev.getByLabel(fWeightTag, wgh);
-
-  if (hasWeights) {
-    assert(wgh->size() == mctruths.size());
+  std::vector<gallery::Handle<std::vector<evwgh::MCEventWeight> > > wghs;
+  for (auto const &weightTag: fWeightTags) {
+    gallery::Handle<std::vector<evwgh::MCEventWeight> > this_wgh;
+    bool hasWeights = ev.getByLabel(weightTag, this_wgh);
+    // coherence check
+    if (hasWeights) {
+      assert(this_wgh->size() == mctruths.size());
+    }
+    // store the weights
+    wghs.push_back(this_wgh);
   }
 
   fTree->GetEntry(fEventIndex);
@@ -97,36 +131,51 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
 
     auto const& mctruth = mctruths.at(i);
 
-    // Weights
-    if (hasWeights) {
-      interaction.weights = wgh->at(i).fWeight;
+    // TODO: What to do with cosmic MC?
+    // For now, ignore them
+    if (!mctruth.NeutrinoSet()) continue;
+
+    // Combine Weights
+    for (auto const &wgh: wghs) {
+      // Insert the weights for each individual EventWeight object into the 
+      // Event class "master" weight list
+      interaction.weights.insert(wgh->at(i).fWeight.begin(), wgh->at(i).fWeight.end());
     }
 
-    // Neutrino
-    const simb::MCNeutrino& nu = mctruth.GetNeutrino();
-    interaction.neutrino.isnc =   nu.CCNC()  && (nu.Mode() != simb::kWeakMix);
-    interaction.neutrino.iscc = (!nu.CCNC()) && (nu.Mode() != simb::kWeakMix);
-    interaction.neutrino.pdg = nu.Nu().PdgCode();
-    interaction.neutrino.targetPDG = nu.Target();
-    interaction.neutrino.genie_intcode = nu.Mode();
-    interaction.neutrino.bjorkenX = nu.X();
-    interaction.neutrino.inelasticityY = nu.Y();
-    interaction.neutrino.Q2 = nu.QSqr();
-    interaction.neutrino.w = nu.W();
-    interaction.neutrino.energy = nu.Nu().EndMomentum().Energy();
-    interaction.neutrino.momentum = nu.Nu().EndMomentum().Vect();
+    TLorentzVector q_labframe;
 
-    // Primary lepton
-    const simb::MCParticle& lepton = nu.Lepton();
-    interaction.lepton.pdg = lepton.PdgCode();
-    interaction.lepton.energy = lepton.Momentum(0).Energy();
-    interaction.lepton.momentum = lepton.Momentum(0).Vect();
+    if (mctruth.NeutrinoSet()) {
+      // Neutrino
+      const simb::MCNeutrino& nu = mctruth.GetNeutrino();
+      interaction.neutrino.isnc =   nu.CCNC()  && (nu.Mode() != simb::kWeakMix);
+      interaction.neutrino.iscc = (!nu.CCNC()) && (nu.Mode() != simb::kWeakMix);
+      interaction.neutrino.pdg = nu.Nu().PdgCode();
+      interaction.neutrino.targetPDG = nu.Target();
+      interaction.neutrino.genie_intcode = nu.Mode();
+      interaction.neutrino.bjorkenX = nu.X();
+      interaction.neutrino.inelasticityY = nu.Y();
+      interaction.neutrino.Q2 = nu.QSqr();
+      interaction.neutrino.w = nu.W();
+      interaction.neutrino.energy = nu.Nu().EndMomentum().Energy();
+      interaction.neutrino.momentum = nu.Nu().EndMomentum().Vect();
+      interaction.neutrino.position = nu.Nu().Position().Vect();
+
+      // Primary lepton
+      const simb::MCParticle& lepton = nu.Lepton();
+      interaction.lepton.pdg = lepton.PdgCode();
+      interaction.lepton.energy = lepton.Momentum(0).Energy();
+      interaction.lepton.momentum = lepton.Momentum(0).Vect();
+
+      q_labframe = nu.Nu().EndMomentum() - lepton.Momentum(0);
+      interaction.neutrino.q0_lab = q_labframe.E();
+      interaction.neutrino.modq_lab = q_labframe.P();
+    }
+
+    // Get CCQE energy from lepton info
+    interaction.neutrino.eccqe = \
+      util::ECCQE(interaction.lepton.momentum, interaction.lepton.energy);
 
     // Hadronic system
-    TLorentzVector q_labframe = nu.Nu().EndMomentum() - lepton.Momentum(0);
-    interaction.neutrino.q0_lab = q_labframe.E();
-    interaction.neutrino.modq_lab = q_labframe.P();
-
     for (int iparticle=0; iparticle<interaction.finalstate.size(); iparticle++) {
       Event::FinalStateParticle fsp;
       const simb::MCParticle& particle = mctruth.GetParticle(iparticle);
@@ -155,7 +204,7 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
       interaction.neutrino.q0 = q_nucframe.E();
     }
 
-    fEvent->interactions.push_back(interaction);
+    fEvent->truth.push_back(interaction);
   }
 }
 
