@@ -130,6 +130,11 @@ void ProcessorBase::BuildEventTree(gallery::Event& ev) {
 
   fTree->GetEntry(fEventIndex);
 
+  auto const& evaux = ev.eventAuxiliary();
+  fEvent->metadata.run = evaux.run();
+  fEvent->metadata.subrun = evaux.subRun();
+  fEvent->metadata.eventID = evaux.event();
+
   // Populate event tree
   for (size_t i=0; i<mctruths.size(); i++) {
     Event::Interaction interaction;

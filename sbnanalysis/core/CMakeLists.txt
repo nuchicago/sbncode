@@ -29,11 +29,9 @@ link_directories(
 
 ROOT_GENERATE_DICTIONARY(sbn_eventdict Event.hh LINKDEF linkdef.h)
 
-add_library(sbnanalysis_Event SHARED sbn_eventdict.cxx Event.cxx)
+add_library(sbnanalysis_Event SHARED sbn_eventdict.cxx)
 target_link_libraries(
   sbnanalysis_Event
-  larsim_EventWeight_Base
-  larsim_EventWeight_Base_dict
   ${ROOT_LIBRARIES}
 )
 
@@ -57,7 +55,6 @@ target_link_libraries(
   larcoreobj_SummaryData
   lardataobj_RecoBase
   lardataobj_MCBase
-  larsim_EventWeight_Base
   larsim_EventWeight_Base_dict
   ${ROOT_LIBRARIES}
 )

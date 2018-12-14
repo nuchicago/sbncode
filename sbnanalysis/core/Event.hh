@@ -16,13 +16,9 @@
 #include <vector>
 #include <TTree.h>
 #include <TVector3.h>
-#include <canvas/Persistency/Common/Wrapper.h>
-
-/** art Wrapper instance to help the build. */
-extern art::Wrapper<std::vector<std::map<std::string, std::vector<double> > > > a;
 
 /** Value for uninitialized defaults. */
-extern int kUnfilled;
+const int kUnfilled = 3;
 
 
 /**
