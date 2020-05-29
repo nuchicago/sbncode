@@ -20,6 +20,7 @@ include_directories($ENV{LARDATAOBJ_INC})
 include_directories($ENV{NUSIMDATA_INC})
 include_directories($ENV{FHICLCPP_INC})
 include_directories($ENV{LARSIM_INC})
+include_directories($ENV{LARDATA_INC})
 include_directories($ENV{SBNDCODE_INC})
 include_directories($ENV{UBCORE_INC})
 include_directories($ENV{ICARUSCODE_INC})
@@ -48,8 +49,6 @@ ROOT_GENERATE_DICTIONARY(sbn_eventdict Event.hh SubRun.hh LINKDEF linkdef.h)
 add_library(sbnanalysis_Event SHARED sbn_eventdict.cxx)
 target_link_libraries(
   sbnanalysis_Event
-  larsim_EventWeight_Base
-  larsim_EventWeight_Base_dict
   ${ROOT_LIBRARIES}
 )
 
